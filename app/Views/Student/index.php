@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard</title>
+    <title>Exam Management - Students</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Muted Color Scheme */
+        /* Modern Color Scheme */
         :root {
-            --primary: #f8f8f8;
-            --primary-dark: #f0f0f0;
-            --secondary: #e8e8e8;
-            --accent: #2c2c2c;
-            --accent-light: #3d3d3d;
-            --text-primary: #333333;
-            --text-secondary: #666666;
-            --border: #e0e0e0;
-            --success: #5a9a8a;
-            --danger: #a15858;
-            --shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-            --radius: 6px;
+            --primary: #f8f9fa;
+            --primary-dark: #f1f3f5;
+            --secondary: #e9ecef;
+            --accent: #1a1f36;
+            --accent-light: #2d3748;
+            --text-primary: #1a1f36;
+            --text-secondary: #4a5568;
+            --border: #e2e8f0;
+            --success: #31c48d;
+            --warning: #f59e0b;
+            --danger: #e53e3e;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            --radius: 8px;
         }
 
         * {
@@ -29,10 +30,11 @@
         }
 
         body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.925rem;
             background-color: var(--primary-dark);
             color: var(--text-primary);
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .dashboard {
@@ -56,7 +58,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            padding: 1.5rem 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -67,7 +69,8 @@
         }
 
         .sidebar-header h2 {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+            letter-spacing: -0.025em;
             font-weight: 600;
             opacity: 0.9;
         }
@@ -84,11 +87,12 @@
         .sidebar-menu a {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1rem;
+            padding: 0.675rem 1rem;
             color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
             border-radius: var(--radius);
             transition: all 0.3s ease;
+            font-size: 0.875rem;
         }
 
         .sidebar-menu a:hover, .sidebar-menu a.active {
@@ -123,16 +127,16 @@
 
         /* Filters */
         .filters {
-            background-color: var(--primary);
+            background: var(--primary);
+            border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 1.5rem;
+            padding: 1.25rem;
             margin-bottom: 2rem;
             box-shadow: var(--shadow);
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
             align-items: center;
-            border: 1px solid var(--border);
         }
 
         .filter-group {
@@ -142,39 +146,38 @@
 
         .filter-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.375rem;
             font-weight: 500;
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.875rem;
         }
 
         .filter-group select, .filter-group input {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.625rem 1rem;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             background-color: var(--primary);
             color: var(--text-primary);
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
         }
 
         .filter-group select:focus, .filter-group input:focus {
-            outline: none;
-            border-color: var(--accent-light);
-            box-shadow: 0 0 0 1px rgba(45, 45, 45, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(26, 31, 54, 0.1);
         }
 
         .btn {
             background-color: var(--accent);
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--primary);
             border: none;
             border-radius: var(--radius);
-            padding: 0.75rem 1.5rem;
-            font-size: 0.95rem;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -187,9 +190,9 @@
         /* Students Container */
         .students-container {
             margin-top: 2rem;
-            background-color: var(--primary);
+            background: var(--primary);
             border-radius: var(--radius);
-            padding: 1.5rem;
+            padding: 1.25rem;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
         }
@@ -198,13 +201,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid var(--border);
         }
 
         .students-header h2 {
-            font-size: 1.3rem;
+            font-size: 1.125rem;
+            letter-spacing: -0.025em;
             font-weight: 600;
             color: var(--text-primary);
         }
@@ -217,12 +221,12 @@
         }
 
         .students-table th {
-            background-color: var(--accent);
-            color: rgba(255, 255, 255, 0.9);
+            background: var(--accent);
+            color: var(--primary);
             text-align: left;
-            padding: 0.9rem 1rem;
+            padding: 0.75rem 1rem;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
         }
 
         .students-table th:first-child {
@@ -234,10 +238,10 @@
         }
 
         .students-table td {
-            padding: 0.9rem 1rem;
+            padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--border);
             color: var(--text-primary);
-            font-size: 0.95rem;
+            font-size: 0.875rem;
         }
 
         .students-table tr:last-child td {
@@ -249,45 +253,45 @@
         }
 
         .table-status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
             font-weight: 500;
             display: inline-block;
         }
 
         .table-status.active {
-            background-color: rgba(90, 154, 138, 0.1);
+            background-color: rgba(49, 196, 141, 0.1);
             color: var(--success);
-            border: 1px solid rgba(90, 154, 138, 0.2);
+            border: 1px solid rgba(49, 196, 141, 0.2);
         }
 
         .table-status.inactive {
-            background-color: rgba(161, 88, 88, 0.1);
+            background-color: rgba(229, 62, 62, 0.1);
             color: var(--danger);
-            border: 1px solid rgba(161, 88, 88, 0.2);
+            border: 1px solid rgba(229, 62, 62, 0.2);
         }
 
         .action-btn {
-            padding: 0.4rem 0.9rem;
+            padding: 0.375rem 0.75rem;
             border-radius: var(--radius);
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             border: none;
             margin-right: 0.5rem;
         }
 
         .action-btn.view {
-            background-color: var(--accent);
-            color: rgba(255, 255, 255, 0.9);
+            background: var(--accent);
+            color: var(--primary);
         }
 
         .action-btn.edit {
-            background-color: transparent;
-            color: var(--text-secondary);
+            background: transparent;
             border: 1px solid var(--border);
+            color: var(--text-secondary);
         }
 
         .action-btn.edit:hover {
@@ -304,8 +308,8 @@
         }
 
         .page-btn {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -314,8 +318,8 @@
             border: 1px solid var(--border);
             color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
         }
 
         .page-btn:hover {
@@ -325,7 +329,7 @@
 
         .page-btn.active {
             background-color: var(--accent);
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--primary);
             border-color: var(--accent);
         }
 
@@ -336,19 +340,19 @@
 
         /* No Results */
         .no-results {
-            padding: 3rem;
+            padding: 2.5rem;
             text-align: center;
         }
 
         .no-results i {
-            font-size: 2.5rem;
+            font-size: 2rem;
             color: var(--text-secondary);
             margin-bottom: 1rem;
-            opacity: 0.7;
+            opacity: 0.5;
         }
 
         .no-results h3 {
-            font-size: 1.3rem;
+            font-size: 1.125rem;
             margin-bottom: 0.5rem;
             color: var(--text-primary);
         }
@@ -356,7 +360,7 @@
         .no-results p {
             color: var(--text-secondary);
             margin-bottom: 1.5rem;
-            font-size: 0.95rem;
+            font-size: 0.875rem;
         }
 
         /* Responsive */
@@ -407,16 +411,14 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-graduation-cap"></i>
-                <h2>Student Portal</h2>
+                <h2>Exam Management</h2>
             </div>
             
             <ul class="sidebar-menu">
-                <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="#"><i class="fas fa-users"></i> Students</a></li>
-                <li><a href="#"><i class="fas fa-chalkboard-teacher"></i> Teachers</a></li>
-                <li><a href="#"><i class="fas fa-book"></i> Courses</a></li>
-                <li><a href="#"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
-                <li><a href="#"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                <li><a href="<?= base_url('dashboard') ?>"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="<?= base_url('student') ?>" class="active"><i class="fas fa-users"></i> Students</a></li>
+                <li><a href="#"><i class="fas fa-file-alt"></i> Exams</a></li>
+                <li><a href="#"><i class="fas fa-chart-bar"></i> Results</a></li>
                 <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
         </div>
@@ -433,10 +435,6 @@
                     <label for="classFilter">Class</label>
                     <select id="classFilter">
                         <option value="">All Classes</option>
-                        <option value="9th">9th Grade</option>
-                        <option value="10th">10th Grade</option>
-                        <option value="11th">11th Grade</option>
-                        <option value="12th">12th Grade</option>
                     </select>
                 </div>
                 
@@ -444,9 +442,6 @@
                     <label for="sectionFilter">Section</label>
                     <select id="sectionFilter">
                         <option value="">All Sections</option>
-                        <option value="A">Section A</option>
-                        <option value="B">Section B</option>
-                        <option value="C">Section C</option>
                     </select>
                 </div>
                 
@@ -473,8 +468,8 @@
                 <table class="students-table" id="studentsTable">
                     <thead>
                         <tr>
-                            <th>First Name</th>
-                            <th>Last Name</th>
+                            <th>Admission No</th>
+                            <th>Name</th>
                             <th>Class</th>
                             <th>Section</th>
                             <th>Status</th>
@@ -482,7 +477,7 @@
                         </tr>
                     </thead>
                     <tbody id="studentTableBody">
-                        <!-- Table rows will be populated dynamically -->
+                        <!-- Dynamic content will be loaded here -->
                     </tbody>
                 </table>
                 
@@ -495,183 +490,183 @@
                 
                 <!-- Pagination -->
                 <div class="pagination" id="pagination">
-                    <!-- Pagination buttons will be added here -->
+                    <!-- Pagination will be dynamically generated -->
                 </div>
             </div>
         </div>
     </div>
 
-    // Replace the existing script section with:
-<script>
-    const baseUrl = window.location.origin;
-    
-    // DOM elements
-    const studentsTable = document.getElementById('studentsTable');
-    const studentTableBody = document.getElementById('studentTableBody');
-    const searchInput = document.getElementById('searchInput');
-    const classFilter = document.getElementById('classFilter');
-    const sectionFilter = document.getElementById('sectionFilter');
-    const searchBtn = document.getElementById('searchBtn');
-    const noResultsElement = document.getElementById('noResults');
-    const paginationContainer = document.getElementById('pagination');
+    <script>
+        const baseUrl = window.location.origin;
+        
+        // DOM elements
+        const studentsTable = document.getElementById('studentsTable');
+        const studentTableBody = document.getElementById('studentTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const classFilter = document.getElementById('classFilter');
+        const sectionFilter = document.getElementById('sectionFilter');
+        const searchBtn = document.getElementById('searchBtn');
+        const noResultsElement = document.getElementById('noResults');
+        const paginationContainer = document.getElementById('pagination');
 
-    async function fetchStudents(page = 1) {
-        const search = searchInput.value;
-        const classValue = classFilter.value;
-        const sectionValue = sectionFilter.value;
-        const limit = 10;
+        // Core functions
+        async function fetchStudents(page = 1) {
+            const search = searchInput.value;
+            const classValue = classFilter.value;
+            const sectionValue = sectionFilter.value;
+            const limit = 10;
 
-        try {
-            const response = await fetch(`${baseUrl}/student/fetchStudents?page=${page}&limit=${limit}&search=${search}&class=${classValue}&section=${sectionValue}`);
-            const data = await response.json();
+            try {
+                const response = await fetch(`${baseUrl}/student/fetchStudents?page=${page}&limit=${limit}&search=${search}&class=${classValue}&section=${sectionValue}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    if (data.data.students.length === 0) {
+                        showNoResults();
+                    } else {
+                        renderStudents(data.data.students);
+                        setupPagination(data.data.pagination);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching students:', error);
+                showNoResults();
+            }
+        }
+
+        function renderStudents(students) {
+            studentTableBody.innerHTML = '';
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.admission_no || '-'}</td>
+                    <td>${student.firstname} ${student.lastname}</td>
+                    <td>${student.class_name || '-'}</td>
+                    <td>${student.section_name || '-'}</td>
+                    <td><span class="table-status ${student.is_active === 'yes' ? 'active' : 'inactive'}">${student.is_active === 'yes' ? 'Active' : 'Inactive'}</span></td>
+                    <td>
+                        <button class="action-btn view" onclick="viewStudent(${student.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-btn edit" onclick="editStudent(${student.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                `;
+                studentTableBody.appendChild(row);
+            });
+            noResultsElement.style.display = 'none';
+            studentsTable.style.display = 'table';
+        }
+
+        function setupPagination(pagination) {
+            paginationContainer.innerHTML = '';
             
-            if (data.status === 'success') {
-                if (data.data.students.length === 0) {
-                    showNoResults();
-                } else {
-                    renderStudents(data.data.students);
-                    setupPagination(data.data.pagination);
+            if (pagination.total_pages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+
+            paginationContainer.style.display = 'flex';
+            
+            // Previous button
+            const prevBtn = createPageButton('‹', pagination.current_page > 1, () => fetchStudents(pagination.current_page - 1));
+            paginationContainer.appendChild(prevBtn);
+
+            // Page numbers
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                if (shouldShowPageNumber(i, pagination.current_page, pagination.total_pages)) {
+                    const pageBtn = createPageButton(
+                        i,
+                        true,
+                        () => fetchStudents(i),
+                        i === pagination.current_page
+                    );
+                    paginationContainer.appendChild(pageBtn);
+                } else if (shouldShowEllipsis(i, pagination.current_page, pagination.total_pages)) {
+                    const ellipsis = createEllipsis();
+                    paginationContainer.appendChild(ellipsis);
                 }
             }
-        } catch (error) {
-            console.error('Error fetching students:', error);
-            showNoResults();
+
+            // Next button
+            const nextBtn = createPageButton('›', pagination.current_page < pagination.total_pages, () => fetchStudents(pagination.current_page + 1));
+            paginationContainer.appendChild(nextBtn);
         }
-    }
 
-    function renderStudents(students) {
-        studentTableBody.innerHTML = '';
-        students.forEach(student => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${student.admission_no || '-'}</td>
-                <td>${student.firstname} ${student.lastname}</td>
-                <td>${student.class_name || '-'}</td>
-                <td>${student.section_name || '-'}</td>
-                <td><span class="table-status ${student.is_active === 'yes' ? 'active' : 'inactive'}">${student.is_active === 'yes' ? 'Active' : 'Inactive'}</span></td>
-                <td>
-                    <button class="action-btn view" onclick="viewStudent(${student.id})">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="action-btn edit" onclick="editStudent(${student.id})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                </td>
-            `;
-            studentTableBody.appendChild(row);
-        });
-        noResultsElement.style.display = 'none';
-        studentsTable.style.display = 'table';
-    }
+        function createPageButton(text, enabled, onClick, isActive = false) {
+            const button = document.createElement('button');
+            button.className = `page-btn${isActive ? ' active' : ''}${!enabled ? ' disabled' : ''}`;
+            button.textContent = text;
+            if (enabled) button.onclick = onClick;
+            return button;
+        }
 
-    function setupPagination(pagination) {
-        paginationContainer.innerHTML = '';
-        
-        if (pagination.total_pages <= 1) {
+        function createEllipsis() {
+            const span = document.createElement('span');
+            span.className = 'page-btn disabled';
+            span.textContent = '...';
+            return span;
+        }
+
+        function shouldShowPageNumber(pageNum, currentPage, totalPages) {
+            return pageNum === 1 ||
+                   pageNum === totalPages ||
+                   (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
+        }
+
+        function shouldShowEllipsis(pageNum, currentPage, totalPages) {
+            return (pageNum === currentPage - 2 && pageNum > 2) ||
+                   (pageNum === currentPage + 2 && pageNum < totalPages - 1);
+        }
+
+        function showNoResults() {
+            studentTableBody.innerHTML = '';
+            noResultsElement.style.display = 'block';
+            studentsTable.style.display = 'none';
             paginationContainer.style.display = 'none';
-            return;
         }
 
-        paginationContainer.style.display = 'flex';
-        
-        // Previous button
-        const prevBtn = createPageButton('‹', pagination.current_page > 1, () => fetchStudents(pagination.current_page - 1));
-        paginationContainer.appendChild(prevBtn);
-
-        // Page numbers
-        for (let i = 1; i <= pagination.total_pages; i++) {
-            if (shouldShowPageNumber(i, pagination.current_page, pagination.total_pages)) {
-                const pageBtn = createPageButton(
-                    i,
-                    true,
-                    () => fetchStudents(i),
-                    i === pagination.current_page
-                );
-                paginationContainer.appendChild(pageBtn);
-            } else if (shouldShowEllipsis(i, pagination.current_page, pagination.total_pages)) {
-                const ellipsis = createEllipsis();
-                paginationContainer.appendChild(ellipsis);
-            }
-        }
-
-        // Next button
-        const nextBtn = createPageButton('›', pagination.current_page < pagination.total_pages, () => fetchStudents(pagination.current_page + 1));
-        paginationContainer.appendChild(nextBtn);
-    }
-
-    function createPageButton(text, enabled, onClick, isActive = false) {
-        const button = document.createElement('button');
-        button.className = `page-btn${isActive ? ' active' : ''}${!enabled ? ' disabled' : ''}`;
-        button.textContent = text;
-        if (enabled) button.onclick = onClick;
-        return button;
-    }
-
-    function createEllipsis() {
-        const span = document.createElement('span');
-        span.className = 'page-btn disabled';
-        span.textContent = '...';
-        return span;
-    }
-
-    function shouldShowPageNumber(pageNum, currentPage, totalPages) {
-        return pageNum === 1 ||
-               pageNum === totalPages ||
-               (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
-    }
-
-    function shouldShowEllipsis(pageNum, currentPage, totalPages) {
-        return (pageNum === currentPage - 2 && pageNum > 2) ||
-               (pageNum === currentPage + 2 && pageNum < totalPages - 1);
-    }
-
-    function showNoResults() {
-        studentTableBody.innerHTML = '';
-        noResultsElement.style.display = 'block';
-        studentsTable.style.display = 'none';
-        paginationContainer.style.display = 'none';
-    }
-
-    // Event Listeners
-    document.addEventListener('DOMContentLoaded', () => {
-        fetchStudents(1);
-    });
-
-    searchBtn.addEventListener('click', () => {
-        fetchStudents(1);
-    });
-
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
             fetchStudents(1);
-        }
-    });
+        });
 
-    async function viewStudent(id) {
-        try {
-            const response = await fetch(`${baseUrl}/student/getStudent/${id}`);
-            const data = await response.json();
-            if (data.status === 'success') {
-                // Implement your view logic here
-                console.log('Student data:', data.data);
-            }
-        } catch (error) {
-            console.error('Error fetching student details:', error);
-        }
-    }
+        searchBtn.addEventListener('click', () => {
+            fetchStudents(1);
+        });
 
-    async function editStudent(id) {
-        try {
-            const response = await fetch(`${baseUrl}/student/getStudent/${id}`);
-            const data = await response.json();
-            if (data.status === 'success') {
-                // Implement your edit logic here
-                console.log('Student data to edit:', data.data);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fetchStudents(1);
             }
-        } catch (error) {
-            console.error('Error fetching student details:', error);
+        });
+
+        async function viewStudent(id) {
+            try {
+                const response = await fetch(`${baseUrl}/student/getStudent/${id}`);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    // Implement your view logic here
+                    console.log('Student data:', data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching student details:', error);
+            }
         }
-    }
-</script>
+
+        async function editStudent(id) {
+            try {
+                const response = await fetch(`${baseUrl}/student/getStudent/${id}`);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    // Implement your edit logic here
+                    console.log('Student data to edit:', data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching student details:', error);
+            }
+        }
+    </script>
 </body>
 </html>
