@@ -501,188 +501,177 @@
         </div>
     </div>
 
-    <script>
-        // Change this:
-        const baseUrl = window.location.origin;
-        
-        // DOM elements
-        const studentsTable = document.getElementById('studentsTable');
-        const studentTableBody = document.getElementById('studentTableBody');
-        const searchInput = document.getElementById('searchInput');
-        const classFilter = document.getElementById('classFilter');
-        const sectionFilter = document.getElementById('sectionFilter');
-        const searchBtn = document.getElementById('searchBtn');
-        const importBtn = document.getElementById('importBtn');
-        const paginationContainer = document.getElementById('pagination');
-        const noResultsElement = document.getElementById('noResults');
-        
-        // Updated fetch function to work with our controller endpoints
-        async function fetchStudents(page = 1, limit = 10, searchTerm = '', classValue = '', sectionValue = '') {
-            try {
-                const queryParams = new URLSearchParams({
-                    page,
-                    limit,
-                    search: searchTerm,
-                    class: classValue,
-                    section: sectionValue
-                });
+    // Replace the existing script section with:
+<script>
+    const baseUrl = window.location.origin;
+    
+    // DOM elements
+    const studentsTable = document.getElementById('studentsTable');
+    const studentTableBody = document.getElementById('studentTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const classFilter = document.getElementById('classFilter');
+    const sectionFilter = document.getElementById('sectionFilter');
+    const searchBtn = document.getElementById('searchBtn');
+    const noResultsElement = document.getElementById('noResults');
+    const paginationContainer = document.getElementById('pagination');
 
-                // Explicitly use HTTP URL
-                const response = await fetch(`/api/students/paginated?${queryParams}`);
-                const data = await response.json();
+    async function fetchStudents(page = 1) {
+        const search = searchInput.value;
+        const classValue = classFilter.value;
+        const sectionValue = sectionFilter.value;
+        const limit = 10;
 
-                if (data.status === 'success') {
-                    return data.data;
+        try {
+            const response = await fetch(`${baseUrl}/student/fetchStudents?page=${page}&limit=${limit}&search=${search}&class=${classValue}&section=${sectionValue}`);
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                if (data.data.students.length === 0) {
+                    showNoResults();
                 } else {
-                    throw new Error(data.message);
-                }
-            } catch (error) {
-                console.error('Error fetching students:', error);
-                return { students: [], pagination: { total_records: 0 } };
-            }
-        }
-
-        // Update renderStudents function to work with our API response
-        function renderStudents(students) {
-            studentTableBody.innerHTML = '';
-            
-            if (!students || students.length === 0) {
-                showNoResults();
-                return;
-            }
-            
-            noResultsElement.style.display = 'none';
-            
-            students.forEach(student => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${student.firstname || ''}</td>
-                    <td>${student.lastname || ''}</td>
-                    <td>${student.class || ''}</td>
-                    <td>${student.section || ''}</td>
-                    <td>
-                        <span class="table-status active">Active</span>
-                    </td>
-                    <td>
-                        <button class="action-btn view" onclick="viewStudent(${student.id})">View</button>
-                        <button class="action-btn edit" onclick="editStudent(${student.id})">Edit</button>
-                    </td>
-                `;
-                studentTableBody.appendChild(row);
-            });
-        }
-
-        // Update setupPagination to work with our API pagination
-        function setupPagination(paginationData) {
-            paginationContainer.innerHTML = '';
-            
-            if (!paginationData || paginationData.total_pages <= 1) {
-                paginationContainer.style.display = 'none';
-                return;
-            }
-            
-            paginationContainer.style.display = 'flex';
-            
-            // Previous button
-            const prevButton = document.createElement('button');
-            prevButton.className = `page-btn${paginationData.current_page === 1 ? ' disabled' : ''}`;
-            prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            prevButton.disabled = paginationData.current_page === 1;
-            prevButton.onclick = () => loadPage(paginationData.current_page - 1);
-            paginationContainer.appendChild(prevButton);
-            
-            // Page numbers
-            for (let i = 1; i <= paginationData.total_pages; i++) {
-                if (
-                    i === 1 ||
-                    i === paginationData.total_pages ||
-                    (i >= paginationData.current_page - 2 && i <= paginationData.current_page + 2)
-                ) {
-                    const pageButton = document.createElement('button');
-                    pageButton.className = `page-btn${i === paginationData.current_page ? ' active' : ''}`;
-                    pageButton.textContent = i;
-                    pageButton.onclick = () => loadPage(i);
-                    paginationContainer.appendChild(pageButton);
-                } else if (
-                    i === paginationData.current_page - 3 ||
-                    i === paginationData.current_page + 3
-                ) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.className = 'page-btn disabled';
-                    ellipsis.textContent = '...';
-                    paginationContainer.appendChild(ellipsis);
+                    renderStudents(data.data.students);
+                    setupPagination(data.data.pagination);
                 }
             }
-            
-            // Next button
-            const nextButton = document.createElement('button');
-            nextButton.className = `page-btn${paginationData.current_page === paginationData.total_pages ? ' disabled' : ''}`;
-            nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            nextButton.disabled = paginationData.current_page === paginationData.total_pages;
-            nextButton.onclick = () => loadPage(paginationData.current_page + 1);
-            paginationContainer.appendChild(nextButton);
+        } catch (error) {
+            console.error('Error fetching students:', error);
+            showNoResults();
         }
+    }
 
-        // Function to load a specific page
-        async function loadPage(page) {
-            const searchTerm = searchInput.value;
-            const classValue = classFilter.value;
-            const sectionValue = sectionFilter.value;
-            
-            const data = await fetchStudents(page, 10, searchTerm, classValue, sectionValue);
-            
-            if (data) {
-                renderStudents(data.students);
-                setupPagination(data.pagination);
-            }
-        }
-
-        // Update the filter application
-        async function applyFilters() {
-            const searchTerm = searchInput.value;
-            const classValue = classFilter.value;
-            const sectionValue = sectionFilter.value;
-            
-            const data = await fetchStudents(1, 10, searchTerm, classValue, sectionValue);
-            
-            if (data) {
-                renderStudents(data.students);
-                setupPagination(data.pagination);
-            }
-        }
-
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Set up event listeners
-            searchBtn.addEventListener('click', applyFilters);
-            
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    applyFilters();
-                }
-            });
-            
-            // Load initial data
-            await loadPage(1);
+    function renderStudents(students) {
+        studentTableBody.innerHTML = '';
+        students.forEach(student => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${student.admission_no || '-'}</td>
+                <td>${student.firstname} ${student.lastname}</td>
+                <td>${student.class_name || '-'}</td>
+                <td>${student.section_name || '-'}</td>
+                <td><span class="table-status ${student.is_active === 'yes' ? 'active' : 'inactive'}">${student.is_active === 'yes' ? 'Active' : 'Inactive'}</span></td>
+                <td>
+                    <button class="action-btn view" onclick="viewStudent(${student.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="action-btn edit" onclick="editStudent(${student.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </td>
+            `;
+            studentTableBody.appendChild(row);
         });
+        noResultsElement.style.display = 'none';
+        studentsTable.style.display = 'table';
+    }
 
-        // Helper function to show no results
-        function showNoResults() {
-            studentTableBody.innerHTML = '';
-            noResultsElement.style.display = 'block';
+    function setupPagination(pagination) {
+        paginationContainer.innerHTML = '';
+        
+        if (pagination.total_pages <= 1) {
             paginationContainer.style.display = 'none';
+            return;
         }
 
-        // View and Edit functions (implement as needed)
-        function viewStudent(id) {
-            // Implement view functionality
-            console.log('View student:', id);
+        paginationContainer.style.display = 'flex';
+        
+        // Previous button
+        const prevBtn = createPageButton('‹', pagination.current_page > 1, () => fetchStudents(pagination.current_page - 1));
+        paginationContainer.appendChild(prevBtn);
+
+        // Page numbers
+        for (let i = 1; i <= pagination.total_pages; i++) {
+            if (shouldShowPageNumber(i, pagination.current_page, pagination.total_pages)) {
+                const pageBtn = createPageButton(
+                    i,
+                    true,
+                    () => fetchStudents(i),
+                    i === pagination.current_page
+                );
+                paginationContainer.appendChild(pageBtn);
+            } else if (shouldShowEllipsis(i, pagination.current_page, pagination.total_pages)) {
+                const ellipsis = createEllipsis();
+                paginationContainer.appendChild(ellipsis);
+            }
         }
 
-        function editStudent(id) {
-            // Implement edit functionality
-            console.log('Edit student:', id);
+        // Next button
+        const nextBtn = createPageButton('›', pagination.current_page < pagination.total_pages, () => fetchStudents(pagination.current_page + 1));
+        paginationContainer.appendChild(nextBtn);
+    }
+
+    function createPageButton(text, enabled, onClick, isActive = false) {
+        const button = document.createElement('button');
+        button.className = `page-btn${isActive ? ' active' : ''}${!enabled ? ' disabled' : ''}`;
+        button.textContent = text;
+        if (enabled) button.onclick = onClick;
+        return button;
+    }
+
+    function createEllipsis() {
+        const span = document.createElement('span');
+        span.className = 'page-btn disabled';
+        span.textContent = '...';
+        return span;
+    }
+
+    function shouldShowPageNumber(pageNum, currentPage, totalPages) {
+        return pageNum === 1 ||
+               pageNum === totalPages ||
+               (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
+    }
+
+    function shouldShowEllipsis(pageNum, currentPage, totalPages) {
+        return (pageNum === currentPage - 2 && pageNum > 2) ||
+               (pageNum === currentPage + 2 && pageNum < totalPages - 1);
+    }
+
+    function showNoResults() {
+        studentTableBody.innerHTML = '';
+        noResultsElement.style.display = 'block';
+        studentsTable.style.display = 'none';
+        paginationContainer.style.display = 'none';
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchStudents(1);
+    });
+
+    searchBtn.addEventListener('click', () => {
+        fetchStudents(1);
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            fetchStudents(1);
         }
-    </script>
+    });
+
+    async function viewStudent(id) {
+        try {
+            const response = await fetch(`${baseUrl}/student/getStudent/${id}`);
+            const data = await response.json();
+            if (data.status === 'success') {
+                // Implement your view logic here
+                console.log('Student data:', data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching student details:', error);
+        }
+    }
+
+    async function editStudent(id) {
+        try {
+            const response = await fetch(`${baseUrl}/student/getStudent/${id}`);
+            const data = await response.json();
+            if (data.status === 'success') {
+                // Implement your edit logic here
+                console.log('Student data to edit:', data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching student details:', error);
+        }
+    }
+</script>
 </body>
 </html>
