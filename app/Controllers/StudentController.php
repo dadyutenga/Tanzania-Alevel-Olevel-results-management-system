@@ -139,52 +139,20 @@ class StudentController extends ResourceController
             $section = $this->request->getGet('section') ?? '';
             $session = $this->request->getGet('session') ?? '';
 
-            log_message('debug', 'Request params: ' . json_encode([
+            log_message('debug', 'Fetching students with params: ' . json_encode([
                 'session' => $session,
                 'class' => $class,
                 'section' => $section
             ]));
 
-            // First verify if we have any students in this session-class-section combination
-            $studentSessionModel = new StudentSessionModel();
-            $validStudentCount = $studentSessionModel->where([
-                'session_id' => $session,
-                'class_id' => $class,
-                'section_id' => $section,
-                'is_active' => 'no'
-            ])->countAllResults();
-
-            if ($validStudentCount === 0) {
-                log_message('info', 'No students found for session={session}, class={class}, section={section}', [
-                    'session' => $session,
-                    'class' => $class,
-                    'section' => $section
-                ]);
-                return $this->respond([
-                    'status' => 'success',
-                    'data' => [
-                        'students' => [],
-                        'pagination' => [
-                            'current_page' => (int)$page,
-                            'total_pages' => 0,
-                            'total_records' => 0,
-                            'per_page' => (int)$limit
-                        ]
-                    ]
-                ]);
-            }
-
             $studentModel = new StudentModel();
             $builder = $studentModel->builder();
 
-            // Build the query with strict session validation
+            // Simplified query to match your working SQL
             $builder->select('
                 students.*, 
                 classes.class as class_name, 
-                sections.section as section_name,
-                student_session.session_id,
-                student_session.class_id,
-                student_session.section_id
+                sections.section as section_name
             ')
             ->join('student_session', 'students.id = student_session.student_id')
             ->join('classes', 'student_session.class_id = classes.id')
@@ -197,9 +165,6 @@ class StudentController extends ResourceController
                 'student_session.section_id' => $section
             ]);
 
-            // Log the query for debugging
-            log_message('debug', 'SQL Query: ' . $builder->getCompiledSelect());
-
             if ($search) {
                 $builder->groupStart()
                         ->like('students.firstname', $search)
@@ -209,27 +174,12 @@ class StudentController extends ResourceController
             }
 
             // Get total count
-            $countBuilder = clone $builder;
-            $totalRecords = $countBuilder->countAllResults(false);
+            $totalRecords = $builder->countAllResults(false);
 
             // Get paginated results
             $students = $builder->limit($limit, ($page - 1) * $limit)
                               ->get()
                               ->getResultArray();
-
-            // Double check the results match our criteria exactly
-            $students = array_filter($students, function($student) use ($session, $class, $section) {
-                return (
-                    $student['session_id'] === $session &&
-                    $student['class_id'] === $class &&
-                    $student['section_id'] === $section
-                );
-            });
-
-            // Reset array keys after filtering
-            $students = array_values($students);
-
-            log_message('debug', 'Final results count: ' . count($students));
 
             return $this->respond([
                 'status' => 'success',
@@ -237,21 +187,18 @@ class StudentController extends ResourceController
                     'students' => $students,
                     'pagination' => [
                         'current_page' => (int)$page,
-                        'total_pages' => $totalRecords > 0 ? ceil($totalRecords / $limit) : 0,
-                        'total_records' => count($students),
+                        'total_pages' => ceil($totalRecords / $limit),
+                        'total_records' => $totalRecords,
                         'per_page' => (int)$limit
                     ]
                 ]
             ]);
 
         } catch (\Exception $e) {
-            log_message('error', '[fetchStudents] Exception: {message} | Stack: {stack}', [
-                'message' => $e->getMessage(),
-                'stack' => $e->getTraceAsString()
-            ]);
+            log_message('error', '[fetchStudents] Exception: {message}', ['message' => $e->getMessage()]);
             return $this->respond([
                 'status' => 'error',
-                'message' => 'Failed to fetch students'
+                'message' => 'Failed to fetch students: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -299,4 +246,4 @@ class StudentController extends ResourceController
             ], 500);
         }
     }
-}
+} 
