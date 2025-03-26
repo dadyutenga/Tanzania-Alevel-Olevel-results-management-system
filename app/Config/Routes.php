@@ -20,4 +20,5 @@ $routes->group('student', static function ($routes) {
     $routes->get('getClasses', 'StudentController::getClasses');
     $routes->get('getSections/(:num)', 'StudentController::getSections/$1');
     $routes->get('fetchStudents', 'StudentController::fetchStudents');
+    $routes->get('getSessions', 'StudentController::getSessions');
 });

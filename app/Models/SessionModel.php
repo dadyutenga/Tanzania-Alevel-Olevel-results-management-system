@@ -67,8 +67,7 @@ class SessionModel extends Model
 
     public function getCurrentSession()
     {
-        return $this->where('is_active', 'no')
-                    ->first();
+        return $this->where('is_active', 'no')->first();
     }
 
     public function setActiveSession($sessionId)
@@ -122,5 +121,10 @@ class SessionModel extends Model
             log_message('error', 'Error updating session: ' . $e->getMessage());
             return false;
         }
+    }
+
+    public function getAllSessions()
+    {
+        return $this->orderBy('session', 'DESC')->findAll();
     }
 }

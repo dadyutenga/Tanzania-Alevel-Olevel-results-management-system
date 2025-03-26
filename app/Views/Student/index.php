@@ -518,12 +518,29 @@
 
         // Initialize the page
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadClasses();
+            await loadSessions();
+            classFilter.disabled = true;
             sectionFilter.disabled = true;
-            showNoResults('Please select a class to view students');
+            showNoResults('Please select academic year to view students');
         });
 
         // Event Listeners
+        sessionFilter.addEventListener('change', async () => {
+            const sessionId = sessionFilter.value;
+            classFilter.innerHTML = '<option value="">Select Class</option>';
+            sectionFilter.innerHTML = '<option value="">Select Section</option>';
+            classFilter.disabled = true;
+            sectionFilter.disabled = true;
+            studentTableBody.innerHTML = '';
+            
+            if (sessionId) {
+                await loadClasses();
+                classFilter.disabled = false;
+            } else {
+                showNoResults('Please select academic year');
+            }
+        });
+
         classFilter.addEventListener('change', async (e) => {
             const classId = e.target.value;
             sectionFilter.innerHTML = '<option value="">Select Section</option>';
@@ -556,6 +573,56 @@
                 await fetchStudents(1);
             }
         });
+
+        async function loadSessions() {
+            try {
+                console.log('Fetching sessions...'); // Debug log
+                const response = await fetch(`${baseUrl}/student/getSessions`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Response status:', response.status); // Debug log
+                const responseText = await response.text();
+                console.log('Raw response:', responseText); // Debug log
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Failed to parse JSON:', e);
+                    throw new Error('Invalid JSON response');
+                }
+
+                console.log('Parsed sessions data:', data); // Debug log
+
+                if (data.status === 'success') {
+                    sessionFilter.innerHTML = '<option value="">Select Year</option>';
+                    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                        data.data.forEach(session => {
+                            sessionFilter.innerHTML += `
+                                <option value="${session.id}">${session.session}</option>
+                            `;
+                        });
+                        console.log('Sessions loaded successfully'); // Debug log
+                    } else {
+                        showError('No academic years available');
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed to load academic years');
+                }
+            } catch (error) {
+                console.error('Error loading academic years:', error);
+                showError('Failed to load academic years. Please try again.');
+            }
+        }
 
         async function loadClasses() {
             try {
@@ -630,9 +697,15 @@
         async function fetchStudents(page = 1) {
             try {
                 const search = searchInput.value.trim();
+                const sessionValue = sessionFilter.value;
                 const classValue = classFilter.value;
                 const sectionValue = sectionFilter.value;
                 const limit = 10;
+
+                if (!sessionValue) {
+                    showNoResults('Please select an academic year');
+                    return;
+                }
 
                 if (!classValue || !sectionValue) {
                     showNoResults('Please select both class and section');
@@ -643,6 +716,7 @@
                     page,
                     limit,
                     search,
+                    session: sessionValue,
                     class: classValue,
                     section: sectionValue
                 });

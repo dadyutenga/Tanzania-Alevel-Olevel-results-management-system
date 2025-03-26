@@ -95,6 +95,39 @@ class StudentController extends ResourceController
         }
     }
 
+    public function getSessions()
+    {
+        try {
+            log_message('info', 'Fetching available sessions');
+            
+            $sessionModel = new SessionModel();
+            
+            // Get all sessions with debug logging
+            $sessions = $sessionModel->getAllSessions();
+            
+            log_message('debug', 'Sessions query: ' . $sessionModel->getLastQuery());
+            log_message('debug', 'Sessions result: ' . json_encode($sessions));
+            
+            if (empty($sessions)) {
+                log_message('warning', 'No sessions found in database');
+            }
+            
+            return $this->respond([
+                'status' => 'success',
+                'data' => $sessions
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', '[getSessions] Exception: {message} | Stack: {stack}', [
+                'message' => $e->getMessage(),
+                'stack' => $e->getTraceAsString()
+            ]);
+            return $this->respond([
+                'status' => 'error',
+                'message' => 'Failed to fetch sessions: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function fetchStudents()
     {
         try {
@@ -103,28 +136,24 @@ class StudentController extends ResourceController
             $search = $this->request->getGet('search') ?? '';
             $class = $this->request->getGet('class') ?? '';
             $section = $this->request->getGet('section') ?? '';
+            $session = $this->request->getGet('session') ?? '';
 
             log_message('info', 'Fetching students with filters', [
                 'page' => $page,
                 'limit' => $limit,
                 'search' => $search,
                 'class' => $class,
-                'section' => $section
+                'section' => $section,
+                'session' => $session
             ]);
 
-            // Get current session
-            $sessionModel = new SessionModel();
-            $currentSession = $sessionModel->where('is_active', 'no')->first();
-            
-            if (!$currentSession) {
-                log_message('warning', 'No active session found');
+            if (!$session) {
+                log_message('warning', 'No session selected');
                 return $this->respond([
                     'status' => 'error',
-                    'message' => 'No active session found'
+                    'message' => 'Please select an academic year'
                 ], 400);
             }
-
-            log_message('debug', 'Current session: ' . json_encode($currentSession));
 
             $studentModel = new StudentModel();
             $builder = $studentModel->builder();
@@ -143,7 +172,7 @@ class StudentController extends ResourceController
             ->where([
                 'students.is_active' => 'yes',  // Active students have is_active = 'yes'
                 'student_session.is_active' => 'no',  // Active session entries have is_active = 'no'
-                'student_session.session_id' => $currentSession['id']
+                'student_session.session_id' => $session
             ]);
 
             // Apply filters
@@ -182,7 +211,7 @@ class StudentController extends ResourceController
                 'status' => 'success',
                 'data' => [
                     'students' => $students,
-                    'current_session' => $currentSession,
+                    'current_session' => $session,
                     'pagination' => [
                         'current_page' => (int)$page,
                         'total_pages' => ceil($totalRecords / $limit),
