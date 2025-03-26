@@ -102,22 +102,21 @@ class StudentController extends ResourceController
             $studentModel = new StudentModel();
             $builder = $studentModel->builder();
             
-            // Base query with all necessary joins
+            // Modified join logic to use separate class_id and section_id
             $builder->select('students.*, classes.class as class_name, sections.section as section_name')
                     ->join('student_session', 'students.id = student_session.student_id')
-                    ->join('class_sections', 'student_session.class_section_id = class_sections.id')
-                    ->join('classes', 'class_sections.class_id = classes.id')
-                    ->join('sections', 'class_sections.section_id = sections.id')
+                    ->join('classes', 'student_session.class_id = classes.id')
+                    ->join('sections', 'student_session.section_id = sections.id')
                     ->where('students.is_active', 'no')
                     ->where('student_session.session_id', $currentSession['id']);
 
             // Apply filters
             if ($class) {
-                $builder->where('class_sections.class_id', $class);
+                $builder->where('classes.id', $class);
             }
 
             if ($section) {
-                $builder->where('class_sections.section_id', $section);
+                $builder->where('sections.id', $section);
             }
 
             if ($search) {
@@ -166,11 +165,11 @@ class StudentController extends ResourceController
             $currentSession = $sessionModel->getCurrentSession();
             
             $builder = $studentModel->builder();
+            // Modified join logic to use separate class_id and section_id
             $builder->select('students.*, classes.class as class_name, sections.section as section_name')
                     ->join('student_session', 'students.id = student_session.student_id')
-                    ->join('class_sections', 'student_session.class_section_id = class_sections.id')
-                    ->join('classes', 'class_sections.class_id = classes.id')
-                    ->join('sections', 'class_sections.section_id = sections.id')
+                    ->join('classes', 'student_session.class_id = classes.id')
+                    ->join('sections', 'student_session.section_id = sections.id')
                     ->where('students.id', $id)
                     ->where('student_session.session_id', $currentSession['id']);
 
