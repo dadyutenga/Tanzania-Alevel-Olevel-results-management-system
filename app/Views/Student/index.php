@@ -431,6 +431,13 @@
             <!-- Filters -->
             <div class="filters">
                 <div class="filter-group">
+                    <label for="sessionFilter">Academic Year</label>
+                    <select id="sessionFilter">
+                        <option value="">Select Year</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
                     <label for="classFilter">Class</label>
                     <select id="classFilter">
                         <option value="">Select Class</option>
@@ -507,15 +514,33 @@
         const searchBtn = document.getElementById('searchBtn');
         const noResultsElement = document.getElementById('noResults');
         const paginationContainer = document.getElementById('pagination');
+        const sessionFilter = document.getElementById('sessionFilter');
 
         // Initialize the page
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadClasses();
+            await loadSessions();
+            classFilter.disabled = true;
             sectionFilter.disabled = true;
-            showNoResults('Please select a class and section to view students');
+            showNoResults('Please select academic year to view students');
         });
 
         // Event Listeners
+        sessionFilter.addEventListener('change', async () => {
+            const sessionId = sessionFilter.value;
+            classFilter.innerHTML = '<option value="">Select Class</option>';
+            sectionFilter.innerHTML = '<option value="">Select Section</option>';
+            classFilter.disabled = true;
+            sectionFilter.disabled = true;
+            studentTableBody.innerHTML = '';
+            
+            if (sessionId) {
+                await loadClasses();
+                classFilter.disabled = false;
+            } else {
+                showNoResults('Please select academic year');
+            }
+        });
+
         classFilter.addEventListener('change', async (e) => {
             const classId = e.target.value;
             sectionFilter.innerHTML = '<option value="">Select Section</option>';
@@ -526,7 +551,7 @@
                 await loadSections(classId);
                 sectionFilter.disabled = false;
             } else {
-                showNoResults('Please select a class and section to view students');
+                showNoResults('Please select a class to view students');
             }
         });
 
@@ -540,20 +565,49 @@
         });
 
         searchBtn.addEventListener('click', async () => {
-            if (classFilter.value && sectionFilter.value) {
-                await fetchStudents(1);
-            } else {
-                showNoResults('Please select both class and section first');
-            }
+            await fetchStudents(1);
         });
 
         searchInput.addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter' && classFilter.value && sectionFilter.value) {
+            if (e.key === 'Enter') {
                 await fetchStudents(1);
             }
         });
 
-        // Core functions
+        async function loadSessions() {
+            try {
+                const response = await fetch(`${baseUrl}/student/getSessions`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = await response.json();
+                console.log('Sessions response:', data); // Debug log
+                
+                if (data.status === 'success') {
+                    sessionFilter.innerHTML = '<option value="">Select Year</option>';
+                    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                        data.data.forEach(session => {
+                            sessionFilter.innerHTML += `
+                                <option value="${session.id}">${session.session}</option>
+                            `;
+                        });
+                    } else {
+                        showError('No academic years available');
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed to load academic years');
+                }
+            } catch (error) {
+                console.error('Error loading academic years:', error);
+                showError('Failed to load academic years. Please try again.');
+            }
+        }
+
         async function loadClasses() {
             try {
                 const response = await fetch(`${baseUrl}/student/getClasses`, {
@@ -563,20 +617,21 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 const data = await response.json();
+                console.log('Classes response:', data); // Debug log
                 
                 if (data.status === 'success') {
                     classFilter.innerHTML = '<option value="">Select Class</option>';
-                    if (data.data && data.data.length > 0) {
+                    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
                         data.data.forEach(classItem => {
                             classFilter.innerHTML += `
                                 <option value="${classItem.id}">${classItem.class}</option>
                             `;
                         });
+                    } else {
+                        showError('No classes available');
                     }
                 } else {
                     throw new Error(data.message || 'Failed to load classes');
@@ -589,6 +644,11 @@
 
         async function loadSections(classId) {
             try {
+                if (!classId) {
+                    sectionFilter.innerHTML = '<option value="">Select Section</option>';
+                    return;
+                }
+
                 const response = await fetch(`${baseUrl}/student/getSections/${classId}`, {
                     method: 'GET',
                     headers: {
@@ -596,23 +656,21 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 const data = await response.json();
+                console.log('Sections response:', data); // Debug log
                 
-                if (data.status === 'success') {
                     sectionFilter.innerHTML = '<option value="">Select Section</option>';
-                    if (data.data && data.data.length > 0) {
+                
+                if (data.status === 'success' && data.data && Array.isArray(data.data)) {
                         data.data.forEach(section => {
                             sectionFilter.innerHTML += `
                                 <option value="${section.id}">${section.section}</option>
                             `;
                         });
-                    }
                 } else {
-                    throw new Error(data.message || 'Failed to load sections');
+                    showError('No sections available for this class');
                 }
             } catch (error) {
                 console.error('Error loading sections:', error);
@@ -622,44 +680,68 @@
 
         async function fetchStudents(page = 1) {
             try {
-                const search = searchInput.value;
+                const search = searchInput.value.trim();
+                const sessionValue = sessionFilter.value;
                 const classValue = classFilter.value;
                 const sectionValue = sectionFilter.value;
                 const limit = 10;
 
-                if (!classValue || !sectionValue) {
-                    showNoResults('Please select both class and section');
-                    return;
-                }
-
                 const queryParams = new URLSearchParams({
                     page,
                     limit,
-                    search,
-                    class: classValue,
-                    section: sectionValue
+                    search
                 });
 
+                // Only add these filters if they are selected
+                if (sessionValue) queryParams.append('session', sessionValue);
+                if (classValue) queryParams.append('class', classValue);
+                if (sectionValue) queryParams.append('section', sectionValue);
+
                 const response = await fetch(`${baseUrl}/student/fetchStudents?${queryParams}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const data = await response.json();
+                console.log('Students response:', data); // Debug log
                 
                 if (data.status === 'success') {
-                    if (data.data.students.length === 0) {
-                        showNoResults('No students found in this class and section');
+                    if (!data.data.students || data.data.students.length === 0) {
+                        showNoResults('No students found');
                     } else {
                         renderStudents(data.data.students);
                         setupPagination(data.data.pagination);
                     }
+                } else {
+                    throw new Error(data.message || 'Failed to fetch students');
                 }
             } catch (error) {
                 console.error('Error fetching students:', error);
-                showError('Failed to fetch students');
+                showError('Failed to fetch students. Please try again.');
             }
+        }
+
+        function renderStudents(students) {
+            studentTableBody.innerHTML = '';
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.admission_no || '-'}</td>
+                    <td>${student.firstname} ${student.lastname}</td>
+                    <td>${student.class_name || '-'}</td>
+                    <td>${student.section_name || '-'}</td>
+                    <td><span class="table-status ${student.is_active === 'no' ? 'active' : 'inactive'}">${student.is_active === 'no' ? 'Active' : 'Inactive'}</span></td>
+                    <td>
+                        <button class="action-btn view" onclick="viewStudent(${student.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-btn edit" onclick="editStudent(${student.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                `;
+                studentTableBody.appendChild(row);
+            });
+            noResultsElement.style.display = 'none';
+            studentsTable.style.display = 'table';
         }
 
         function showNoResults(message) {
@@ -678,33 +760,7 @@
             showNoResults(message);
         }
 
-        function renderStudents(students) {
-            studentTableBody.innerHTML = '';
-            students.forEach(student => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${student.admission_no || '-'}</td>
-                    <td>${student.firstname} ${student.lastname}</td>
-                    <td>${student.class_name || '-'}</td>
-                    <td>${student.section_name || '-'}</td>
-                    <td><span class="table-status ${student.is_active === 'yes' ? 'active' : 'inactive'}">${student.is_active === 'yes' ? 'Active' : 'Inactive'}</span></td>
-                    <td>
-                        <button class="action-btn view" onclick="viewStudent(${student.id})">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="action-btn edit" onclick="editStudent(${student.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
-                `;
-                studentTableBody.appendChild(row);
-            });
-            noResultsElement.style.display = 'none';
-            studentsTable.style.display = 'table';
-            paginationContainer.style.display = 'flex';
-        }
-
-        // [Keep all your existing pagination and helper functions]
+        // Keep your existing pagination functions unchanged
         
         async function viewStudent(id) {
             try {

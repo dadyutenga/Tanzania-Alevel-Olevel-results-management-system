@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Models\StudentModel;
 use App\Models\ClassModel;
 use App\Models\SectionModel;
+use App\Models\SessionModel;
+use App\Models\ClassSectionModel;
 use CodeIgniter\RESTful\ResourceController;
 
 class StudentController extends ResourceController
@@ -21,9 +23,15 @@ class StudentController extends ResourceController
     {
         try {
             $classModel = new ClassModel();
-            $classes = $classModel->where('is_active', 'no')->findAll();
+            $classSectionModel = new ClassSectionModel();
             
-            log_message('debug', 'Classes fetched: ' . json_encode($classes)); // Debug log
+            // Get active classes that have sections
+            $classes = $classModel->select('classes.*')
+                                ->join('class_sections', 'classes.id = class_sections.class_id')
+                                ->where('classes.is_active', 'no')
+                                ->where('class_sections.is_active', 'no')
+                                ->groupBy('classes.id')
+                                ->findAll();
             
             return $this->respond([
                 'status' => 'success',
@@ -41,9 +49,22 @@ class StudentController extends ResourceController
     public function getSections($classId = null)
     {
         try {
+            if (!$classId) {
+                return $this->respond([
+                    'status' => 'error',
+                    'message' => 'Class ID is required'
+                ], 400);
+            }
+
+            $classSectionModel = new ClassSectionModel();
             $sectionModel = new SectionModel();
-            $sections = $sectionModel->where('is_active', 'no')
-                                   ->where('class_id', $classId)
+            
+            // Get sections linked to the class through class_sections
+            $sections = $sectionModel->select('sections.*')
+                                   ->join('class_sections', 'sections.id = class_sections.section_id')
+                                   ->where('class_sections.class_id', $classId)
+                                   ->where('sections.is_active', 'no')
+                                   ->where('class_sections.is_active', 'no')
                                    ->findAll();
             
             return $this->respond([
@@ -67,23 +88,36 @@ class StudentController extends ResourceController
             $class = $this->request->getGet('class') ?? '';
             $section = $this->request->getGet('section') ?? '';
 
+            // Get current session
+            $sessionModel = new SessionModel();
+            $currentSession = $sessionModel->getCurrentSession();
+            
+            if (!$currentSession) {
+                return $this->respond([
+                    'status' => 'error',
+                    'message' => 'No active session found'
+                ], 400);
+            }
+
             $studentModel = new StudentModel();
             $builder = $studentModel->builder();
             
-            // Base query with joins
+            // Base query with all necessary joins
             $builder->select('students.*, classes.class as class_name, sections.section as section_name')
-                    ->join('student_session', 'students.id = student_session.student_id', 'left')
-                    ->join('classes', 'student_session.class_id = classes.id', 'left')
-                    ->join('sections', 'student_session.section_id = sections.id', 'left')
-                    ->where('students.is_active', 'yes');
+                    ->join('student_session', 'students.id = student_session.student_id')
+                    ->join('class_sections', 'student_session.class_section_id = class_sections.id')
+                    ->join('classes', 'class_sections.class_id = classes.id')
+                    ->join('sections', 'class_sections.section_id = sections.id')
+                    ->where('students.is_active', 'no')
+                    ->where('student_session.session_id', $currentSession['id']);
 
             // Apply filters
             if ($class) {
-                $builder->where('classes.id', $class);
+                $builder->where('class_sections.class_id', $class);
             }
 
             if ($section) {
-                $builder->where('sections.id', $section);
+                $builder->where('class_sections.section_id', $section);
             }
 
             if ($search) {
@@ -106,6 +140,7 @@ class StudentController extends ResourceController
                 'status' => 'success',
                 'data' => [
                     'students' => $students,
+                    'current_session' => $currentSession,
                     'pagination' => [
                         'current_page' => (int)$page,
                         'total_pages' => ceil($totalRecords / $limit),
@@ -115,6 +150,7 @@ class StudentController extends ResourceController
                 ]
             ]);
         } catch (\Exception $e) {
+            log_message('error', 'Error fetching students: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to fetch students'
@@ -124,24 +160,36 @@ class StudentController extends ResourceController
 
     public function getStudent($id)
     {
-        $studentModel = new StudentModel();
-        
-        $builder = $studentModel->builder();
-        $builder->select('students.*, classes.class as class_name, sections.section as section_name')
-                ->join('student_session', 'students.id = student_session.student_id', 'left')
-                ->join('classes', 'student_session.class_id = classes.id', 'left')
-                ->join('sections', 'student_session.section_id = sections.id', 'left')
-                ->where('students.id', $id);
+        try {
+            $studentModel = new StudentModel();
+            $sessionModel = new SessionModel();
+            $currentSession = $sessionModel->getCurrentSession();
+            
+            $builder = $studentModel->builder();
+            $builder->select('students.*, classes.class as class_name, sections.section as section_name')
+                    ->join('student_session', 'students.id = student_session.student_id')
+                    ->join('class_sections', 'student_session.class_section_id = class_sections.id')
+                    ->join('classes', 'class_sections.class_id = classes.id')
+                    ->join('sections', 'class_sections.section_id = sections.id')
+                    ->where('students.id', $id)
+                    ->where('student_session.session_id', $currentSession['id']);
 
-        $student = $builder->get()->getRowArray();
+            $student = $builder->get()->getRowArray();
 
-        if (!$student) {
-            return $this->failNotFound('Student not found');
+            if (!$student) {
+                return $this->failNotFound('Student not found');
+            }
+
+            return $this->respond([
+                'status' => 'success',
+                'data' => $student,
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Error getting student: ' . $e->getMessage());
+            return $this->respond([
+                'status' => 'error',
+                'message' => 'Failed to get student details'
+            ], 500);
         }
-
-        return $this->respond([
-            'status' => 'success',
-            'data' => $student,
-        ]);
     }
 }
