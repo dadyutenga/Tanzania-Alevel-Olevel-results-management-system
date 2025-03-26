@@ -28,10 +28,9 @@ class StudentSessionModel extends Model
 
     // Validation
     protected $validationRules = [
-        'session_id'  => 'permit_empty|integer',
-        'student_id'  => 'permit_empty|integer',
-        'class_id'    => 'permit_empty|integer',
-        'section_id'  => 'permit_empty|integer',
-        'is_active'   => 'permit_empty|in_list[yes,no]',
+        'session_id' => 'required|numeric',
+        'student_id' => 'required|numeric',
+        'class_id' => 'required|numeric',
+        'section_id' => 'required|numeric'
     ];
 }

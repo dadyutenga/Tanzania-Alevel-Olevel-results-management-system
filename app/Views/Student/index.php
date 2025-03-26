@@ -527,17 +527,28 @@
         // Event Listeners
         sessionFilter.addEventListener('change', async () => {
             const sessionId = sessionFilter.value;
+            
+            // Reset everything
             classFilter.innerHTML = '<option value="">Select Class</option>';
             sectionFilter.innerHTML = '<option value="">Select Section</option>';
             classFilter.disabled = true;
             sectionFilter.disabled = true;
             studentTableBody.innerHTML = '';
+            paginationContainer.innerHTML = '';
             
-            if (sessionId) {
+            if (!sessionId) {
+                showNoResults('Please select an academic year');
+                return;
+            }
+
+            const selectedYear = sessionFilter.options[sessionFilter.selectedIndex].text;
+            showNoResults(`Select class and section to view students for ${selectedYear}`);
+            
+            try {
                 await loadClasses();
                 classFilter.disabled = false;
-            } else {
-                showNoResults('Please select academic year');
+            } catch (error) {
+                showError('Failed to load classes for the selected academic year');
             }
         });
 
@@ -702,17 +713,14 @@
                 const sectionValue = sectionFilter.value;
                 const limit = 10;
 
-                console.log('Fetching students with params:', {
-                    session: sessionValue,
-                    class: classValue,
-                    section: sectionValue,
-                    search: search
-                });
-
+                // Validate required parameters
                 if (!sessionValue || !classValue || !sectionValue) {
-                    showNoResults('Please select session, class and section');
+                    showNoResults('Please select academic year, class and section');
                     return;
                 }
+
+                // Show loading state
+                studentTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
 
                 const queryParams = new URLSearchParams({
                     page,
@@ -724,21 +732,23 @@
                 });
 
                 const response = await fetch(`${baseUrl}/student/fetchStudents?${queryParams}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
                 const data = await response.json();
-                console.log('Students response:', data);
                 
-                if (data.status === 'success') {
-                    if (!data.data.students || data.data.students.length === 0) {
-                        showNoResults('No students found for the selected criteria');
-                    } else {
-                        renderStudents(data.data.students);
-                        setupPagination(data.data.pagination);
-                    }
-                } else {
-                    throw new Error(data.message || 'Failed to fetch students');
+                console.log('Students response:', data); // Debug log
+
+                if (data.status === 'error') {
+                    showError(data.message);
+                    return;
                 }
+
+                if (!data.data.students || data.data.students.length === 0) {
+                    showNoResults(`No students found in ${sessionFilter.options[sessionFilter.selectedIndex].text} for selected class and section`);
+                    return;
+                }
+
+                renderStudents(data.data.students);
+                setupPagination(data.data.pagination);
+
             } catch (error) {
                 console.error('Error fetching students:', error);
                 showError('Failed to fetch students. Please try again.');
@@ -747,14 +757,26 @@
 
         function renderStudents(students) {
             studentTableBody.innerHTML = '';
+            
+            if (!Array.isArray(students) || students.length === 0) {
+                showNoResults('No students found for the selected criteria');
+                return;
+            }
+
+            const selectedYear = sessionFilter.options[sessionFilter.selectedIndex].text;
+            const selectedClass = classFilter.options[classFilter.selectedIndex].text;
+            const selectedSection = sectionFilter.options[sectionFilter.selectedIndex].text;
+
             students.forEach(student => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${student.admission_no || '-'}</td>
                     <td>${student.full_name || `${student.firstname} ${student.lastname}`}</td>
-                    <td>${student.class_name || '-'}</td>
-                    <td>${student.section_name || '-'}</td>
-                    <td><span class="table-status ${student.is_active === 'yes' ? 'active' : 'inactive'}">${student.is_active === 'yes' ? 'Active' : 'Inactive'}</span></td>
+                    <td>${selectedClass}</td>
+                    <td>${selectedSection}</td>
+                    <td><span class="table-status ${student.is_active === 'yes' ? 'active' : 'inactive'}">
+                        ${student.is_active === 'yes' ? 'Active' : 'Inactive'}
+                    </span></td>
                     <td>
                         <button class="action-btn view" onclick="viewStudent(${student.id})">
                             <i class="fas fa-eye"></i>
@@ -766,6 +788,8 @@
                 `;
                 studentTableBody.appendChild(row);
             });
+
+            // Update table display
             noResultsElement.style.display = 'none';
             studentsTable.style.display = 'table';
             paginationContainer.style.display = 'flex';
@@ -823,7 +847,7 @@
             noResultsElement.innerHTML = `
                 <i class="fas fa-search"></i>
                 <h3>${message}</h3>
-                <p>Try adjusting your search criteria</p>
+                <p>Make sure you have selected the correct academic year, class, and section</p>
             `;
             noResultsElement.style.display = 'block';
             studentsTable.style.display = 'none';
@@ -831,7 +855,15 @@
         }
 
         function showError(message) {
-            showNoResults(message);
+            studentTableBody.innerHTML = '';
+            noResultsElement.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Error</h3>
+                <p>${message}</p>
+            `;
+            noResultsElement.style.display = 'block';
+            studentsTable.style.display = 'none';
+            paginationContainer.style.display = 'none';
         }
 
         // Keep the existing viewStudent and editStudent functions
