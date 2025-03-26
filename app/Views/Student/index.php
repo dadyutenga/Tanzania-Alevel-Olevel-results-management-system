@@ -702,13 +702,15 @@
                 const sectionValue = sectionFilter.value;
                 const limit = 10;
 
-                if (!sessionValue) {
-                    showNoResults('Please select an academic year');
-                    return;
-                }
+                console.log('Fetching students with params:', {
+                    session: sessionValue,
+                    class: classValue,
+                    section: sectionValue,
+                    search: search
+                });
 
-                if (!classValue || !sectionValue) {
-                    showNoResults('Please select both class and section');
+                if (!sessionValue || !classValue || !sectionValue) {
+                    showNoResults('Please select session, class and section');
                     return;
                 }
 
@@ -725,11 +727,11 @@
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const data = await response.json();
-                console.log('Students response:', data); // Debug log
+                console.log('Students response:', data);
                 
                 if (data.status === 'success') {
                     if (!data.data.students || data.data.students.length === 0) {
-                        showNoResults('No students found');
+                        showNoResults('No students found for the selected criteria');
                     } else {
                         renderStudents(data.data.students);
                         setupPagination(data.data.pagination);
