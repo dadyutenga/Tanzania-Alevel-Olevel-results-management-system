@@ -404,9 +404,8 @@
             }
         }
     </style>
-</head>
 <body>
-    <div class="dashboard">
+<div class="dashboard">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -434,14 +433,14 @@
                 <div class="filter-group">
                     <label for="classFilter">Class</label>
                     <select id="classFilter">
-                        <option value="">All Classes</option>
+                        <option value="">Select Class</option>
                     </select>
                 </div>
                 
                 <div class="filter-group">
                     <label for="sectionFilter">Section</label>
                     <select id="sectionFilter">
-                        <option value="">All Sections</option>
+                        <option value="">Select Section</option>
                     </select>
                 </div>
                 
@@ -509,20 +508,149 @@
         const noResultsElement = document.getElementById('noResults');
         const paginationContainer = document.getElementById('pagination');
 
-        // Core functions
-        async function fetchStudents(page = 1) {
-            const search = searchInput.value;
-            const classValue = classFilter.value;
-            const sectionValue = sectionFilter.value;
-            const limit = 10;
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadClasses();
+            sectionFilter.disabled = true;
+            showNoResults('Please select a class and section to view students');
+        });
 
+        // Event Listeners
+        classFilter.addEventListener('change', async (e) => {
+            const classId = e.target.value;
+            sectionFilter.innerHTML = '<option value="">Select Section</option>';
+            sectionFilter.disabled = true;
+            studentTableBody.innerHTML = '';
+            
+            if (classId) {
+                await loadSections(classId);
+                sectionFilter.disabled = false;
+            } else {
+                showNoResults('Please select a class and section to view students');
+            }
+        });
+
+        sectionFilter.addEventListener('change', async () => {
+            if (sectionFilter.value) {
+                await fetchStudents(1);
+            } else {
+                studentTableBody.innerHTML = '';
+                showNoResults('Please select a section to view students');
+            }
+        });
+
+        searchBtn.addEventListener('click', async () => {
+            if (classFilter.value && sectionFilter.value) {
+                await fetchStudents(1);
+            } else {
+                showNoResults('Please select both class and section first');
+            }
+        });
+
+        searchInput.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter' && classFilter.value && sectionFilter.value) {
+                await fetchStudents(1);
+            }
+        });
+
+        // Core functions
+        async function loadClasses() {
             try {
-                const response = await fetch(`${baseUrl}/student/fetchStudents?page=${page}&limit=${limit}&search=${search}&class=${classValue}&section=${sectionValue}`);
+                const response = await fetch(`${baseUrl}/student/getClasses`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    classFilter.innerHTML = '<option value="">Select Class</option>';
+                    if (data.data && data.data.length > 0) {
+                        data.data.forEach(classItem => {
+                            classFilter.innerHTML += `
+                                <option value="${classItem.id}">${classItem.class}</option>
+                            `;
+                        });
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed to load classes');
+                }
+            } catch (error) {
+                console.error('Error loading classes:', error);
+                showError('Failed to load classes. Please try again.');
+            }
+        }
+
+        async function loadSections(classId) {
+            try {
+                const response = await fetch(`${baseUrl}/student/getSections/${classId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    sectionFilter.innerHTML = '<option value="">Select Section</option>';
+                    if (data.data && data.data.length > 0) {
+                        data.data.forEach(section => {
+                            sectionFilter.innerHTML += `
+                                <option value="${section.id}">${section.section}</option>
+                            `;
+                        });
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed to load sections');
+                }
+            } catch (error) {
+                console.error('Error loading sections:', error);
+                showError('Failed to load sections. Please try again.');
+            }
+        }
+
+        async function fetchStudents(page = 1) {
+            try {
+                const search = searchInput.value;
+                const classValue = classFilter.value;
+                const sectionValue = sectionFilter.value;
+                const limit = 10;
+
+                if (!classValue || !sectionValue) {
+                    showNoResults('Please select both class and section');
+                    return;
+                }
+
+                const queryParams = new URLSearchParams({
+                    page,
+                    limit,
+                    search,
+                    class: classValue,
+                    section: sectionValue
+                });
+
+                const response = await fetch(`${baseUrl}/student/fetchStudents?${queryParams}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.status === 'success') {
                     if (data.data.students.length === 0) {
-                        showNoResults();
+                        showNoResults('No students found in this class and section');
                     } else {
                         renderStudents(data.data.students);
                         setupPagination(data.data.pagination);
@@ -530,8 +658,24 @@
                 }
             } catch (error) {
                 console.error('Error fetching students:', error);
-                showNoResults();
+                showError('Failed to fetch students');
             }
+        }
+
+        function showNoResults(message) {
+            studentTableBody.innerHTML = '';
+            noResultsElement.innerHTML = `
+                <i class="fas fa-search"></i>
+                <h3>${message}</h3>
+                <p>Try adjusting your search criteria</p>
+            `;
+            noResultsElement.style.display = 'block';
+            studentsTable.style.display = 'none';
+            paginationContainer.style.display = 'none';
+        }
+
+        function showError(message) {
+            showNoResults(message);
         }
 
         function renderStudents(students) {
@@ -557,101 +701,22 @@
             });
             noResultsElement.style.display = 'none';
             studentsTable.style.display = 'table';
-        }
-
-        function setupPagination(pagination) {
-            paginationContainer.innerHTML = '';
-            
-            if (pagination.total_pages <= 1) {
-                paginationContainer.style.display = 'none';
-                return;
-            }
-
             paginationContainer.style.display = 'flex';
-            
-            // Previous button
-            const prevBtn = createPageButton('‹', pagination.current_page > 1, () => fetchStudents(pagination.current_page - 1));
-            paginationContainer.appendChild(prevBtn);
-
-            // Page numbers
-            for (let i = 1; i <= pagination.total_pages; i++) {
-                if (shouldShowPageNumber(i, pagination.current_page, pagination.total_pages)) {
-                    const pageBtn = createPageButton(
-                        i,
-                        true,
-                        () => fetchStudents(i),
-                        i === pagination.current_page
-                    );
-                    paginationContainer.appendChild(pageBtn);
-                } else if (shouldShowEllipsis(i, pagination.current_page, pagination.total_pages)) {
-                    const ellipsis = createEllipsis();
-                    paginationContainer.appendChild(ellipsis);
-                }
-            }
-
-            // Next button
-            const nextBtn = createPageButton('›', pagination.current_page < pagination.total_pages, () => fetchStudents(pagination.current_page + 1));
-            paginationContainer.appendChild(nextBtn);
         }
 
-        function createPageButton(text, enabled, onClick, isActive = false) {
-            const button = document.createElement('button');
-            button.className = `page-btn${isActive ? ' active' : ''}${!enabled ? ' disabled' : ''}`;
-            button.textContent = text;
-            if (enabled) button.onclick = onClick;
-            return button;
-        }
-
-        function createEllipsis() {
-            const span = document.createElement('span');
-            span.className = 'page-btn disabled';
-            span.textContent = '...';
-            return span;
-        }
-
-        function shouldShowPageNumber(pageNum, currentPage, totalPages) {
-            return pageNum === 1 ||
-                   pageNum === totalPages ||
-                   (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
-        }
-
-        function shouldShowEllipsis(pageNum, currentPage, totalPages) {
-            return (pageNum === currentPage - 2 && pageNum > 2) ||
-                   (pageNum === currentPage + 2 && pageNum < totalPages - 1);
-        }
-
-        function showNoResults() {
-            studentTableBody.innerHTML = '';
-            noResultsElement.style.display = 'block';
-            studentsTable.style.display = 'none';
-            paginationContainer.style.display = 'none';
-        }
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchStudents(1);
-        });
-
-        searchBtn.addEventListener('click', () => {
-            fetchStudents(1);
-        });
-
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                fetchStudents(1);
-            }
-        });
-
+        // [Keep all your existing pagination and helper functions]
+        
         async function viewStudent(id) {
             try {
                 const response = await fetch(`${baseUrl}/student/getStudent/${id}`);
                 const data = await response.json();
                 if (data.status === 'success') {
-                    // Implement your view logic here
-                    console.log('Student data:', data.data);
+                    // Here you can implement a modal or page to view student details
+                    alert(`Viewing student: ${data.data.firstname} ${data.data.lastname}`);
                 }
             } catch (error) {
                 console.error('Error fetching student details:', error);
+                alert('Failed to load student details');
             }
         }
 
@@ -660,11 +725,12 @@
                 const response = await fetch(`${baseUrl}/student/getStudent/${id}`);
                 const data = await response.json();
                 if (data.status === 'success') {
-                    // Implement your edit logic here
-                    console.log('Student data to edit:', data.data);
+                    // Here you can implement a form to edit student details
+                    alert(`Editing student: ${data.data.firstname} ${data.data.lastname}`);
                 }
             } catch (error) {
                 console.error('Error fetching student details:', error);
+                alert('Failed to load student details');
             }
         }
     </script>

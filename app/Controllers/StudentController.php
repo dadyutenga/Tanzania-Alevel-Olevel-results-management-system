@@ -14,66 +14,112 @@ class StudentController extends ResourceController
 
     public function index()
     {
-        $classModel = new ClassModel();
-        $sectionModel = new SectionModel();
+        return view('Student/index');
+    }
 
-        $data = [
-            'classes' => $classModel->where('is_active', 'yes')->findAll(),
-            'sections' => $sectionModel->where('is_active', 'yes')->findAll()
-        ];
+    public function getClasses()
+    {
+        try {
+            $classModel = new ClassModel();
+            $classes = $classModel->where('is_active', 'no')->findAll();
+            
+            log_message('debug', 'Classes fetched: ' . json_encode($classes)); // Debug log
+            
+            return $this->respond([
+                'status' => 'success',
+                'data' => $classes
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Error in getClasses: ' . $e->getMessage());
+            return $this->respond([
+                'status' => 'error',
+                'message' => 'Failed to fetch classes'
+            ], 500);
+        }
+    }
 
-        return view('Student/index', $data);
+    public function getSections($classId = null)
+    {
+        try {
+            $sectionModel = new SectionModel();
+            $sections = $sectionModel->where('is_active', 'no')
+                                   ->where('class_id', $classId)
+                                   ->findAll();
+            
+            return $this->respond([
+                'status' => 'success',
+                'data' => $sections
+            ]);
+        } catch (\Exception $e) {
+            return $this->respond([
+                'status' => 'error',
+                'message' => 'Failed to fetch sections'
+            ], 500);
+        }
     }
 
     public function fetchStudents()
     {
-        $page = $this->request->getGet('page') ?? 1;
-        $limit = $this->request->getGet('limit') ?? 10;
-        $search = $this->request->getGet('search') ?? '';
-        $class = $this->request->getGet('class') ?? '';
-        $section = $this->request->getGet('section') ?? '';
+        try {
+            $page = $this->request->getGet('page') ?? 1;
+            $limit = $this->request->getGet('limit') ?? 10;
+            $search = $this->request->getGet('search') ?? '';
+            $class = $this->request->getGet('class') ?? '';
+            $section = $this->request->getGet('section') ?? '';
 
-        $studentModel = new StudentModel();
+            $studentModel = new StudentModel();
+            $builder = $studentModel->builder();
+            
+            // Base query with joins
+            $builder->select('students.*, classes.class as class_name, sections.section as section_name')
+                    ->join('student_session', 'students.id = student_session.student_id', 'left')
+                    ->join('classes', 'student_session.class_id = classes.id', 'left')
+                    ->join('sections', 'student_session.section_id = sections.id', 'left')
+                    ->where('students.is_active', 'yes');
 
-        $builder = $studentModel->builder();
-        $builder->select('students.*, classes.class as class_name, sections.section as section_name')
-                ->join('student_session', 'students.id = student_session.student_id', 'left')
-                ->join('classes', 'student_session.class_id = classes.id', 'left')
-                ->join('sections', 'student_session.section_id = sections.id', 'left')
-                ->where('students.is_active', 'yes');
+            // Apply filters
+            if ($class) {
+                $builder->where('classes.id', $class);
+            }
 
-        if ($search) {
-            $builder->groupStart()
-                    ->like('students.firstname', $search)
-                    ->orLike('students.lastname', $search)
-                    ->orLike('students.admission_no', $search)
-                    ->groupEnd();
+            if ($section) {
+                $builder->where('sections.id', $section);
+            }
+
+            if ($search) {
+                $builder->groupStart()
+                        ->like('students.firstname', $search)
+                        ->orLike('students.lastname', $search)
+                        ->orLike('students.admission_no', $search)
+                        ->groupEnd();
+            }
+
+            // Get total records before limit
+            $totalRecords = $builder->countAllResults(false);
+
+            // Get paginated results
+            $students = $builder->limit($limit, ($page - 1) * $limit)
+                              ->get()
+                              ->getResultArray();
+
+            return $this->respond([
+                'status' => 'success',
+                'data' => [
+                    'students' => $students,
+                    'pagination' => [
+                        'current_page' => (int)$page,
+                        'total_pages' => ceil($totalRecords / $limit),
+                        'total_records' => $totalRecords,
+                        'per_page' => $limit
+                    ],
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return $this->respond([
+                'status' => 'error',
+                'message' => 'Failed to fetch students'
+            ], 500);
         }
-
-        if ($class) {
-            $builder->where('classes.id', $class);
-        }
-
-        if ($section) {
-            $builder->where('sections.id', $section);
-        }
-
-        $totalRecords = $builder->countAllResults(false);
-        $students = $builder->limit($limit, ($page - 1) * $limit)->get()->getResultArray();
-
-        $totalPages = ceil($totalRecords / $limit);
-
-        return $this->respond([
-            'status' => 'success',
-            'data' => [
-                'students' => $students,
-                'pagination' => [
-                    'current_page' => (int)$page,
-                    'total_pages' => $totalPages,
-                    'total_records' => $totalRecords,
-                ],
-            ],
-        ]);
     }
 
     public function getStudent($id)

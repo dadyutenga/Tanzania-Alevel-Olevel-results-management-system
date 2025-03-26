@@ -15,4 +15,9 @@ $routes->group('student', static function ($routes) {
     $routes->get('/', 'StudentController::index');
     $routes->get('fetchStudents', 'StudentController::fetchStudents');
     $routes->get('getStudent/(:num)', 'StudentController::getStudent/$1');
+    $routes->get('getClasses', 'StudentController::getClasses');
+    $routes->get('getSections/(:num)', 'StudentController::getSections/$1');
+    $routes->get('getClasses', 'StudentController::getClasses');
+    $routes->get('getSections/(:num)', 'StudentController::getSections/$1');
+    $routes->get('fetchStudents', 'StudentController::fetchStudents');
 });
