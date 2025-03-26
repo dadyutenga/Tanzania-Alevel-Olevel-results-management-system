@@ -22,10 +22,11 @@ class StudentController extends ResourceController
     public function getClasses()
     {
         try {
-            $classModel = new ClassModel();
-            $classSectionModel = new ClassSectionModel();
+            log_message('info', 'Fetching active classes with sections');
             
-            // Get active classes that have sections
+            $classModel = new ClassModel();
+            
+            // Get active classes that have sections (is_active = 'no' means active)
             $classes = $classModel->select('classes.*')
                                 ->join('class_sections', 'classes.id = class_sections.class_id')
                                 ->where('classes.is_active', 'no')
@@ -33,12 +34,15 @@ class StudentController extends ResourceController
                                 ->groupBy('classes.id')
                                 ->findAll();
             
+            log_message('debug', 'Classes query: ' . $classModel->getLastQuery());
+            log_message('info', 'Successfully fetched {count} classes', ['count' => count($classes)]);
+            
             return $this->respond([
                 'status' => 'success',
                 'data' => $classes
             ]);
         } catch (\Exception $e) {
-            log_message('error', 'Error in getClasses: ' . $e->getMessage());
+            log_message('error', '[getClasses] Exception: {message}', ['message' => $e->getMessage()]);
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to fetch classes'
@@ -49,29 +53,41 @@ class StudentController extends ResourceController
     public function getSections($classId = null)
     {
         try {
+            log_message('info', 'Fetching sections for class ID: {classId}', ['classId' => $classId]);
+            
             if (!$classId) {
+                log_message('warning', 'getSections called without class ID');
                 return $this->respond([
                     'status' => 'error',
                     'message' => 'Class ID is required'
                 ], 400);
             }
 
-            $classSectionModel = new ClassSectionModel();
             $sectionModel = new SectionModel();
             
-            // Get sections linked to the class through class_sections
-            $sections = $sectionModel->select('sections.*')
+            // Get sections through class_sections (is_active = 'no' means active)
+            $sections = $sectionModel->select('sections.*, class_sections.id as class_section_id')
                                    ->join('class_sections', 'sections.id = class_sections.section_id')
                                    ->where('class_sections.class_id', $classId)
                                    ->where('sections.is_active', 'no')
                                    ->where('class_sections.is_active', 'no')
                                    ->findAll();
             
+            log_message('debug', 'Sections query: ' . $sectionModel->getLastQuery());
+            log_message('info', 'Successfully fetched {count} sections for class {classId}', [
+                'count' => count($sections),
+                'classId' => $classId
+            ]);
+            
             return $this->respond([
                 'status' => 'success',
                 'data' => $sections
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[getSections] Exception for class {classId}: {message}', [
+                'classId' => $classId,
+                'message' => $e->getMessage()
+            ]);
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to fetch sections'
@@ -88,27 +104,47 @@ class StudentController extends ResourceController
             $class = $this->request->getGet('class') ?? '';
             $section = $this->request->getGet('section') ?? '';
 
+            log_message('info', 'Fetching students with filters', [
+                'page' => $page,
+                'limit' => $limit,
+                'search' => $search,
+                'class' => $class,
+                'section' => $section
+            ]);
+
             // Get current session
             $sessionModel = new SessionModel();
-            $currentSession = $sessionModel->getCurrentSession();
+            $currentSession = $sessionModel->where('is_active', 'no')->first();
             
             if (!$currentSession) {
+                log_message('warning', 'No active session found');
                 return $this->respond([
                     'status' => 'error',
                     'message' => 'No active session found'
                 ], 400);
             }
 
+            log_message('debug', 'Current session: ' . json_encode($currentSession));
+
             $studentModel = new StudentModel();
             $builder = $studentModel->builder();
             
-            // Modified join logic to use separate class_id and section_id
-            $builder->select('students.*, classes.class as class_name, sections.section as section_name')
-                    ->join('student_session', 'students.id = student_session.student_id')
-                    ->join('classes', 'student_session.class_id = classes.id')
-                    ->join('sections', 'student_session.section_id = sections.id')
-                    ->where('students.is_active', 'no')
-                    ->where('student_session.session_id', $currentSession['id']);
+            // Build the query with correct joins and conditions
+            $builder->select('
+                students.*, 
+                classes.class as class_name, 
+                sections.section as section_name,
+                CONCAT(students.firstname, " ", COALESCE(students.middlename, ""), " ", students.lastname) as full_name
+            ')
+            ->join('student_session', 'students.id = student_session.student_id')
+            ->join('classes', 'student_session.class_id = classes.id')
+            ->join('class_sections', 'classes.id = class_sections.class_id')
+            ->join('sections', 'class_sections.section_id = sections.id')
+            ->where([
+                'students.is_active' => 'yes',  // Active students have is_active = 'yes'
+                'student_session.is_active' => 'no',  // Active session entries have is_active = 'no'
+                'student_session.session_id' => $currentSession['id']
+            ]);
 
             // Apply filters
             if ($class) {
@@ -127,13 +163,20 @@ class StudentController extends ResourceController
                         ->groupEnd();
             }
 
-            // Get total records before limit
-            $totalRecords = $builder->countAllResults(false);
+            // Clone the builder for total count
+            $countBuilder = clone $builder;
+            $totalRecords = $countBuilder->countAllResults();
 
             // Get paginated results
             $students = $builder->limit($limit, ($page - 1) * $limit)
                               ->get()
                               ->getResultArray();
+
+            log_message('debug', 'Students query: ' . $builder->getCompiledSelect());
+            log_message('info', 'Fetched {count} students out of {total}', [
+                'count' => count($students),
+                'total' => $totalRecords
+            ]);
 
             return $this->respond([
                 'status' => 'success',
@@ -144,12 +187,12 @@ class StudentController extends ResourceController
                         'current_page' => (int)$page,
                         'total_pages' => ceil($totalRecords / $limit),
                         'total_records' => $totalRecords,
-                        'per_page' => $limit
+                        'per_page' => (int)$limit
                     ],
                 ]
             ]);
         } catch (\Exception $e) {
-            log_message('error', 'Error fetching students: ' . $e->getMessage());
+            log_message('error', '[fetchStudents] Exception: {message}', ['message' => $e->getMessage()]);
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to fetch students'
@@ -160,6 +203,8 @@ class StudentController extends ResourceController
     public function getStudent($id)
     {
         try {
+            log_message('info', 'Fetching details for student ID: {id}', ['id' => $id]);
+            
             $studentModel = new StudentModel();
             $sessionModel = new SessionModel();
             $currentSession = $sessionModel->getCurrentSession();
@@ -176,15 +221,22 @@ class StudentController extends ResourceController
             $student = $builder->get()->getRowArray();
 
             if (!$student) {
+                log_message('warning', 'Student not found with ID: {id}', ['id' => $id]);
                 return $this->failNotFound('Student not found');
             }
 
+            log_message('info', 'Successfully fetched details for student ID: {id}', ['id' => $id]);
+            
             return $this->respond([
                 'status' => 'success',
                 'data' => $student,
             ]);
         } catch (\Exception $e) {
-            log_message('error', 'Error getting student: ' . $e->getMessage());
+            log_message('error', '[getStudent] Exception for ID {id}: {message} | Stack: {stack}', [
+                'id' => $id,
+                'message' => $e->getMessage(),
+                'stack' => $e->getTraceAsString()
+            ]);
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to get student details'
