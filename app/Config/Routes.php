@@ -25,7 +25,6 @@ $routes->group('student', static function ($routes) {
 
 // Exam routes
 $routes->group('exam', static function ($routes) {
-    $routes->get('/', 'ExamController::index');           // List all exams
-    $routes->get('add', 'AddExamController::index');      // Show add exam form
-    $routes->post('store', 'AddExamController::store');   // Store new exam
+    $routes->get('/', 'AddExamController::index');        // Changed this line
+    $routes->post('store', 'AddExamController::store');   // This stays the same
 });

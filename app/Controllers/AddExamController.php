@@ -35,7 +35,7 @@ class AddExamController extends ResourceController
                 'exam_name' => $this->request->getPost('exam_name'),
                 'exam_date' => $this->request->getPost('exam_date'),
                 'academic_year' => $this->request->getPost('academic_year'),
-                'is_active' => $this->request->getPost('is_active', 'yes')
+                'is_active' => $this->request->getPost('is_active') ?? 'yes'
             ];
 
             $examModel = new ExamModel();

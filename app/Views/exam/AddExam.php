@@ -228,8 +228,8 @@
             <ul class="sidebar-menu">
                 <li><a href="<?= base_url('dashboard') ?>"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="<?= base_url('student') ?>"><i class="fas fa-users"></i> Students</a></li>
-                <li><a href="#" class="active"><i class="fas fa-file-alt"></i> Exams</a></li>
                 <li><a href="#"><i class="fas fa-chart-bar"></i> Results</a></li>
+                <li><a href="<?= base_url('exam') ?>" class="active"><i class="fas fa-file-alt"></i> Exams</a></li>                <li><a href="#"><i class="fas fa-chart-bar"></i> Results</a></li>
                 <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
         </div>
@@ -317,7 +317,7 @@
                         showConfirmButton: false,
                         timer: 1500
                     }).then(() => {
-                        window.location.href = '<?= base_url('exams') ?>';
+                        window.location.href = '<?= base_url('exam') ?>';
                     });
                 } else {
                     Swal.fire({
