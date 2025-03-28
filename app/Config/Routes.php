@@ -22,3 +22,10 @@ $routes->group('student', static function ($routes) {
     $routes->get('fetchStudents', 'StudentController::fetchStudents');
     $routes->get('getSessions', 'StudentController::getSessions');
 });
+
+// Exam routes
+$routes->group('exam', static function ($routes) {
+    $routes->get('/', 'ExamController::index');           // List all exams
+    $routes->get('add', 'AddExamController::index');      // Show add exam form
+    $routes->post('store', 'AddExamController::store');   // Store new exam
+});

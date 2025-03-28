@@ -224,7 +224,7 @@
                 <li><a href="<?= base_url('student') ?>">
                     <i class="fas fa-users"></i> Students
                 </a></li>
-                <li><a href="#">
+                <li><a href="<?= base_url('exam') ?> ">
                     <i class="fas fa-file-alt"></i> Exams
                 </a></li>
                 <li><a href="#">
