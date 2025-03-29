@@ -15,7 +15,7 @@ class ExamModel extends Model
     protected $allowedFields = [
         'exam_name',
         'exam_date',
-        'academic_year',
+        'session_id',
         'is_active'
     ];
     protected $useTimestamps = true;
@@ -25,7 +25,16 @@ class ExamModel extends Model
     // Custom validation rules
     protected $validationRules = [
         'exam_name' => 'required|max_length[100]',
-        'academic_year' => 'permit_empty|max_length[20]',
+        'exam_date' => 'permit_empty|valid_date',
+        'session_id' => 'required|integer|is_not_unique[sessions.id]',
         'is_active' => 'permit_empty|in_list[yes,no]'
     ];
+
+ 
+    
+    // Optional: Add relationship methods
+    public function session()
+    {
+        return $this->belongsTo('App\Models\SessionModel', 'session_id', 'id');
+    }
 } 
