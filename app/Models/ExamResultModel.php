@@ -10,13 +10,12 @@ class ExamResultModel extends Model
     protected $table = 'tz_exam_results';
     protected $primaryKey = 'id';
     protected $returnType = 'array';
-    protected $useSoftDeletes = true;
-    protected $deletedField = 'deleted_at';
+    protected $useSoftDeletes = false;
     protected $allowedFields = [
         'student_id',
         'exam_id',
         'class_id',
-        'academic_year',
+        'session_id',
         'total_points',
         'division',
         'division_description'
@@ -25,30 +24,35 @@ class ExamResultModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
-    // Custom validation rules
+    // Validation rules matching SQL constraints
     protected $validationRules = [
-        'student_id' => 'required|numeric',
-        'exam_id' => 'required|numeric',
-        'class_id' => 'required|numeric',
-        'academic_year' => 'permit_empty|max_length[20]',
+        'student_id' => 'required|numeric|is_not_unique[students.id]',
+        'exam_id' => 'required|numeric|is_not_unique[tz_exams.id]',
+        'class_id' => 'required|numeric|is_not_unique[classes.id]',
+        'session_id' => 'required|numeric|is_not_unique[sessions.id]',
         'total_points' => 'permit_empty|numeric',
         'division' => 'permit_empty|max_length[5]',
         'division_description' => 'permit_empty|max_length[50]'
     ];
 
-    // Define relationships
+    // Relationships based on SQL foreign keys
     public function student()
     {
-        return $this->belongsTo(StudentModel::class, 'student_id', 'id');
+        return $this->belongsTo('App\Models\StudentModel', 'student_id', 'id');
     }
 
     public function exam()
     {
-        return $this->belongsTo(ExamModel::class, 'exam_id', 'id');
+        return $this->belongsTo('App\Models\ExamModel', 'exam_id', 'id');
     }
 
     public function class()
     {
-        return $this->belongsTo(ClassModel::class, 'class_id', 'id');
+        return $this->belongsTo('App\Models\ClassModel', 'class_id', 'id');
+    }
+
+    public function session()
+    {
+        return $this->belongsTo('App\Models\SessionModel', 'session_id', 'id');
     }
 } 

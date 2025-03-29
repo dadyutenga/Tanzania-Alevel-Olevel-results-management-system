@@ -10,8 +10,7 @@ class ExamSubjectModel extends Model
     protected $table = 'tz_exam_subjects';
     protected $primaryKey = 'id';
     protected $returnType = 'array';
-    protected $useSoftDeletes = true;
-    protected $deletedField = 'deleted_at';
+    protected $useSoftDeletes = false;
     protected $allowedFields = [
         'exam_id',
         'subject_name',
@@ -22,17 +21,22 @@ class ExamSubjectModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
-    // Custom validation rules
+    // Validation rules matching SQL constraints
     protected $validationRules = [
-        'exam_id' => 'required|numeric',
+        'exam_id' => 'required|numeric|is_not_unique[tz_exams.id]',
         'subject_name' => 'required|max_length[100]',
         'max_marks' => 'permit_empty|numeric',
         'passing_marks' => 'permit_empty|numeric'
     ];
 
-    // Define relationships
+    // Relationships based on SQL foreign keys
     public function exam()
     {
-        return $this->belongsTo(ExamModel::class, 'exam_id', 'id');
+        return $this->belongsTo('App\Models\ExamModel', 'exam_id', 'id');
+    }
+
+    public function subjectMarks()
+    {
+        return $this->hasMany('App\Models\ExamSubjectMarkModel', 'exam_subject_id', 'id');
     }
 } 
