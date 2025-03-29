@@ -231,7 +231,7 @@
                     </a>
                     <ul class="submenu" style="display: none; padding-left: 1rem;">
                         <li><a href="<?= base_url('exam') ?>">View Exams</a></li>
-                        <li><a href="<?= base_url('exam/add-subjects') ?>">Add Exam Subjects</a></li>
+                        <li><a href="<?= base_url('exam/subjects') ?>">Add Exam Subjects</a></li>
                     </ul>
                 </li>
                 <li><a href="#">

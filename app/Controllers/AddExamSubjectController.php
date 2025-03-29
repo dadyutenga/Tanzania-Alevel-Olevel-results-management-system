@@ -26,7 +26,7 @@ class AddExamSubjectController extends ResourceController
                 $data = [
                     'exams' => $this->getActiveExams()
                 ];
-                return view('exam/SelectExam', $data);
+                return view('exam/AddExamSubject', $data);  // Changed from SelectExam
             }
 
             // Get exam details
@@ -43,7 +43,7 @@ class AddExamSubjectController extends ResourceController
                 'existingSubjects' => $existingSubjects
             ];
 
-            return view('exam/AddExamSubject', $data);
+            return view('exam/AddExamSubject', $data);  // Make sure this matches your view filename
         } catch (\Exception $e) {
             log_message('error', '[AddExamSubject.index] Exception: {message}', ['message' => $e->getMessage()]);
             return redirect()->to('exam')->with('error', 'Failed to load exam subject form');
