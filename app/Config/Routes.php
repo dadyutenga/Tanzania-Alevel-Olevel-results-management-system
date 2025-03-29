@@ -25,6 +25,7 @@ $routes->group('student', static function ($routes) {
 
 // Exam routes
 $routes->group('exam', static function ($routes) {
-    $routes->get('/', 'AddExamController::index');        // Changed this line
-    $routes->post('store', 'AddExamController::store');   // This stays the same
+    $routes->get('/', 'AddExamController::index');                    // Show add exam form
+    $routes->get('getSessions', 'AddExamController::getSessions');    // Get active sessions for dropdown
+    $routes->post('store', 'AddExamController::store');              // Store new exam
 });

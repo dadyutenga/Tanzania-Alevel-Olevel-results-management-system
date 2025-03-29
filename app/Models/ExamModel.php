@@ -25,7 +25,7 @@ class ExamModel extends Model
     protected $validationRules = [
         'exam_name' => 'required|max_length[100]',
         'exam_date' => 'permit_empty|valid_date',
-        'session_id' => 'required|integer|is_not_unique[sessions.id]',
+        'session_id' => 'required|integer',
         'is_active' => 'required|in_list[yes,no]'
     ];
 

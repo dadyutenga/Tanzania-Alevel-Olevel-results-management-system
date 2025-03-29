@@ -214,6 +214,33 @@
                 grid-column: 1;
             }
         }
+
+        .is-invalid {
+            border-color: var(--danger) !important;
+        }
+
+        .is-valid {
+            border-color: var(--success) !important;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: -0.75rem;
+        }
+
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+            .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -259,8 +286,10 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="academic_year">Academic Year <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="academic_year" name="academic_year" placeholder="e.g., 2023-2024" required>
+                                <label for="session_id">Academic Session <span class="text-danger">*</span></label>
+                                <select class="form-control" id="session_id" name="session_id" required>
+                                    <option value="">Select Academic Session</option>
+                                </select>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -290,6 +319,38 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('addExamForm');
+        const sessionSelect = document.getElementById('session_id');
+
+        // Load all sessions
+        async function loadSessions() {
+            try {
+                const response = await fetch('<?= base_url('exam/getSessions') ?>');
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Clear existing options except the first one
+                    sessionSelect.innerHTML = '<option value="">Select Academic Session</option>';
+
+                    // Add sessions to dropdown
+                    result.data.forEach(session => {
+                        const option = document.createElement('option');
+                        option.value = session.id;
+                        option.textContent = session.session; // Just show the session name without (Current)
+                        sessionSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load academic sessions'
+                });
+            }
+        }
+
+        // Call loadSessions immediately
+        loadSessions();
 
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -297,6 +358,16 @@
             if (!form.checkValidity()) {
                 e.stopPropagation();
                 form.classList.add('was-validated');
+                return;
+            }
+
+            // Validate session selection
+            if (!sessionSelect.value) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Please select an academic session'
+                });
                 return;
             }
 
@@ -323,7 +394,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: result.message
+                        text: result.message || 'Failed to create exam'
                     });
                 }
             } catch (error) {
@@ -334,6 +405,20 @@
                     text: 'An error occurred while saving the exam'
                 });
             }
+        });
+
+        // Add form validation styles
+        const inputs = form.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('invalid', function() {
+                input.classList.add('is-invalid');
+            });
+            input.addEventListener('input', function() {
+                if (input.validity.valid) {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                }
+            });
         });
     });
     </script>
