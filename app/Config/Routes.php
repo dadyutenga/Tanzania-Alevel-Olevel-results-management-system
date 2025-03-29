@@ -31,6 +31,7 @@ $routes->group('exam', static function ($routes) {
     
     // Add Exam Subject routes - using 'subjects' (plural) to avoid conflicts
     $routes->group('subjects', static function ($routes) {
+        $routes->get('add-subjects', 'AddExamSubjectController::index');
         $routes->get('add/(:num)', 'AddExamSubjectController::index/$1');     // Show subject form for specific exam
         $routes->get('list/(:num)', 'AddExamSubjectController::getExamSubjects/$1'); // Get subjects for exam
         $routes->post('add', 'AddExamSubjectController::store');        // Store single subject

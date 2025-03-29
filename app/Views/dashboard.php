@@ -224,9 +224,16 @@
                 <li><a href="<?= base_url('student') ?>">
                     <i class="fas fa-users"></i> Students
                 </a></li>
-                <li><a href="<?= base_url('exam') ?> ">
-                    <i class="fas fa-file-alt"></i> Exams
-                </a></li>
+                <li>
+                    <a href="#" class="expandable">
+                        <i class="fas fa-file-alt"></i> Exams
+                        <i class="fas fa-chevron-down toggle-icon" style="margin-left:auto;"></i>
+                    </a>
+                    <ul class="submenu" style="display: none; padding-left: 1rem;">
+                        <li><a href="<?= base_url('exam') ?>">View Exams</a></li>
+                        <li><a href="<?= base_url('exam/add-subjects') ?>">Add Exam Subjects</a></li>
+                    </ul>
+                </li>
                 <li><a href="#">
                     <i class="fas fa-chart-bar"></i> Results
                 </a></li>
@@ -291,5 +298,26 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const expandableLinks = document.querySelectorAll('.expandable');
+            expandableLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const submenu = this.nextElementSibling;
+                    const toggleIcon = this.querySelector('.toggle-icon');
+                    if (submenu.style.display === 'none' || submenu.style.display === '') {
+                        submenu.style.display = 'block';
+                        toggleIcon.classList.remove('fa-chevron-down');
+                        toggleIcon.classList.add('fa-chevron-up');
+                    } else {
+                        submenu.style.display = 'none';
+                        toggleIcon.classList.remove('fa-chevron-up');
+                        toggleIcon.classList.add('fa-chevron-down');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
