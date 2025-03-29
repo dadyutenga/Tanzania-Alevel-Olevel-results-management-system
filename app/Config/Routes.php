@@ -28,4 +28,12 @@ $routes->group('exam', static function ($routes) {
     $routes->get('/', 'AddExamController::index');                    // Show add exam form
     $routes->get('getSessions', 'AddExamController::getSessions');    // Get active sessions for dropdown
     $routes->post('store', 'AddExamController::store');              // Store new exam
+    
+    // Add Exam Subject routes - using 'subjects' (plural) to avoid conflicts
+    $routes->group('subjects', static function ($routes) {
+        $routes->get('add/(:num)', 'AddExamSubjectController::index/$1');     // Show subject form for specific exam
+        $routes->get('list/(:num)', 'AddExamSubjectController::getExamSubjects/$1'); // Get subjects for exam
+        $routes->post('add', 'AddExamSubjectController::store');        // Store single subject
+        $routes->delete('(:num)', 'AddExamSubjectController::delete/$1'); // Delete subject
+    });
 });
