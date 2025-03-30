@@ -269,9 +269,31 @@
             <!-- Dynamic Content Area -->
             <div id="examContentArea">
                 <?php if (isset($exam) && $exam): ?>
-                    <!-- Exam content area -->
+                    <!-- Add New Subjects Form -->
                     <div class="form-container">
-                        <h3>Exam Subjects</h3>
+                        <div class="header-action">
+                            <h3>Add New Subjects</h3>
+                            <button type="button" class="btn btn-primary" onclick="addSubjectRow()">
+                                <i class="fas fa-plus"></i> Add More Subjects
+                            </button>
+                        </div>
+                        
+                        <form id="multiSubjectForm" class="mt-3">
+                            <input type="hidden" name="exam_id" value="<?= $exam['id'] ?? '' ?>">
+                            <div id="subjectsContainer">
+                                <!-- Subject rows will be added here -->
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save All Subjects
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                
+                    <!-- Existing Subjects Table -->
+                    <div class="form-container">
+                        <h3>Existing Subjects</h3>
                         <table class="table">
                             <thead>
                                 <tr>
@@ -310,6 +332,173 @@
             </div>
         </div>
 </div>
+
+<!-- Add these styles to your existing CSS -->
+<style>
+    .header-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .subject-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        align-items: start;
+    }
+
+    .form-actions {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .btn-sm {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
+
+<!-- Update the JavaScript for adding rows -->
+<script>
+<!-- Update the JavaScript for form submission -->
+<script>
+<!-- Add SweetAlert2 CDN at the top of the file, after other CSS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Replace the duplicate script tags with a single one -->
+<script>
+let subjectRowCount = 0;
+
+// Initialize form when document loads
+document.addEventListener('DOMContentLoaded', function() {
+    const examId = '<?= isset($exam['id']) ? $exam['id'] : '' ?>';
+    if (examId) {
+        addSubjectRow(); // Add initial row
+    }
+});
+
+// Add delete subject function
+async function deleteSubject(subjectId) {
+    try {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            const response = await fetch(`<?= base_url('exam/subjects/delete/') ?>/${subjectId}`, {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                Swal.fire('Deleted!', 'Subject has been deleted.', 'success');
+                document.getElementById(`subject-row-${subjectId}`).remove();
+            } else {
+                throw new Error(data.message || 'Failed to delete subject');
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire('Error!', error.message || 'Failed to delete subject', 'error');
+    }
+}
+
+// Add loadSubjects function
+async function loadSubjects() {
+    const examId = '<?= isset($exam['id']) ? $exam['id'] : '' ?>';
+    if (!examId) return;
+
+    try {
+        const response = await fetch(`<?= base_url('exam/subjects/list/') ?>/${examId}`);
+        const result = await response.json();
+
+        const tbody = document.getElementById('subjectsTableBody');
+        if (result.status === 'success' && Array.isArray(result.data)) {
+            if (result.data.length > 0) {
+                tbody.innerHTML = result.data.map(subject => `
+                    <tr id="subject-row-${subject.id}">
+                        <td>${subject.subject_name || ''}</td>
+                        <td>${subject.max_marks || ''}</td>
+                        <td>${subject.passing_marks || ''}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick='editSubject(${JSON.stringify(subject)})'>
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteSubject(${subject.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No subjects found</td></tr>';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading subjects:', error);
+        Swal.fire('Error!', 'Failed to load subjects', 'error');
+    }
+}
+
+// Rest of your existing functions (addSubjectRow, removeSubjectRow, etc.)
+</script>
+</script>
+
+<!-- Add these styles to your existing CSS -->
+<style>
+    .subject-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--primary-dark);
+        border-radius: var(--radius);
+    }
+
+    .subject-row .form-group {
+        margin-bottom: 0;
+    }
+
+    .subject-row label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .form-actions {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+</style>
+
+// Add SweetAlert2 CDN if not already included
+if (typeof Swal === 'undefined') {
+    const sweetalertScript = document.createElement('script');
+    sweetalertScript.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+    document.head.appendChild(sweetalertScript);
+}
+</script>
 
 <!-- Add Edit Subject Modal -->
 <div class="modal" id="editSubjectModal" tabindex="-1" style="display: none;">
