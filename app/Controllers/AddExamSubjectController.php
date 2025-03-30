@@ -141,6 +141,10 @@ class AddExamSubjectController extends ResourceController
             $examId = $this->request->getPost('exam_id');
             $subjects = $this->request->getPost('subjects'); // Array of subjects
 
+            // Add debug logging
+            log_message('debug', 'Received exam_id: {exam_id}', ['exam_id' => $examId]);
+            log_message('debug', 'Received subjects: {subjects}', ['subjects' => json_encode($subjects)]);
+
             if (!$examId || !is_array($subjects)) {
                 return $this->respond([
                     'status' => 'error',
@@ -161,20 +165,12 @@ class AddExamSubjectController extends ResourceController
             $errors = [];
 
             foreach ($subjects as $subject) {
+                // Add debug logging for each subject
+                log_message('debug', 'Processing subject: {subject}', ['subject' => json_encode($subject)]);
+
                 // Validate each subject
                 if (!$this->validateSubject($subject)) {
                     $errors[] = "Invalid data for subject: {$subject['subject_name']}";
-                    continue;
-                }
-
-                // Check for duplicate
-                $exists = $this->examSubjectModel->where([
-                    'exam_id' => $examId,
-                    'subject_name' => $subject['subject_name']
-                ])->first();
-
-                if ($exists) {
-                    $errors[] = "Subject already exists: {$subject['subject_name']}";
                     continue;
                 }
 
@@ -187,21 +183,31 @@ class AddExamSubjectController extends ResourceController
             }
 
             if (!empty($insertData)) {
-                $this->examSubjectModel->insertBatch($insertData);
+                // Add debug logging before insert
+                log_message('debug', 'Attempting to insert data: {data}', ['data' => json_encode($insertData)]);
+                
+                $inserted = $this->examSubjectModel->insertBatch($insertData);
+                
+                // Add debug logging after insert
+                log_message('debug', 'Insert result: {result}', ['result' => $inserted]);
             }
 
             return $this->respond([
                 'status' => 'success',
                 'message' => 'Subjects added successfully',
-                'errors' => $errors, // Return any errors that occurred
-                'added_count' => count($insertData)
+                'errors' => $errors,
+                'added_count' => count($insertData),
+                'debug_data' => [
+                    'insert_data' => $insertData,
+                    'exam_id' => $examId
+                ]
             ]);
 
         } catch (\Exception $e) {
             log_message('error', '[AddExamSubject.storeBatch] Exception: {message}', ['message' => $e->getMessage()]);
             return $this->respond([
                 'status' => 'error',
-                'message' => 'Failed to add subjects'
+                'message' => 'Failed to add subjects: ' . $e->getMessage()
             ], 500);
         }
     }

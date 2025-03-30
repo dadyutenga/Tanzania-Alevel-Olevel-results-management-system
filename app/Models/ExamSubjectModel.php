@@ -8,15 +8,6 @@ class ExamSubjectModel extends Model
 {
     protected $DBGroup = 'second_db';
     protected $table = 'tz_exam_subjects';
-    protected $validationRules = [
-        'exam_id' => 'required|numeric|is_not_unique[tz_exams.id]',
-        'subject_name' => 'required|max_length[100]',
-        'max_marks' => 'required|numeric|greater_than[0]',
-        'passing_marks' => 'required|numeric|greater_than[0]'
-    ];
-    protected $primaryKey = 'id';
-    protected $returnType = 'array';
-    protected $useSoftDeletes = false;
     protected $allowedFields = [
         'exam_id',
         'subject_name',
