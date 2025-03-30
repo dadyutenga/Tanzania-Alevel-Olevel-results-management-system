@@ -32,6 +32,8 @@ $routes->group('exam', static function ($routes) {
     // Exam Subject routes
     $routes->get('subjects', 'AddExamSubjectController::index');
     $routes->get('subjects/(:num)', 'AddExamSubjectController::index/$1');
+    $routes->post('subjects/store-batch', 'AddExamSubjectController::storeBatch');
     $routes->post('subjects/update/(:num)', 'AddExamSubjectController::update/$1');
     $routes->get('subjects/list/(:num)', 'AddExamSubjectController::getExamSubjects/$1');
+    $routes->post('subjects/delete/(:num)', 'AddExamSubjectController::delete/$1');
 });

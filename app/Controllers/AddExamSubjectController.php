@@ -151,16 +151,25 @@ class AddExamSubjectController extends ResourceController
     {
         try {
             $examId = $this->request->getPost('exam_id');
-            $subjects = $this->request->getPost('subjects'); // Array of subjects
-
-            // Add debug logging
-            log_message('debug', 'Received exam_id: {exam_id}', ['exam_id' => $examId]);
-            log_message('debug', 'Received subjects: {subjects}', ['subjects' => json_encode($subjects)]);
-
+            $subjectsJson = $this->request->getPost('subjects');
+            
+            // Debug logging
+            log_message('debug', 'Raw subjects data: ' . $subjectsJson);
+            
+            // Decode JSON string to array
+            $subjects = json_decode($subjectsJson, true);
+            
+            // Validate input
             if (!$examId || !is_array($subjects)) {
+                log_message('error', 'Invalid input - examId: ' . $examId . ', subjects: ' . gettype($subjects));
                 return $this->respond([
                     'status' => 'error',
-                    'message' => 'Invalid input data'
+                    'message' => 'Invalid input data',
+                    'debug' => [
+                        'exam_id' => $examId,
+                        'subjects_type' => gettype($subjects),
+                        'raw_subjects' => $subjectsJson
+                    ]
                 ], 400);
             }
 
@@ -178,7 +187,7 @@ class AddExamSubjectController extends ResourceController
 
             foreach ($subjects as $subject) {
                 // Add debug logging for each subject
-                log_message('debug', 'Processing subject: {subject}', ['subject' => json_encode($subject)]);
+                log_message('debug', 'Processing subject: ' . json_encode($subject));
 
                 // Validate each subject
                 if (!$this->validateSubject($subject)) {
@@ -188,35 +197,26 @@ class AddExamSubjectController extends ResourceController
 
                 $insertData[] = [
                     'exam_id' => $examId,
-                    'subject_name' => $subject['subject_name'],
-                    'max_marks' => $subject['max_marks'],
-                    'passing_marks' => $subject['passing_marks']
+                    'subject_name' => trim($subject['subject_name']),
+                    'max_marks' => (int)$subject['max_marks'],
+                    'passing_marks' => (int)$subject['passing_marks']
                 ];
             }
 
             if (!empty($insertData)) {
-                // Add debug logging before insert
-                log_message('debug', 'Attempting to insert data: {data}', ['data' => json_encode($insertData)]);
-                
                 $inserted = $this->examSubjectModel->insertBatch($insertData);
-                
-                // Add debug logging after insert
-                log_message('debug', 'Insert result: {result}', ['result' => $inserted]);
+                log_message('debug', 'Insert result: ' . json_encode($inserted));
             }
 
             return $this->respond([
                 'status' => 'success',
                 'message' => 'Subjects added successfully',
                 'errors' => $errors,
-                'added_count' => count($insertData),
-                'debug_data' => [
-                    'insert_data' => $insertData,
-                    'exam_id' => $examId
-                ]
+                'added_count' => count($insertData)
             ]);
 
         } catch (\Exception $e) {
-            log_message('error', '[AddExamSubject.storeBatch] Exception: {message}', ['message' => $e->getMessage()]);
+            log_message('error', '[AddExamSubject.storeBatch] Exception: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to add subjects: ' . $e->getMessage()

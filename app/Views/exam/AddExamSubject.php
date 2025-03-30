@@ -333,35 +333,203 @@
         </div>
 </div>
 
-<!-- Add these styles to your existing CSS -->
-<style>
-    .header-action {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border);
-    }
+<!-- Add SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    .subject-row {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr auto;
-        gap: 1rem;
-        margin-bottom: 1rem;
-        align-items: start;
-    }
+<!-- Main Script -->
+<script>
+let subjectRowCount = 0;
 
-    .form-actions {
-        margin-top: 1.5rem;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border);
-        display: flex;
-        justify-content: flex-end;
+// Initialize form when document loads
+document.addEventListener('DOMContentLoaded', function() {
+    const examId = '<?= isset($exam['id']) ? $exam['id'] : '' ?>';
+    if (examId) {
+        addSubjectRow();
     }
+});
 
-    .btn-sm {
-        padding: 0.5rem;
-        font-size: 0.875rem;
+function loadExamSubjects(examId) {
+    if (!examId) return;
+    window.location.href = '<?= base_url('exam/subjects') ?>/' + examId;
+}
+
+function addSubjectRow() {
+    const container = document.getElementById('subjectsContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'subject-row';
+    newRow.innerHTML = `
+        <div class="form-group">
+            <label>Subject Name</label>
+            <input type="text" class="form-control" name="subjects[${subjectRowCount}][subject_name]" 
+                placeholder="Enter subject name" required maxlength="100">
+        </div>
+        <div class="form-group">
+            <label>Maximum Marks</label>
+            <input type="number" class="form-control" name="subjects[${subjectRowCount}][max_marks]" 
+                placeholder="Enter max marks" required min="1">
+        </div>
+        <div class="form-group">
+            <label>Passing Marks</label>
+            <input type="number" class="form-control" name="subjects[${subjectRowCount}][passing_marks]" 
+                placeholder="Enter passing marks" required min="1">
+        </div>
+        <div class="form-group" style="display: flex; align-items: flex-end;">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeSubjectRow(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(newRow);
+    subjectRowCount++;
+}
+
+function removeSubjectRow(button) {
+    button.closest('.subject-row').remove();
+}
+
+// Form submission handler
+document.getElementById('multiSubjectForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    try {
+        const formData = new FormData();
+        const examId = this.querySelector('[name="exam_id"]').value;
+        formData.append('exam_id', examId);
+        
+        const subjectRows = document.querySelectorAll('.subject-row');
+        const subjects = [];
+        
+        for (let row of subjectRows) {
+            const subjectName = row.querySelector('[name$="[subject_name]"]').value.trim();
+            const maxMarks = parseInt(row.querySelector('[name$="[max_marks]"]').value);
+            const passingMarks = parseInt(row.querySelector('[name$="[passing_marks]"]').value);
+            
+            if (!subjectName || isNaN(maxMarks) || isNaN(passingMarks)) {
+                throw new Error('Please fill all fields for each subject');
+            }
+            
+            if (passingMarks > maxMarks) {
+                throw new Error('Passing marks cannot be greater than maximum marks');
+            }
+            
+            subjects.push({
+                subject_name: subjectName,
+                max_marks: maxMarks,
+                passing_marks: passingMarks
+            });
+        }
+        
+        // Convert subjects array to JSON string
+        formData.append('subjects', JSON.stringify(subjects));
+
+        const response = await fetch('<?= base_url('exam/subjects/store-batch') ?>', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        console.log('Server response:', result); // Debug log
+
+        if (result.status === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Subjects added successfully',
+                timer: 1500
+            });
+            
+            this.reset();
+            document.getElementById('subjectsContainer').innerHTML = '';
+            addSubjectRow();
+            window.location.reload();
+        } else {
+            throw new Error(result.message || 'Failed to add subjects');
+        }
+    } catch (error) {
+        console.error('Error:', error); // Debug log
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Failed to add subjects'
+        });
     }
-</style>
+});
+
+async function deleteSubject(subjectId) {
+    try {
+        const result = await Swal.fire({
+            title: 'Delete Subject',
+            text: 'Are you sure you want to delete this subject?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            const response = await fetch(`<?= base_url('exam/subjects/delete') ?>/${subjectId}`, {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                Swal.fire('Deleted!', 'Subject has been deleted.', 'success');
+                document.getElementById(`subject-row-${subjectId}`).remove();
+            } else {
+                throw new Error(data.message || 'Failed to delete subject');
+            }
+        }
+    } catch (error) {
+        Swal.fire('Error!', error.message || 'Failed to delete subject', 'error');
+    }
+}
+
+function editSubject(subject) {
+    Swal.fire({
+        title: 'Edit Subject',
+        html: `
+            <input type="text" id="edit_subject_name" class="swal2-input" placeholder="Subject Name" 
+                value="${subject.subject_name}" required>
+            <input type="number" id="edit_max_marks" class="swal2-input" placeholder="Maximum Marks" 
+                value="${subject.max_marks}" required min="1">
+            <input type="number" id="edit_passing_marks" class="swal2-input" placeholder="Passing Marks" 
+                value="${subject.passing_marks}" required min="1">
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Update',
+        showLoaderOnConfirm: true,
+        preConfirm: async () => {
+            try {
+                const formData = new FormData();
+                formData.append('subject_name', document.getElementById('edit_subject_name').value);
+                formData.append('max_marks', document.getElementById('edit_max_marks').value);
+                formData.append('passing_marks', document.getElementById('edit_passing_marks').value);
+
+                const response = await fetch(`<?= base_url('exam/subjects/update') ?>/${subject.id}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.status !== 'success') {
+                    throw new Error(result.message || 'Failed to update subject');
+                }
+                
+                return result;
+            } catch (error) {
+                Swal.showValidationMessage(error.message);
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire('Success!', 'Subject has been updated.', 'success');
+            window.location.reload();
+        }
+    });
+}
+</script>
+</body>
+</html>
