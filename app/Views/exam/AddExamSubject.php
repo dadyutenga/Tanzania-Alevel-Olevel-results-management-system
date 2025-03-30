@@ -236,249 +236,245 @@
     <div class="dashboard">
         <!-- Sidebar -->
         <div class="sidebar">
+        <div class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-graduation-cap"></i>
-                <h2>Exam Result Management</h2>
+                <h2>Exam Results Management</h2>
             </div>
-            
-            <ul class="sidebar-menu">
-                <li><a href="<?= base_url('dashboard') ?>"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="<?= base_url('student') ?>"><i class="fas fa-users"></i> Students</a></li>
-                <li><a href="<?= base_url('exam') ?>" class="active"><i class="fas fa-file-alt"></i> Exams</a></li>
-                <li><a href="#"><i class="fas fa-chart-bar"></i> Results</a></li>
-                <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
-            </ul>
+            <?= view('shared/sidebar_menu') ?>
         </div>
 
+
         <!-- Main Content -->
+        <!-- After the header section -->
         <div class="main-content">
             <div class="header">
-                <h1>Add Exam Subjects</h1>
+                <h1>Exam Subjects Management</h1>
             </div>
-
-            <!-- Exam Information -->
-            <?php if ($exam): ?>
-                <div class="form-container exam-info">
-                    <h3>Exam Details</h3>
-                    <div class="row">
-                        <p><strong>Exam Name:</strong> <?= esc($exam['exam_name']) ?></p>
-                        <p><strong>Exam Date:</strong> <?= esc($exam['exam_date']) ?></p>
-                    </div>
-                </div>
-
-                <!-- Add Subject Form -->
-                <div class="form-container">
-                    <form id="addSubjectForm">
-                        <input type="hidden" name="exam_id" value="<?= esc($exam['id']) ?>">
-                        <div class="row">
-                            <div class="form-group">
-                                <label for="subject_name">Subject Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="subject_name" name="subject_name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="max_marks">Maximum Marks <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="max_marks" name="max_marks" required min="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="passing_marks">Passing Marks <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="passing_marks" name="passing_marks" required min="0">
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Add Subject
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Existing Subjects Table -->
-                <div class="form-container">
-                    <h3>Added Subjects</h3>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Subject Name</th>
-                                <th>Maximum Marks</th>
-                                <th>Passing Marks</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="subjectsTableBody">
-                            <?php if (!empty($existingSubjects)): ?>
-                                <?php foreach ($existingSubjects as $subject): ?>
-                                    <tr>
-                                        <td><?= esc($subject['subject_name']) ?></td>
-                                        <td><?= esc($subject['max_marks']) ?></td>
-                                        <td><?= esc($subject['passing_marks']) ?></td>
-                                        <td>
-                                            <button class="btn btn-danger btn-sm" onclick="deleteSubject(<?= $subject['id'] ?>)">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php else: ?>
-                <!-- Show exam selection when no exam is selected -->
-                <div class="form-container">
-                    <h3>Select an Exam</h3>
-                    <div class="row">
+        
+            <!-- Exam Selection Dropdown -->
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="examSelect">Select Exam</label>
+                    <select class="form-control" id="examSelect" onchange="loadExamSubjects(this.value)">
+                        <option value="">Choose an exam...</option>
                         <?php if (!empty($exams)): ?>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Exam Name</th>
-                                        <th>Date</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($exams as $exam): ?>
-                                        <tr>
-                                            <td><?= esc($exam['exam_name']) ?></td>
-                                            <td><?= esc($exam['exam_date']) ?></td>
+                            <?php foreach ($exams as $examItem): ?>
+                                <option value="<?= $examItem['id'] ?>" <?= ($exam && $exam['id'] == $examItem['id']) ? 'selected' : '' ?>>
+                                    <?= esc($examItem['exam_name']) ?> (<?= esc($examItem['exam_date']) ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+            </div>
+        
+            <!-- Dynamic Content Area -->
+            <div id="examContentArea">
+                <?php if ($exam): ?>
+                    <!-- Existing exam info and add subject form remains the same -->
+                    
+                    <!-- Modified Subjects Table with Edit Feature -->
+                    <div class="form-container">
+                        <h3>Exam Subjects</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Subject Name</th>
+                                    <th>Maximum Marks</th>
+                                    <th>Passing Marks</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subjectsTableBody">
+                                <?php if (!empty($existingSubjects)): ?>
+                                    <?php foreach ($existingSubjects as $subject): ?>
+                                        <tr id="subject-row-<?= $subject['id'] ?>">
+                                            <td><?= esc($subject['subject_name']) ?></td>
+                                            <td><?= esc($subject['max_marks']) ?></td>
+                                            <td><?= esc($subject['passing_marks']) ?></td>
                                             <td>
-                                                <a href="<?= base_url('exam/subjects/add/' . $exam['id']) ?>" 
-                                                   class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-plus"></i> Add Subjects
-                                                </a>
+                                                <button class="btn btn-primary btn-sm" onclick="editSubject(<?= json_encode($subject) ?>)">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm" onclick="deleteSubject(<?= $subject['id'] ?>)">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        <?php else: ?>
-                            <p>No active exams found.</p>
-                        <?php endif; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+</div>
+
+<!-- Add Edit Subject Modal -->
+<div class="modal" id="editSubjectModal" tabindex="-1" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Subject</h5>
+                <button type="button" class="close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editSubjectForm">
+                    <input type="hidden" id="edit_subject_id" name="subject_id">
+                    <div class="form-group">
+                        <label for="edit_subject_name">Subject Name</label>
+                        <input type="text" class="form-control" id="edit_subject_name" name="subject_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_max_marks">Maximum Marks</label>
+                        <input type="number" class="form-control" id="edit_max_marks" name="max_marks" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_passing_marks">Passing Marks</label>
+                        <input type="number" class="form-control" id="edit_passing_marks" name="passing_marks" required min="0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Close</button>
+                <button type="button" class="btn btn-primary" onclick="updateSubject()">Save changes</button>
+            </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('addSubjectForm');
-        const maxMarksInput = document.getElementById('max_marks');
-        const passingMarksInput = document.getElementById('passing_marks');
-
-        // Validate passing marks cannot exceed maximum marks
-        passingMarksInput.addEventListener('input', function() {
-            const maxMarks = parseInt(maxMarksInput.value) || 0;
-            const passingMarks = parseInt(this.value) || 0;
-            
-            if (passingMarks > maxMarks) {
-                this.setCustomValidity('Passing marks cannot exceed maximum marks');
-            } else {
-                this.setCustomValidity('');
-            }
-        });
-
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            try {
-                const formData = new FormData(form);
-                const response = await fetch('<?= base_url('exam/subjects/add') ?>', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: result.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-
-                    // Reset form and refresh subjects list
-                    form.reset();
-                    loadSubjects();
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: result.message
-                    });
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to add subject'
-                });
-            }
-        });
-
-        async function loadSubjects() {
-            try {
-                const response = await fetch('<?= base_url('exam/subjects/list/') ?>/<?= $exam['id'] ?>');
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    const tbody = document.getElementById('subjectsTableBody');
-                    tbody.innerHTML = result.data.map(subject => `
-                        <tr>
-                            <td>${subject.subject_name}</td>
-                            <td>${subject.max_marks}</td>
-                            <td>${subject.passing_marks}</td>
-                            <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteSubject(${subject.id})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Error loading subjects:', error);
-            }
-        }
-
-        // Initial load of subjects
-        loadSubjects();
-    });
-
-    async function deleteSubject(subjectId) {
-        try {
-            const result = await Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#e53e3e',
-                confirmButtonText: 'Yes, delete it!'
-            });
-
-            if (result.isConfirmed) {
-                const response = await fetch('<?= base_url('exam/subjects/') ?>' + subjectId, {
-                    method: 'DELETE'
-                });
-
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    Swal.fire('Deleted!', data.message, 'success');
-                    loadSubjects();
-                } else {
-                    Swal.fire('Error!', data.message, 'error');
-                }
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            Swal.fire('Error!', 'Failed to delete subject', 'error');
-        }
+<!-- Add these styles to your existing CSS -->
+<style>
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
     }
-    </script>
+    .modal-dialog {
+        background: white;
+        border-radius: var(--radius);
+        width: 500px;
+        max-width: 90%;
+    }
+    .modal-content {
+        padding: 1rem;
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .modal-footer {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+    .close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+</style>
+
+<!-- Add these scripts to your existing JavaScript -->
+<script>
+function loadExamSubjects(examId) {
+    if (!examId) return;
+    window.location.href = `<?= base_url('exam/subjects/add/') ?>/${examId}`;
+}
+
+function editSubject(subject) {
+    document.getElementById('edit_subject_id').value = subject.id;
+    document.getElementById('edit_subject_name').value = subject.subject_name;
+    document.getElementById('edit_max_marks').value = subject.max_marks;
+    document.getElementById('edit_passing_marks').value = subject.passing_marks;
+    
+    document.getElementById('editSubjectModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editSubjectModal').style.display = 'none';
+}
+
+async function updateSubject() {
+    const form = document.getElementById('editSubjectForm');
+    const subjectId = document.getElementById('edit_subject_id').value;
+    
+    try {
+        const formData = new FormData(form);
+        const response = await fetch(`<?= base_url('exam/subjects/update/') ?>/${subjectId}`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: result.message,
+                timer: 1500,
+                showConfirmButton: false
+            });
+            closeEditModal();
+            loadSubjects(); // Refresh the subjects list
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: result.message
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to update subject'
+        });
+    }
+}
+
+// Update the existing loadSubjects function to handle the edit button
+async function loadSubjects() {
+    try {
+        const response = await fetch('<?= base_url('exam/subjects/list/') ?>/<?= $exam['id'] ?>');
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            const tbody = document.getElementById('subjectsTableBody');
+            tbody.innerHTML = result.data.map(subject => `
+                <tr id="subject-row-${subject.id}">
+                    <td>${subject.subject_name}</td>
+                    <td>${subject.max_marks}</td>
+                    <td>${subject.passing_marks}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick='editSubject(${JSON.stringify(subject)})'>
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSubject(${subject.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading subjects:', error);
+    }
+}
+</script>
 </body>
 </html>

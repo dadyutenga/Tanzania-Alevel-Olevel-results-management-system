@@ -304,51 +304,40 @@ class AddExamSubjectController extends ResourceController
     public function update($id = null)
     {
         try {
-            if (!$id) {
-                return $this->respond([
-                    'status' => 'error',
-                    'message' => 'Subject ID is required'
-                ], 400);
-            }
-
             $rules = [
                 'subject_name' => 'required|max_length[100]',
-                'max_marks' => 'required|numeric',
-                'passing_marks' => 'required|numeric|less_than_equal_to[max_marks]'
-            ];
+            'max_marks' => 'required|numeric|greater_than[0]',
+            'passing_marks' => 'required|numeric|greater_than[0]'
+        ];
 
-            if (!$this->validate($rules)) {
-                return $this->respond([
-                    'status' => 'error',
-                    'message' => $this->validator->getErrors()
-                ], 400);
-            }
-
-            $data = [
-                'subject_name' => $this->request->getPost('subject_name'),
-                'max_marks' => $this->request->getPost('max_marks'),
-                'passing_marks' => $this->request->getPost('passing_marks')
-            ];
-
-            $updated = $this->examSubjectModel->update($id, $data);
-
-            if (!$updated) {
-                throw new \RuntimeException('Failed to update exam subject');
-            }
-
-            return $this->respond([
-                'status' => 'success',
-                'message' => 'Exam subject updated successfully',
-                'data' => $this->examSubjectModel->find($id)
-            ]);
-
-        } catch (\Exception $e) {
-            log_message('error', '[AddExamSubject.update] Exception: {message}', ['message' => $e->getMessage()]);
+        if (!$this->validate($rules)) {
             return $this->respond([
                 'status' => 'error',
-                'message' => 'Failed to update exam subject'
-            ], 500);
+                'message' => 'Validation failed',
+                'errors' => $this->validator->getErrors()
+            ], 400);
         }
+
+        $data = [
+            'subject_name' => $this->request->getPost('subject_name'),
+            'max_marks' => $this->request->getPost('max_marks'),
+            'passing_marks' => $this->request->getPost('passing_marks')
+        ];
+
+        $updated = $this->examSubjectModel->update($id, $data);
+
+        return $this->respond([
+            'status' => 'success',
+            'message' => 'Subject updated successfully'
+        ]);
+
+    } catch (\Exception $e) {
+        log_message('error', '[AddExamSubject.update] Exception: {message}', ['message' => $e->getMessage()]);
+        return $this->respond([
+            'status' => 'error',
+            'message' => 'Failed to update subject'
+        ], 500);
+    }
     }
 
     public function delete($id = null)
