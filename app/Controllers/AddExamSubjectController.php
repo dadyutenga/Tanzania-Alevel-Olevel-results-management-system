@@ -23,10 +23,17 @@ class AddExamSubjectController extends ResourceController
         try {
             // If no exam ID, show exam selection page
             if (!$examId) {
+                $exams = $this->examModel
+                    ->where('is_active', 'yes')
+                    ->orderBy('exam_date', 'DESC')
+                    ->findAll();
+                    
                 $data = [
-                    'exams' => $this->getActiveExams()
+                    'exams' => $exams,
+                    'exam' => null,  // Add this to prevent undefined variable
+                    'existingSubjects' => []  // Add empty array for consistency
                 ];
-                return view('exam/AddExamSubject', $data);  // Changed from SelectExam
+                return view('exam/AddExamSubject', $data);
             }
 
             // Get exam details
@@ -40,10 +47,11 @@ class AddExamSubjectController extends ResourceController
 
             $data = [
                 'exam' => $exam,
-                'existingSubjects' => $existingSubjects
+                'existingSubjects' => $existingSubjects,
+                'exams' => []  // Add empty array for consistency
             ];
 
-            return view('exam/AddExamSubject', $data);  // Make sure this matches your view filename
+            return view('exam/AddExamSubject', $data);
         } catch (\Exception $e) {
             log_message('error', '[AddExamSubject.index] Exception: {message}', ['message' => $e->getMessage()]);
             return redirect()->to('exam')->with('error', 'Failed to load exam subject form');
@@ -207,23 +215,29 @@ class AddExamSubjectController extends ResourceController
             'passing_marks' => 'required|numeric|greater_than[0]|less_than_equal_to[' . ($subject['max_marks'] ?? 0) . ']'
         ];
 
-        return $this->validate($rules);
+        // Use the second_db group for validation
+        $db = \Config\Database::connect('second_db');
+        $validation = \Config\Services::validation();
+        $validation->setRules($rules);
+        
+        return $validation->run((array)$subject);
     }
 
     public function store()
     {
         try {
             $rules = [
-                'exam_id' => 'required|numeric|is_not_unique[tz_exams.id]',
+                'exam_id' => 'required|numeric|is_not_unique[second_db.tz_exams.id]',
                 'subject_name' => 'required|max_length[100]',
-                'max_marks' => 'required|numeric',
-                'passing_marks' => 'required|numeric|less_than_equal_to[max_marks]'
+                'max_marks' => 'required|numeric|greater_than[0]',
+                'passing_marks' => 'required|numeric|greater_than[0]'
             ];
 
             if (!$this->validate($rules)) {
                 return $this->respond([
                     'status' => 'error',
-                    'message' => $this->validator->getErrors()
+                    'message' => 'Validation failed',
+                    'errors' => $this->validator->getErrors()
                 ], 400);
             }
 

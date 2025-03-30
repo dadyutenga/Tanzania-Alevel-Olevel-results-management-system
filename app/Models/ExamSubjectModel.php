@@ -8,6 +8,12 @@ class ExamSubjectModel extends Model
 {
     protected $DBGroup = 'second_db';
     protected $table = 'tz_exam_subjects';
+    protected $validationRules = [
+        'exam_id' => 'required|numeric|is_not_unique[tz_exams.id]',
+        'subject_name' => 'required|max_length[100]',
+        'max_marks' => 'required|numeric|greater_than[0]',
+        'passing_marks' => 'required|numeric|greater_than[0]'
+    ];
     protected $primaryKey = 'id';
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
@@ -22,12 +28,7 @@ class ExamSubjectModel extends Model
     protected $updatedField = 'updated_at';
 
     // Validation rules matching SQL constraints
-    protected $validationRules = [
-        'exam_id' => 'required|numeric|is_not_unique[tz_exams.id]',
-        'subject_name' => 'required|max_length[100]',
-        'max_marks' => 'permit_empty|numeric',
-        'passing_marks' => 'permit_empty|numeric'
-    ];
+   
 
     // Relationships based on SQL foreign keys
     public function exam()
@@ -39,4 +40,4 @@ class ExamSubjectModel extends Model
     {
         return $this->hasMany('App\Models\ExamSubjectMarkModel', 'exam_subject_id', 'id');
     }
-} 
+}

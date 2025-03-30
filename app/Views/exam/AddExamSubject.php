@@ -257,70 +257,106 @@
             </div>
 
             <!-- Exam Information -->
-            <div class="form-container exam-info">
-                <h3>Exam Details</h3>
-                <div class="row">
-                    <p><strong>Exam Name:</strong> <?= esc($exam['exam_name']) ?></p>
-                    <p><strong>Exam Date:</strong> <?= esc($exam['exam_date']) ?></p>
-                </div>
-            </div>
-
-            <!-- Add Subject Form -->
-            <div class="form-container">
-                <form id="addSubjectForm">
-                    <input type="hidden" name="exam_id" value="<?= esc($exam['id']) ?>">
+            <?php if ($exam): ?>
+                <div class="form-container exam-info">
+                    <h3>Exam Details</h3>
                     <div class="row">
-                        <div class="form-group">
-                            <label for="subject_name">Subject Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="subject_name" name="subject_name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="max_marks">Maximum Marks <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="max_marks" name="max_marks" required min="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="passing_marks">Passing Marks <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="passing_marks" name="passing_marks" required min="0">
-                        </div>
+                        <p><strong>Exam Name:</strong> <?= esc($exam['exam_name']) ?></p>
+                        <p><strong>Exam Date:</strong> <?= esc($exam['exam_date']) ?></p>
                     </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Add Subject
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
 
-            <!-- Existing Subjects Table -->
-            <div class="form-container">
-                <h3>Added Subjects</h3>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Subject Name</th>
-                            <th>Maximum Marks</th>
-                            <th>Passing Marks</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="subjectsTableBody">
-                        <?php if (!empty($existingSubjects)): ?>
-                            <?php foreach ($existingSubjects as $subject): ?>
-                                <tr>
-                                    <td><?= esc($subject['subject_name']) ?></td>
-                                    <td><?= esc($subject['max_marks']) ?></td>
-                                    <td><?= esc($subject['passing_marks']) ?></td>
-                                    <td>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteSubject(<?= $subject['id'] ?>)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
+                <!-- Add Subject Form -->
+                <div class="form-container">
+                    <form id="addSubjectForm">
+                        <input type="hidden" name="exam_id" value="<?= esc($exam['id']) ?>">
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="subject_name">Subject Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="subject_name" name="subject_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="max_marks">Maximum Marks <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="max_marks" name="max_marks" required min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="passing_marks">Passing Marks <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="passing_marks" name="passing_marks" required min="0">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add Subject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Existing Subjects Table -->
+                <div class="form-container">
+                    <h3>Added Subjects</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Subject Name</th>
+                                <th>Maximum Marks</th>
+                                <th>Passing Marks</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectsTableBody">
+                            <?php if (!empty($existingSubjects)): ?>
+                                <?php foreach ($existingSubjects as $subject): ?>
+                                    <tr>
+                                        <td><?= esc($subject['subject_name']) ?></td>
+                                        <td><?= esc($subject['max_marks']) ?></td>
+                                        <td><?= esc($subject['passing_marks']) ?></td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="deleteSubject(<?= $subject['id'] ?>)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <!-- Show exam selection when no exam is selected -->
+                <div class="form-container">
+                    <h3>Select an Exam</h3>
+                    <div class="row">
+                        <?php if (!empty($exams)): ?>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Exam Name</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($exams as $exam): ?>
+                                        <tr>
+                                            <td><?= esc($exam['exam_name']) ?></td>
+                                            <td><?= esc($exam['exam_date']) ?></td>
+                                            <td>
+                                                <a href="<?= base_url('exam/subjects/add/' . $exam['id']) ?>" 
+                                                   class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-plus"></i> Add Subjects
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php else: ?>
+                            <p>No active exams found.</p>
                         <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
