@@ -36,4 +36,11 @@ $routes->group('exam', static function ($routes) {
     $routes->post('subjects/update/(:num)', 'AddExamSubjectController::update/$1');
     $routes->get('subjects/list/(:num)', 'AddExamSubjectController::getExamSubjects/$1');
     $routes->post('subjects/delete/(:num)', 'AddExamSubjectController::delete/$1');
+    
+    // Allocation routes
+    $routes->get('allocation', 'AllocationController::index');
+    $routes->get('allocation/exams/(:num)', 'AllocationController::getExamsBySession/$1');
+    $routes->get('allocation/list/(:num)', 'AllocationController::getAllocations/$1');
+    $routes->post('allocation/store', 'AllocationController::store');
+    $routes->post('allocation/delete/(:num)/(:num)', 'AllocationController::deallocate/$1/$2');
 });

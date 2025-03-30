@@ -4,12 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-namespace App\Models;
-
-use CodeIgniter\Model;
-
 class ExamClassModel extends Model
 {
+    protected $DBGroup = 'second_db';
     protected $table = 'tz_exam_classes';
     protected $primaryKey = 'id';
     protected $allowedFields = ['exam_id', 'class_id', 'session_id'];   
@@ -57,7 +54,7 @@ class ExamClassModel extends Model
     public function getExamClassesWithDetails(?array $where = null)
     {
         $builder = $this->db->table($this->table)
-            ->select('tz_exam_classes.*, tz_exams.name as exam_name, classes.name as class_name, sessions.name as session_name')
+            ->select('tz_exam_classes.*, tz_exams.exam_name, classes.class as class_name, sessions.session as session_name')
             ->join('tz_exams', 'tz_exams.id = tz_exam_classes.exam_id')
             ->join('classes', 'classes.id = tz_exam_classes.class_id')
             ->join('sessions', 'sessions.id = tz_exam_classes.session_id');

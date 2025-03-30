@@ -13,6 +13,7 @@
         <ul class="submenu" style="display: <?= strpos(current_url(), 'exam') !== false ? 'block' : 'none' ?>; padding-left: 1rem;">
             <li><a href="<?= base_url('exam') ?>">Add Exams</a></li>
             <li><a href="<?= base_url('exam/subjects') ?>">Add Exam Subjects</a></li>
+            <li><a href="<?= base_url('exam/allocation') ?>">Allocate Classes</a></li>
         </ul>
     </li>
     <li><a href="#" class="<?= strpos(current_url(), 'results') !== false ? 'active' : '' ?>">
