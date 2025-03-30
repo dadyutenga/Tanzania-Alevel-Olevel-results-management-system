@@ -21,40 +21,52 @@ class AddExamSubjectController extends ResourceController
     public function index($examId = null)
     {
         try {
-            // If no exam ID, show exam selection page
-            if (!$examId) {
-                $exams = $this->examModel
-                    ->where('is_active', 'yes')
-                    ->orderBy('exam_date', 'DESC')
-                    ->findAll();
-                    
-                $data = [
-                    'exams' => $exams,
-                    'exam' => null,  // Add this to prevent undefined variable
-                    'existingSubjects' => []  // Add empty array for consistency
-                ];
-                return view('exam/AddExamSubject', $data);
-            }
-
-            // Get exam details
-            $exam = $this->examModel->find($examId);
-            if (!$exam) {
-                return redirect()->to('exam')->with('error', 'Exam not found');
-            }
-
-            // Get existing subjects for this exam
-            $existingSubjects = $this->examSubjectModel->where('exam_id', $examId)->findAll();
-
+            // Initialize with empty arrays
             $data = [
-                'exam' => $exam,
-                'existingSubjects' => $existingSubjects,
-                'exams' => []  // Add empty array for consistency
+                'exams' => [],
+                'exam' => null,
+                'existingSubjects' => []
             ];
 
+            // Get active exams with proper error handling
+            $exams = $this->examModel->select('id, exam_name, exam_date')
+                ->where('is_active', 'yes')
+                ->orderBy('exam_date', 'DESC')
+                ->findAll();
+            
+            if ($exams === null) {
+                throw new \RuntimeException('Failed to fetch exams');
+            }
+            
+            $data['exams'] = $exams;
+
+            // Handle exam ID if provided
+            if (!empty($examId)) {
+                $exam = $this->examModel->find($examId);
+                if ($exam === null) {
+                    return redirect()->to(base_url('exam/subjects'))
+                        ->with('error', 'Invalid exam selected');
+                }
+                
+                $data['exam'] = $exam;
+                
+                // Fetch subjects with proper error handling
+                $subjects = $this->examSubjectModel
+                    ->where('exam_id', $examId)
+                    ->findAll();
+                
+                $data['existingSubjects'] = $subjects ?? [];
+            }
+
+            // Add debug information
+            log_message('debug', 'Data being passed to view: ' . json_encode($data));
+
             return view('exam/AddExamSubject', $data);
+
         } catch (\Exception $e) {
             log_message('error', '[AddExamSubject.index] Exception: {message}', ['message' => $e->getMessage()]);
-            return redirect()->to('exam')->with('error', 'Failed to load exam subject form');
+            return redirect()->to(base_url('dashboard'))
+                ->with('error', 'Failed to load exam subject form: ' . $e->getMessage());
         }
     }
 

@@ -25,16 +25,13 @@ $routes->group('student', static function ($routes) {
 
 // Exam routes
 $routes->group('exam', static function ($routes) {
-    $routes->get('/', 'AddExamController::index');                    // Show add exam form
-    $routes->get('getSessions', 'AddExamController::getSessions');    // Get active sessions for dropdown
-    $routes->post('store', 'AddExamController::store');              // Store new exam
+    $routes->get('/', 'AddExamController::index');
+    $routes->get('getSessions', 'AddExamController::getSessions');
+    $routes->post('store', 'AddExamController::store');
     
-    // Add Exam Subject routes - using 'subjects' (plural) to avoid conflicts
-    $routes->group('subjects', static function ($routes) {
-        $routes->get('/', 'AddExamSubjectController::index');          // Changed from add-subjects
-        $routes->get('add/(:num)', 'AddExamSubjectController::index/$1');
-        $routes->get('list/(:num)', 'AddExamSubjectController::getExamSubjects/$1');
-        $routes->post('add', 'AddExamSubjectController::store');
-        $routes->delete('(:num)', 'AddExamSubjectController::delete/$1');
-    });
+    // Exam Subject routes
+    $routes->get('subjects', 'AddExamSubjectController::index');
+    $routes->get('subjects/(:num)', 'AddExamSubjectController::index/$1');
+    $routes->post('subjects/update/(:num)', 'AddExamSubjectController::update/$1');
+    $routes->get('subjects/list/(:num)', 'AddExamSubjectController::getExamSubjects/$1');
 });

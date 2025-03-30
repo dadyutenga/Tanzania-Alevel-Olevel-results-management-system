@@ -11,7 +11,7 @@
             <i class="fas fa-chevron-down toggle-icon" style="margin-left:auto;"></i>
         </a>
         <ul class="submenu" style="display: <?= strpos(current_url(), 'exam') !== false ? 'block' : 'none' ?>; padding-left: 1rem;">
-            <li><a href="<?= base_url('exam') ?>">View Exams</a></li>
+            <li><a href="<?= base_url('exam') ?>">Add Exams</a></li>
             <li><a href="<?= base_url('exam/subjects') ?>">Add Exam Subjects</a></li>
         </ul>
     </li>

@@ -236,17 +236,14 @@
     <div class="dashboard">
         <!-- Sidebar -->
         <div class="sidebar">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <i class="fas fa-graduation-cap"></i>
-                <h2>Exam Results Management</h2>
-            </div>
-            <?= view('shared/sidebar_menu') ?>
+        <div class="sidebar-header">
+            <i class="fas fa-graduation-cap"></i>
+            <h2>Exam Results Management</h2>
+        </div>
+        <?= view('shared/sidebar_menu') ?>
         </div>
 
-
         <!-- Main Content -->
-        <!-- After the header section -->
         <div class="main-content">
             <div class="header">
                 <h1>Exam Subjects Management</h1>
@@ -260,7 +257,7 @@
                         <option value="">Choose an exam...</option>
                         <?php if (!empty($exams)): ?>
                             <?php foreach ($exams as $examItem): ?>
-                                <option value="<?= $examItem['id'] ?>" <?= ($exam && $exam['id'] == $examItem['id']) ? 'selected' : '' ?>>
+                                <option value="<?= $examItem['id'] ?>" <?= (isset($exam['id']) && $exam['id'] == $examItem['id']) ? 'selected' : '' ?>>
                                     <?= esc($examItem['exam_name']) ?> (<?= esc($examItem['exam_date']) ?>)
                                 </option>
                             <?php endforeach; ?>
@@ -271,10 +268,8 @@
         
             <!-- Dynamic Content Area -->
             <div id="examContentArea">
-                <?php if ($exam): ?>
-                    <!-- Existing exam info and add subject form remains the same -->
-                    
-                    <!-- Modified Subjects Table with Edit Feature -->
+                <?php if (isset($exam) && $exam): ?>
+                    <!-- Exam content area -->
                     <div class="form-container">
                         <h3>Exam Subjects</h3>
                         <table class="table">
@@ -290,19 +285,23 @@
                                 <?php if (!empty($existingSubjects)): ?>
                                     <?php foreach ($existingSubjects as $subject): ?>
                                         <tr id="subject-row-<?= $subject['id'] ?>">
-                                            <td><?= esc($subject['subject_name']) ?></td>
-                                            <td><?= esc($subject['max_marks']) ?></td>
-                                            <td><?= esc($subject['passing_marks']) ?></td>
+                                            <td><?= esc($subject['subject_name'] ?? '') ?></td>
+                                            <td><?= esc($subject['max_marks'] ?? '') ?></td>
+                                            <td><?= esc($subject['passing_marks'] ?? '') ?></td>
                                             <td>
-                                                <button class="btn btn-primary btn-sm" onclick="editSubject(<?= json_encode($subject) ?>)">
+                                                <button class="btn btn-primary btn-sm" onclick="editSubject(<?= htmlspecialchars(json_encode($subject), ENT_QUOTES, 'UTF-8') ?>)">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button class="btn btn-danger btn-sm" onclick="deleteSubject(<?= $subject['id'] ?>)">
+                                                <button class="btn btn-danger btn-sm" onclick="deleteSubject(<?= $subject['id'] ?? '' ?>)">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center">No subjects found</td>
+                                    </tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
@@ -390,8 +389,11 @@
 <!-- Add these scripts to your existing JavaScript -->
 <script>
 function loadExamSubjects(examId) {
-    if (!examId) return;
-    window.location.href = `<?= base_url('exam/subjects/add/') ?>/${examId}`;
+    if (!examId) {
+        window.location.href = '<?= base_url('exam/subjects') ?>';
+        return;
+    }
+    window.location.href = '<?= base_url('exam/subjects') ?>/' + examId;
 }
 
 function editSubject(subject) {
@@ -447,19 +449,26 @@ async function updateSubject() {
     }
 }
 
-// Update the existing loadSubjects function to handle the edit button
+<!-- In the loadSubjects function -->
 async function loadSubjects() {
     try {
-        const response = await fetch('<?= base_url('exam/subjects/list/') ?>/<?= $exam['id'] ?>');
+        // Check if exam exists in the page context
+        const examId = '<?= isset($exam['id']) ? $exam['id'] : '' ?>';
+        if (!examId) {
+            console.error('No exam ID available');
+            return;
+        }
+
+        const response = await fetch('<?= base_url('exam/subjects/list/') ?>/' + examId);
         const result = await response.json();
 
-        if (result.status === 'success') {
+        if (result.status === 'success' && Array.isArray(result.data)) {
             const tbody = document.getElementById('subjectsTableBody');
             tbody.innerHTML = result.data.map(subject => `
                 <tr id="subject-row-${subject.id}">
-                    <td>${subject.subject_name}</td>
-                    <td>${subject.max_marks}</td>
-                    <td>${subject.passing_marks}</td>
+                    <td>${subject.subject_name || ''}</td>
+                    <td>${subject.max_marks || ''}</td>
+                    <td>${subject.passing_marks || ''}</td>
                     <td>
                         <button class="btn btn-primary btn-sm" onclick='editSubject(${JSON.stringify(subject)})'>
                             <i class="fas fa-edit"></i>
@@ -470,9 +479,18 @@ async function loadSubjects() {
                     </td>
                 </tr>
             `).join('');
+        } else {
+            document.getElementById('subjectsTableBody').innerHTML = `
+                <tr><td colspan="4" class="text-center">No subjects found</td></tr>
+            `;
         }
     } catch (error) {
         console.error('Error loading subjects:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to load subjects'
+        });
     }
 }
 </script>

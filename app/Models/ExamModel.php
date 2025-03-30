@@ -8,6 +8,13 @@ class ExamModel extends Model
 {
     protected $DBGroup = 'second_db';
     protected $table = 'tz_exams';
+    protected $allowedFields = [
+        'exam_name',
+        'exam_date',
+        'session_id',
+        'is_active'
+    ];
+    protected $returnType = 'array';
     protected $validationRules = [
         'exam_name' => 'required|max_length[100]',
         'exam_date' => 'required|valid_date',

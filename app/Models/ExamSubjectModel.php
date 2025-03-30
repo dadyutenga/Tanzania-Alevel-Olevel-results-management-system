@@ -14,6 +14,7 @@ class ExamSubjectModel extends Model
         'max_marks',
         'passing_marks'
     ];
+    protected $returnType = 'array';
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
