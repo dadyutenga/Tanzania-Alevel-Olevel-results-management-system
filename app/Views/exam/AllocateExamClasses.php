@@ -417,24 +417,30 @@
                 
                 const tbody = document.getElementById('allocationsTableBody');
                 if (result.status === 'success' && result.data.length > 0) {
-                    tbody.innerHTML = result.data.map(allocation => `
-                        <tr>
-                            <td>${allocation.exam_name}</td>
-                            <td>${new Date(allocation.exam_date).toLocaleDateString()}</td>
-                            <td>${allocation.class}</td>
-                            <td>
-                                <button class="btn btn-danger btn-sm" 
-                                    onclick="deallocate(${allocation.exam_id}, ${allocation.class_id})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
+                    tbody.innerHTML = result.data.map(allocation => {
+                        // Format the date properly
+                        const examDate = allocation.exam_date ? new Date(allocation.exam_date).toLocaleDateString() : 'N/A';
+                        
+                        return `
+                            <tr>
+                                <td>${allocation.exam_name || 'N/A'}</td>
+                                <td>${examDate}</td>
+                                <td>${allocation.class || 'N/A'}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" 
+                                        onclick="deallocate(${allocation.exam_id}, ${allocation.class_id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="4" class="text-center">No allocations found</td></tr>';
                 }
             } catch (error) {
                 console.error('Error loading allocations:', error);
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading allocations</td></tr>';
             }
         }
 

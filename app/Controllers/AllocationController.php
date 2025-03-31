@@ -28,7 +28,7 @@ class AllocationController extends ResourceController
     {
         try {
             $data = [
-                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(),
+                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
                 'exams' => [],
                 'classes' => [],
                 'existingSubjects' => [],
@@ -40,7 +40,7 @@ class AllocationController extends ResourceController
             if ($currentSession) {
                 $data['current_session'] = $currentSession;
                 
-                // Get exams for current session
+                // Get exams for current session - fixed is_active to 'yes'
                 $data['exams'] = $this->examModel
                     ->where('session_id', $currentSession['id'])
                     ->where('is_active', 'yes')
@@ -48,7 +48,7 @@ class AllocationController extends ResourceController
 
                 // Get active classes
                 $data['classes'] = $this->classModel
-                    ->where('is_active', 'yes')
+                    ->where('is_active', 'no')
                     ->findAll();
 
                 // Get existing allocations
@@ -64,69 +64,10 @@ class AllocationController extends ResourceController
         }
     }
 
-    // Update the allocate method to match the view's form submission
-    public function store()
-    {
-        try {
-            $rules = [
-                'exam_id' => 'required|numeric',
-                'class_ids' => 'required',
-                'session_id' => 'required|numeric'
-            ];
-
-            if (!$this->validate($rules)) {
-                return $this->respond([
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $this->validator->getErrors()
-                ], 400);
-            }
-
-            $examId = $this->request->getPost('exam_id');
-            $classIds = json_decode($this->request->getPost('class_ids'), true);
-            $sessionId = $this->request->getPost('session_id');
-
-            // Validate exam exists
-            $exam = $this->examModel->find($examId);
-            if (!$exam) {
-                return $this->respond([
-                    'status' => 'error',
-                    'message' => 'Invalid exam selected'
-                ], 400);
-            }
-
-            // Remove existing allocations for this exam
-            $this->examClassModel->where('exam_id', $examId)->delete();
-
-            // Create new allocations
-            $insertData = [];
-            foreach ($classIds as $classId) {
-                $insertData[] = [
-                    'exam_id' => $examId,
-                    'class_id' => $classId,
-                    'created_at' => date('Y-m-d H:i:s')
-                ];
-            }
-
-            $result = $this->examClassModel->insertBatch($insertData);
-
-            return $this->respond([
-                'status' => 'success',
-                'message' => 'Exam allocated to classes successfully'
-            ]);
-
-        } catch (\Exception $e) {
-            log_message('error', '[AllocationController.store] Exception: ' . $e->getMessage());
-            return $this->respond([
-                'status' => 'error',
-                'message' => 'Failed to allocate exam: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function getExamsBySession($sessionId)
     {
         try {
+            // Fixed is_active to 'yes' to match database values
             $exams = $this->examModel
                 ->where('session_id', $sessionId)
                 ->where('is_active', 'yes')
@@ -148,7 +89,7 @@ class AllocationController extends ResourceController
     {
         try {
             $classes = $this->classModel
-                ->where('is_active', 'yes')
+                ->where('is_active', 'no')
                 ->findAll();
 
             return $this->respond([
@@ -166,29 +107,49 @@ class AllocationController extends ResourceController
     public function getAllocations($sessionId)
     {
         try {
-            $allocations = $this->examClassModel->getExamClassesWithDetails([
-                'sessions.id' => $sessionId
-            ]);
+            $db = \Config\Database::connect('second_db');
+            $builder = $db->table('tz_exam_classes');
+            
+            $allocations = $builder
+                ->select('
+                    tz_exam_classes.id,
+                    tz_exam_classes.exam_id,
+                    tz_exam_classes.class_id,
+                    tz_exam_classes.session_id,
+                    tz_exams.exam_name,
+                    tz_exams.exam_date,
+                    classes.class
+                ')
+                ->join('tz_exams', 'tz_exams.id = tz_exam_classes.exam_id')
+                ->join('classes', 'classes.id = tz_exam_classes.class_id')
+                ->join('sessions', 'sessions.id = tz_exam_classes.session_id')
+                ->where('tz_exam_classes.session_id', $sessionId)
+                ->get()
+                ->getResultArray();
+
+            log_message('debug', 'Allocations Query: ' . $db->getLastQuery());
 
             return $this->respond([
                 'status' => 'success',
                 'data' => $allocations
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AllocationController.getAllocations] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
-                'message' => 'Failed to fetch allocations'
+                'message' => 'Failed to fetch allocations: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    public function allocate()
+    // Rename 'allocate' method to 'store'
+    public function store()
     {
         try {
             $rules = [
                 'exam_id' => 'required|numeric',
-                'class_ids' => 'required',
-                'session_id' => 'required|numeric'
+                'session_id' => 'required|numeric',
+                'class_id' => 'required|numeric'  // Changed from class_ids to class_id
             ];
 
             if (!$this->validate($rules)) {
@@ -200,7 +161,7 @@ class AllocationController extends ResourceController
             }
 
             $examId = $this->request->getPost('exam_id');
-            $classIds = json_decode($this->request->getPost('class_ids'), true);
+            $classId = $this->request->getPost('class_id');  // Changed from class_ids
             $sessionId = $this->request->getPost('session_id');
 
             // Validate exam exists
@@ -221,19 +182,22 @@ class AllocationController extends ResourceController
                 ], 400);
             }
 
-            // Remove existing allocations for this exam
-            $this->examClassModel->where('exam_id', $examId)->delete();
+            // Create new allocation
+            $data = [
+                'exam_id' => $examId,
+                'class_id' => $classId,
+                'session_id' => $sessionId
+            ];
 
-            // Create new allocations
-            $result = $this->examClassModel->assignClassesToExam($examId, $classIds, $sessionId);
+            $result = $this->examClassModel->insert($data);
 
             if ($result) {
                 return $this->respond([
                     'status' => 'success',
-                    'message' => 'Exam allocated to classes successfully'
+                    'message' => 'Exam allocated to class successfully'
                 ]);
             } else {
-                throw new \RuntimeException('Failed to allocate exam to classes');
+                throw new \RuntimeException('Failed to allocate exam to class');
             }
         } catch (\Exception $e) {
             return $this->respond([
