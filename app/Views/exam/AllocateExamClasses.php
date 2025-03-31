@@ -342,9 +342,22 @@
             <!-- Current Allocations -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Current Allocations</h3>
+                    <h3>View Allocations</h3>
                 </div>
                 <div class="card-body">
+                    <!-- Add Session Filter -->
+                    <div class="form-group">
+                        <label for="filterSession">Filter by Academic Session</label>
+                        <select id="filterSession" class="form-control" onchange="loadAllocations(this.value)">
+                            <option value="">Select Session</option>
+                            <?php foreach ($sessions as $session): ?>
+                                <option value="<?= $session['id'] ?>">
+                                    <?= esc($session['session']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
                     <table class="table">
                         <thead>
                             <tr>
@@ -355,29 +368,56 @@
                             </tr>
                         </thead>
                         <tbody id="allocationsTableBody">
-                            <?php if (!empty($allocations)): ?>
-                                <?php foreach ($allocations as $allocation): ?>
-                                    <tr>
-                                        <td><?= esc($allocation['exam_name']) ?></td>
-                                        <td><?= date('d-m-Y', strtotime($allocation['exam_date'])) ?></td>
-                                        <td><?= esc($allocation['class']) ?></td>
-                                        <td>
-                                            <button class="btn btn-danger btn-sm" 
-                                                onclick="deallocate(<?= $allocation['exam_id'] ?>, <?= $allocation['class_id'] ?>)">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="text-center">No allocations found</td>
-                                </tr>
-                            <?php endif; ?>
+                            <tr>
+                                <td colspan="4" class="text-center">Please select a session to view allocations</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <!-- Update the loadAllocations function in your JavaScript -->
+            <script>
+                async function loadAllocations(sessionId) {
+                    if (!sessionId) {
+                        document.getElementById('allocationsTableBody').innerHTML = 
+                            '<tr><td colspan="4" class="text-center">Please select a session to view allocations</td></tr>';
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`<?= base_url('exam/allocation/list/') ?>/${sessionId}`);
+                        const result = await response.json();
+                        
+                        const tbody = document.getElementById('allocationsTableBody');
+                        if (result.status === 'success' && result.data.length > 0) {
+                            tbody.innerHTML = result.data.map(allocation => {
+                                const examDate = allocation.exam_date ? 
+                                    new Date(allocation.exam_date).toLocaleDateString('en-GB') : 'N/A';
+                                
+                                return `
+                                    <tr>
+                                        <td>${allocation.exam_name || 'N/A'}</td>
+                                        <td>${examDate}</td>
+                                        <td>${allocation.class || 'N/A'}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" 
+                                                onclick="deallocate(${allocation.exam_id}, ${allocation.class_id})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('');
+                        } else {
+                            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No allocations found for this session</td></tr>';
+                        }
+                    } catch (error) {
+                        console.error('Error loading allocations:', error);
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading allocations</td></tr>';
+                    }
+                }
+            </script>
         </div>
     </div>
 
@@ -402,9 +442,6 @@
                             ${exam.exam_name} (${new Date(exam.exam_date).toLocaleDateString()})
                         </option>
                     `).join('');
-
-                // Load allocations
-                loadAllocations(sessionId);
             } catch (error) {
                 Swal.fire('Error', 'Failed to load exam data', 'error');
             }
