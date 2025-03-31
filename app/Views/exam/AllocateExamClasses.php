@@ -4,17 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam Class Allocation</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Add before closing </body> tag -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        /* Root Variables and Base Styles */
         :root {
-            --primary: #f8f9fa;
-            --primary-dark: #f1f3f5;
+            --primary: #ffffff;
+            --primary-dark: #f8f9fa;
             --secondary: #e9ecef;
             --accent: #1a1f36;
             --accent-light: #2d3748;
@@ -24,8 +18,8 @@
             --success: #31c48d;
             --warning: #f59e0b;
             --danger: #e53e3e;
-            --shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-            --radius: 8px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --radius: 6px;
         }
 
         * {
@@ -36,7 +30,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 0.925rem;
+            font-size: 14px;
             background-color: var(--primary-dark);
             color: var(--text-primary);
             line-height: 1.5;
@@ -48,64 +42,229 @@
             min-height: 100vh;
         }
 
-        /* Updated Sidebar Styles */
+        /* Sidebar styles */
         .sidebar {
             background-color: var(--accent);
-            color: var(--primary);
-            padding: 1rem;
+            color: white;
+            padding: 1.5rem 1rem;
             position: fixed;
             width: 250px;
             height: 100vh;
             overflow-y: auto;
-            z-index: 1000;
         }
 
         .sidebar-header {
             display: flex;
             align-items: center;
-            padding: 1rem;
-            margin: -1rem -1rem 1rem -1rem;
-            background-color: var(--accent-light);
+            margin-bottom: 2rem;
+            padding: 0 0.5rem 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .sidebar-header i {
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-right: 0.75rem;
             opacity: 0.9;
         }
 
         .sidebar-header h2 {
-            font-size: 1.25rem;
-            letter-spacing: -0.025em;
+            font-size: 1.1rem;
             font-weight: 600;
             opacity: 0.9;
         }
 
-        /* Keep your existing styles but update the container structure */
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: var(--radius);
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar-menu i {
+            margin-right: 0.75rem;
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
         .main-content {
             grid-column: 2;
             padding: 2rem;
             background-color: var(--primary-dark);
         }
 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Card styles */
         .card {
             background: var(--primary);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
         }
 
         .card-header {
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem;
             border-bottom: 1px solid var(--border);
+            background-color: var(--primary);
+        }
+
+        .card-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 0;
         }
 
         .card-body {
             padding: 1.5rem;
         }
 
-        /* Your existing form and table styles... */
+        /* Form styles */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            background-color: var(--primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-light);
+        }
+
+        /* Button styles */
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-light);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.875rem;
+            font-size: 0.8125rem;
+        }
+
+        /* Table styles */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .table th, .table td {
+            padding: 0.875rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .table th {
+            background-color: var(--primary-dark);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        /* Form actions */
+        .form-actions {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                grid-column: 1;
+                padding: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -121,14 +280,17 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Keep your existing content but wrapped in the new structure -->
+            <div class="header">
+                <h1>Exam Class Allocation</h1>
+            </div>
+
             <div class="card">
                 <div class="card-header">
-                    <h3>Exam Class Allocation</h3>
+                    <h3>Allocate Classes to Exams</h3>
                 </div>
                 <div class="card-body">
                     <!-- Session Selection -->
-                    <div class="form-group mb-4">
+                    <div class="form-group">
                         <label for="session">Academic Session</label>
                         <select id="session" class="form-control" onchange="loadExamsAndClasses()">
                             <option value="">Select Session</option>
@@ -141,7 +303,7 @@
                     </div>
 
                     <!-- Allocation Form -->
-                    <form id="allocationForm" class="mb-4">
+                    <form id="allocationForm">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -158,63 +320,62 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Select Classes</label>
-                                    <div class="class-selection">
+                                    <label for="class_id">Select Class</label>
+                                    <select id="class_id" name="class_id" class="form-control" required>
+                                        <option value="">Select Class</option>
                                         <?php foreach ($classes as $class): ?>
-                                            <div class="form-check">
-                                                <input type="checkbox" class="form-check-input" name="class_ids[]" 
-                                                    value="<?= $class['id'] ?>" id="class_<?= $class['id'] ?>">
-                                                <label class="form-check-label" for="class_<?= $class['id'] ?>">
-                                                    <?= esc($class['class']) ?>
-                                                </label>
-                                            </div>
+                                            <option value="<?= $class['id'] ?>"><?= esc($class['class']) ?></option>
                                         <?php endforeach; ?>
-                                    </div>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-actions mt-3">
+                        <div class="form-actions">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Save Allocation
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
 
-                    <!-- Existing Allocations Table -->
-                    <div class="table-responsive">
-                        <h4>Current Allocations</h4>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Exam Name</th>
-                                    <th>Date</th>
-                                    <th>Classes</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="allocationsTableBody">
-                                <?php if (!empty($allocations)): ?>
-                                    <?php foreach ($allocations as $allocation): ?>
-                                        <tr>
-                                            <td><?= esc($allocation['exam_name']) ?></td>
-                                            <td><?= date('d-m-Y', strtotime($allocation['exam_date'])) ?></td>
-                                            <td><?= esc($allocation['class']) ?></td>
-                                            <td>
-                                                <button class="btn btn-danger btn-sm" 
-                                                    onclick="deallocate(<?= $allocation['exam_id'] ?>, <?= $allocation['class_id'] ?>)">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
+            <!-- Current Allocations -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Current Allocations</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Exam Name</th>
+                                <th>Date</th>
+                                <th>Class</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allocationsTableBody">
+                            <?php if (!empty($allocations)): ?>
+                                <?php foreach ($allocations as $allocation): ?>
                                     <tr>
-                                        <td colspan="4" class="text-center">No allocations found</td>
+                                        <td><?= esc($allocation['exam_name']) ?></td>
+                                        <td><?= date('d-m-Y', strtotime($allocation['exam_date'])) ?></td>
+                                        <td><?= esc($allocation['class']) ?></td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" 
+                                                onclick="deallocate(<?= $allocation['exam_id'] ?>, <?= $allocation['class_id'] ?>)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
                                     </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4" class="text-center">No allocations found</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -222,8 +383,6 @@
 
     <!-- Add SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         async function loadExamsAndClasses() {
@@ -285,11 +444,10 @@
             
             const examId = document.getElementById('exam').value;
             const sessionId = document.getElementById('session').value;
-            const classCheckboxes = document.querySelectorAll('input[name="class_ids[]"]:checked');
-            const classIds = Array.from(classCheckboxes).map(cb => cb.value);
+            const classId = document.getElementById('class_id').value;
 
-            if (!examId || classIds.length === 0) {
-                Swal.fire('Error', 'Please select an exam and at least one class', 'error');
+            if (!examId || !classId) {
+                Swal.fire('Error', 'Please select both an exam and a class', 'error');
                 return;
             }
 
@@ -297,7 +455,7 @@
                 const formData = new FormData();
                 formData.append('exam_id', examId);
                 formData.append('session_id', sessionId);
-                formData.append('class_ids', JSON.stringify(classIds));
+                formData.append('class_id', classId);
 
                 const response = await fetch('<?= base_url('exam/allocation/store') ?>', {
                     method: 'POST',
@@ -357,144 +515,5 @@
             }
         });
     </script>
-
-    <style>
-        .class-selection {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .form-check {
-            margin-bottom: 8px;
-        }
-        .form-actions {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-        }
-        .table th {
-            background-color: #f8f9fa;
-        }
-    </style>
 </body>
 </html>
-
-<style>
-    :root {
-        /* Update accent colors to match the image */
-        --accent: #1e2837;
-        --accent-light: #2a374b;
-        --accent-hover: #2f3f57;
-    }
-
-    /* Updated Sidebar Styles */
-    .sidebar {
-        background-color: var(--accent);
-        color: #fff;
-        padding: 0;
-        position: fixed;
-        width: 250px;
-        height: 100vh;
-        overflow-y: auto;
-        z-index: 1000;
-    }
-
-    .sidebar-header {
-        display: flex;
-        align-items: center;
-        padding: 2rem 1.5rem;
-        margin: 0;
-        background-color: var(--accent);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .sidebar-header i {
-        font-size: 2.5rem;
-        margin-right: 1rem;
-        color: #fff;
-    }
-
-    .sidebar-header h2 {
-        font-size: 1.25rem;
-        color: #fff;
-        margin: 0;
-        line-height: 1.2;
-    }
-
-    /* Menu Items Styling */
-    .sidebar-menu {
-        list-style: none;
-        padding: 1rem 0;
-        margin: 0;
-    }
-
-    .sidebar-menu li {
-        margin: 0;
-    }
-
-    .sidebar-menu a {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1.5rem;
-        color: #fff;
-        text-decoration: none;
-        transition: background-color 0.3s;
-    }
-
-    .sidebar-menu a:hover,
-    .sidebar-menu a.active {
-        background-color: var(--accent-hover);
-    }
-
-    .sidebar-menu i {
-        width: 24px;
-        margin-right: 1rem;
-        font-size: 1.2rem;
-    }
-
-    .sidebar-menu .expandable {
-        position: relative;
-    }
-
-    .sidebar-menu .toggle-icon {
-        position: absolute;
-        right: 1.5rem;
-        transition: transform 0.3s;
-    }
-
-    .sidebar-menu .expandable.active .toggle-icon {
-        transform: rotate(180deg);
-    }
-
-    /* Updated submenu styles */
-    .sidebar-menu .submenu {
-        display: none;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        background-color: var(--accent-light);
-    }
-
-    .sidebar-menu .expandable.active + .submenu {
-        display: block;
-    }
-
-    .sidebar-menu .submenu a {
-        padding-left: 3.5rem;
-        font-size: 0.95rem;
-        opacity: 0.9;
-    }
-
-    /* Adjust main content margin */
-    .main-content {
-        margin-left: 250px;
-        padding: 2rem;
-    }
-
-    /* Make dashboard grid layout work with fixed sidebar */
-    .dashboard {
-        display: block;
-    }
-</style>

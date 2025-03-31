@@ -6,13 +6,14 @@
     <title>Exam Result Management - Add Exam</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Using the same style as index.php */
+        /* Update root variables to match the screenshot */
         :root {
             --primary: #f8f9fa;
             --primary-dark: #f1f3f5;
             --secondary: #e9ecef;
-            --accent: #1a1f36;
-            --accent-light: #2d3748;
+            --accent: #1e2837;        /* Dark blue from screenshot */
+            --accent-light: #2a374b;  /* Lighter blue for hover */
+            --accent-hover: #2f3f57;  /* Hover state blue */
             --text-primary: #1a1f36;
             --text-secondary: #4a5568;
             --border: #e2e8f0;
@@ -46,8 +47,8 @@
         /* Sidebar styles from index.php */
         .sidebar {
             background-color: var(--accent);
-            color: var(--primary);
-            padding: 2rem 1rem;
+            color: #fff;
+            padding: 0;
             position: fixed;
             width: 250px;
             height: 100vh;
@@ -57,189 +58,75 @@
         .sidebar-header {
             display: flex;
             align-items: center;
-            margin-bottom: 2rem;
-            padding: 1.5rem 1rem;
+            padding: 2rem 1.5rem;
+            margin: 0;
+            background-color: var(--accent);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .sidebar-header i {
-            font-size: 2rem;
-            margin-right: 0.75rem;
-            opacity: 0.9;
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.25rem;
-            letter-spacing: -0.025em;
-            font-weight: 600;
-            opacity: 0.9;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            margin-top: 2rem;
-        }
-
-        .sidebar-menu li {
-            margin-bottom: 0.5rem;
-        }
-
+        /* Update menu items */
         .sidebar-menu a {
             display: flex;
             align-items: center;
-            padding: 0.675rem 1rem;
-            color: rgba(255, 255, 255, 0.6);
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
-            border-radius: var(--radius);
             transition: all 0.3s ease;
             font-size: 0.875rem;
         }
 
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.9);
+        .sidebar-menu a:hover, 
+        .sidebar-menu a.active {
+            background-color: var(--accent-hover);
+            color: #fff;
         }
 
-        .sidebar-menu i {
-            margin-right: 0.75rem;
-            font-size: 1.2rem;
-        }
-
-        /* Main Content */
-        .main-content {
-            grid-column: 2;
-            padding: 2rem;
-            background-color: var(--primary-dark);
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        /* Form Container */
+        /* Update form styles */
         .form-container {
-            background: var(--primary);
+            background: #fff;
             border-radius: var(--radius);
-            padding: 1.5rem;
+            padding: 2rem;
             box-shadow: var(--shadow);
-            border: 1px solid var(--border);
         }
 
-        .form-header {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .form-header h2 {
-            font-size: 1.25rem;
-            color: var(--text-primary);
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.625rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background-color: var(--primary);
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-        }
-
-        .form-control:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(26, 31, 54, 0.1);
-            outline: none;
-        }
-
+        /* Update button styles */
         .btn {
             background-color: var(--accent);
-            color: var(--primary);
+            color: #fff;
             border: none;
             border-radius: var(--radius);
-            padding: 0.625rem 1.25rem;
+            padding: 0.75rem 1.5rem;
             font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+            transition: all 0.3s ease;
         }
 
         .btn:hover {
-            background-color: var(--accent-light);
+            background-color: var(--accent-hover);
         }
 
         .btn-secondary {
-            background-color: var(--secondary);
+            background-color: #e9ecef;
             color: var(--text-primary);
         }
 
         .btn-secondary:hover {
-            background-color: var(--border);
+            background-color: #dde1e4;
         }
 
-        @media (max-width: 1024px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                display: none;
-            }
-            
-            .main-content {
-                grid-column: 1;
-            }
+        /* Update form controls */
+        .form-control {
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
         }
 
-        .is-invalid {
-            border-color: var(--danger) !important;
-        }
-
-        .is-valid {
-            border-color: var(--success) !important;
-        }
-
-        .row {
-            display: flex;
-            flex-wrap: wrap;
-            margin: -0.75rem;
-        }
-
-        .col-md-6 {
-            flex: 0 0 50%;
-            max-width: 50%;
-            padding: 0.75rem;
-        }
-
-        @media (max-width: 768px) {
-            .col-md-6 {
-                flex: 0 0 100%;
-                max-width: 100%;
-            }
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(30, 40, 55, 0.1);
         }
     </style>
 </head>
