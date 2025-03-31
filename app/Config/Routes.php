@@ -43,4 +43,13 @@ $routes->group('exam', static function ($routes) {
     $routes->get('allocation/list/(:num)', 'AllocationController::getAllocations/$1');
     $routes->post('allocation/store', 'AllocationController::store');
     $routes->post('allocation/delete/(:num)/(:num)', 'AllocationController::deallocate/$1/$2');
+    
+    // Add Exam Marks routes
+    $routes->get('marks', 'AddExamMarks::index');
+    $routes->get('marks/exams/(:num)', 'AddExamMarks::getExams/$1');
+    $routes->get('marks/classes/(:num)', 'AddExamMarks::getClasses/$1');
+    $routes->get('marks/subjects', 'AddExamMarks::getSubjects');
+    $routes->get('marks/students', 'AddExamMarks::getStudents');
+    $routes->get('marks/existing/(:num)/(:num)', 'AddExamMarks::getExistingMarks/$1/$2');
+    $routes->post('marks/save', 'AddExamMarks::saveMarks');
 });
