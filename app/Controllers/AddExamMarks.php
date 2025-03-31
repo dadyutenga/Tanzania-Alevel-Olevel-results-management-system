@@ -208,4 +208,63 @@ class AddExamMarks extends ResourceController
             ], 500);
         }
     }
+
+    public function getExams($sessionId)
+    {
+        try {
+            if (!$sessionId) {
+                throw new \Exception('Session ID is required');
+            }
+
+            $exams = $this->examModel
+                ->where([
+                    'session_id' => $sessionId,
+                    'is_active' => 'yes'
+                ])
+                ->findAll();
+
+            return $this->respond([
+                'status' => 'success',
+                'data' => $exams
+            ]);
+        } catch (\Exception $e) {
+            return $this->respond([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClasses($sessionId)
+    {
+        try {
+            if (!$sessionId) {
+                throw new \Exception('Session ID is required');
+            }
+
+            $db = \Config\Database::connect('second_db');
+            $classes = $db->table('classes c')
+                ->select('c.id, c.class')
+                ->join('tz_exam_classes ec', 'c.id = ec.class_id')
+                ->join('tz_exams e', 'e.id = ec.exam_id')
+                ->where([
+                    'e.session_id' => $sessionId,
+                    'e.is_active' => 'yes',
+                    'c.is_active' => 'no'
+                ])
+                ->groupBy('c.id')
+                ->get()
+                ->getResultArray();
+
+            return $this->respond([
+                'status' => 'success',
+                'data' => $classes
+            ]);
+        } catch (\Exception $e) {
+            return $this->respond([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

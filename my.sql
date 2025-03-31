@@ -90,3 +90,4 @@ CREATE TABLE `tz_exam_subject_marks` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 
+
