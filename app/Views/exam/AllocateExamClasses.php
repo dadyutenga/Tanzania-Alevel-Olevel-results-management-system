@@ -269,13 +269,12 @@
 </head>
 <body>
     <div class="dashboard">
-        <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-graduation-cap"></i>
                 <h2>Exam Results Management</h2>
             </div>
-            <?= view('shared/sidebar_menu') ?>
+            <?= $this->include('shared/sidebar_menu') ?>
         </div>
 
         <!-- Main Content -->
