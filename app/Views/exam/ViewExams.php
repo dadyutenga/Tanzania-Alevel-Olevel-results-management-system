@@ -443,14 +443,24 @@
         }
 
         function editExam(id) {
-            const row = document.querySelector(`#examTable tr:has(td:first-child:contains(${id}))`);
-            document.getElementById('editId').value = id;
-            document.getElementById('editName').value = row.cells[1].textContent;
-            document.getElementById('editDate').value = row.cells[2].textContent;
-            document.getElementById('editStatus').value = row.cells[3].textContent === 'Active' ? 'yes' : 'no';
-            document.getElementById('editSession').value = document.getElementById('sessionFilter').value;
-            
-            document.getElementById('editModal').style.display = 'flex';
+            // Find the row by iterating through table rows
+            const rows = document.querySelectorAll('#examTable tbody tr');
+            let row;
+            rows.forEach(tr => {
+                if (tr.cells[0].textContent == id) {
+                    row = tr;
+                }
+            });
+
+            if (row) {
+                document.getElementById('editId').value = id;
+                document.getElementById('editName').value = row.cells[1].textContent;
+                document.getElementById('editDate').value = row.cells[2].textContent;
+                document.getElementById('editStatus').value = row.cells[3].textContent.trim() === 'Active' ? 'yes' : 'no';
+                document.getElementById('editSession').value = document.getElementById('sessionFilter').value;
+                
+                document.getElementById('editModal').style.display = 'flex';
+            }
         }
 
         function updateExam() {
