@@ -6,28 +6,47 @@
     <title>Exam Result Management - Add Exam</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Update root variables to match the screenshot */
         :root {
-            --primary: #ffffff;
-            --primary-dark: #f8fafc;
-            --secondary: #f1f5f9;
-            --accent: #1e293b;
-            --accent-light: #334155;
-            --accent-hover: #475569;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
+            --primary: #f8f9fa;
+            --primary-dark: #f1f3f5;
+            --secondary: #e9ecef;
+            --accent: #1a1f36;
+            --accent-light: #2d3748;
+            --text-primary: #1a1f36;
+            --text-secondary: #4a5568;
             --border: #e2e8f0;
             --success: #31c48d;
             --warning: #f59e0b;
             --danger: #e53e3e;
-            --radius: 6px;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.925rem;
+            background-color: var(--primary-dark);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
         }
 
         /* Sidebar styles */
         .sidebar {
             background-color: var(--accent);
-            color: #fff;
-            padding: 0;
+            color: var(--primary);
+            padding: 2rem 1rem;
             position: fixed;
             width: 250px;
             height: 100vh;
@@ -37,100 +56,35 @@
         .sidebar-header {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--accent-light);
+            margin-bottom: 2rem;
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .sidebar-header i {
-            font-size: 1.5rem;
-            color: #fff;
+            font-size: 2rem;
+            margin-right: 0.75rem;
+            opacity: 0.9;
         }
 
         .sidebar-header h2 {
-            font-size: 1rem;
+            font-size: 1.25rem;
+            letter-spacing: -0.025em;
             font-weight: 600;
-            color: #fff;
+            opacity: 0.9;
         }
 
-        /* Form Container */
-        .form-container {
-            background: #fff;
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--border);
-        }
-
-        .form-group label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .form-control {
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 0.625rem 0.875rem;
-            font-size: 0.875rem;
-            color: var(--text-primary);
-            background-color: #fff;
-            transition: all 0.2s ease;
-        }
-
-        .form-control:focus {
-            border-color: var(--accent-light);
-            box-shadow: 0 0 0 2px rgba(30, 41, 59, 0.1);
-        }
-
-        /* Button styles */
-        .btn {
-            padding: 0.625rem 1rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            border-radius: var(--radius);
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary {
-            background-color: var(--accent);
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-light);
-        }
-
-        .btn-secondary {
-            background-color: var(--secondary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background-color: #e2e8f0;
-        }
-
-        /* Header styles */
-        .header {
-            margin-bottom: 1.5rem;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        /* Main content padding */
+        /* Main Content */
         .main-content {
-            margin-left: 250px;
-            padding: 1.5rem;
+            grid-column: 2;
+            padding: 2rem;
             background-color: var(--primary-dark);
         }
 
         .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 2rem;
         }
 
@@ -142,14 +96,14 @@
 
         /* Form Container */
         .form-container {
-            background: #fff;
+            background: var(--primary);
             border-radius: var(--radius);
-            padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
             border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
         }
 
-        /* Grid Layout */
         .row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -218,7 +172,7 @@
         }
 
         .btn-primary:hover {
-            background-color: var(--accent-hover);
+            background-color: var(--accent-light);
         }
 
         .btn-secondary {
@@ -240,7 +194,19 @@
             border-color: var(--success);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                grid-column: 1;
+            }
+
             .row {
                 grid-template-columns: 1fr;
             }
@@ -308,7 +274,7 @@
                         </div>
                     </div>
                     <div class="form-actions" style="margin-top: 2rem;">
-                        <button type="submit" class="btn">
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save Exam
                         </button>
                         <a href="<?= base_url('exam') ?>" class="btn btn-secondary">
