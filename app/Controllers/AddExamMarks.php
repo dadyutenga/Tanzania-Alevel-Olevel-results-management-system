@@ -67,19 +67,16 @@ class AddExamMarks extends ResourceController
             }
 
             $students = $this->studentSessionModel
-                ->select('students.*, student_session.*, classes.class')
+                ->select('students.id, students.firstname, students.lastname, students.roll_no, student_session.*, classes.class')
                 ->join('students', 'students.id = student_session.student_id')
                 ->join('classes', 'classes.id = student_session.class_id')
                 ->where([
                     'student_session.session_id' => $sessionId,
                     'student_session.class_id' => $classId,
-                    'student_session.is_active' => 'no',  // Changed from students.is_active
-                    'students.is_active' => 'yes'         // Changed to 'yes' as active students
+                    'student_session.is_active' => 'no',
+                    'students.is_active' => 'yes'
                 ])
                 ->findAll();
-
-            // Log the query for debugging
-            log_message('debug', 'Student Query: ' . $this->studentSessionModel->getLastQuery());
 
             return $this->respond([
                 'status' => 'success',

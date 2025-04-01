@@ -263,9 +263,10 @@
             // Add student rows
             students.forEach(student => {
                 const tr = document.createElement('tr');
+                const fullName = `${student.firstname} ${student.lastname}`.trim();
                 tr.innerHTML = `
-                    <td>${student.name}</td>
-                    <td>${student.roll_no}</td>
+                    <td>${fullName}</td>
+                    <td>${student.roll_no || 'N/A'}</td>
                     ${subjects.map(subject => `
                         <td>
                             <input type="number" 
@@ -274,6 +275,7 @@
                                 data-student="${student.id}"
                                 min="0" 
                                 max="${subject.max_marks}"
+                                placeholder="Enter marks"
                                 required>
                         </td>
                     `).join('')}
@@ -285,6 +287,21 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Add some styling to make it more readable
+            const style = document.createElement('style');
+            style.textContent = `
+                .table { margin-top: 20px; }
+                .table th { background-color: #f8f9fa; }
+                .marks-input { 
+                    width: 80px;
+                    text-align: center;
+                    padding: 4px;
+                }
+                .table td { vertical-align: middle; }
+                .btn-sm { padding: 4px 8px; }
+            `;
+            document.head.appendChild(style);
 
             // Load existing marks for each student
             students.forEach(student => loadExistingMarks(student.id));
