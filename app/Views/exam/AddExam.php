@@ -74,6 +74,33 @@
             opacity: 0.9;
         }
 
+        /* Sidebar Menu Styles */
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.675rem 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .sidebar-menu i {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
         /* Main Content */
         .main-content {
             grid-column: 2;
