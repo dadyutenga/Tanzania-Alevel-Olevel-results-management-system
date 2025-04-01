@@ -11,11 +11,11 @@
             <i class="fas fa-chevron-down toggle-icon" style="margin-left:auto;"></i>
         </a>
         <ul class="submenu" style="display: <?= strpos(current_url(), 'exam') !== false ? 'block' : 'none' ?>; padding-left: 1rem;">
-            <li><a href="<?= base_url('exam') ?>">Add Exams</a></li>
-            <li><a href="<?= base_url('exam/subjects') ?>">Add Exam Subjects</a></li>
-            <li><a href="<?= base_url('exam/allocation') ?>">Allocate Classes</a></li>
-            <li><a href="<?= base_url('exam/marks') ?>">Add Exam Marks</a></li>
-            <li><a href="<?= base_url ('exam/marks/bulk')?>">Bulk Add Exam Marks</a></li>
+            <li><a href="<?= base_url('exam') ?>"><i class="fas fa-plus-circle"></i> Add Exams</a></li>
+            <li><a href="<?= base_url('exam/subjects') ?>"><i class="fas fa-book"></i> Add Exam Subjects</a></li>
+            <li><a href="<?= base_url('exam/allocation') ?>"><i class="fas fa-chalkboard"></i> Allocate Classes</a></li>
+            <li><a href="<?= base_url('exam/marks') ?>"><i class="fas fa-pen"></i> Add Exam Marks</a></li>
+            <li><a href="<?= base_url ('exam/marks/bulk')?>"><i class="fas fa-upload"></i> Bulk Add Exam Marks</a></li>
         </ul>
     </li>
     <li><a href="#" class="<?= strpos(current_url(), 'results') !== false ? 'active' : '' ?>">
