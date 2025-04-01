@@ -152,13 +152,13 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>Student Name</th>
-                                    <th>Roll Number</th>
-                                    <th id="subjectsHeader">Subjects</th>
-                                    <th>Actions</th>
+                                    <th style="width: 200px;">Student Name</th>
+                                    <th style="width: 100px;">Roll Number</th>
+                                    <th>Subjects</th>
+                                    <th style="width: 100px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="marksTableBody">
@@ -168,6 +168,87 @@
                     </div>
                 </div>
             </div>
+
+            <style>
+                .subject-group {
+                    display: inline-block;
+                    margin: 5px 10px;
+                }
+                .subject-label {
+                    font-weight: bold;
+                    margin-right: 5px;
+                }
+                .marks-input {
+                    width: 70px !important;
+                    display: inline-block !important;
+                    padding: 4px !important;
+                    height: 30px !important;
+                }
+                .marks-max {
+                    color: #666;
+                    font-size: 0.9em;
+                    margin-left: 3px;
+                }
+                .table td {
+                    vertical-align: middle;
+                }
+                .btn-save {
+                    background-color: #2196F3;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                }
+                .btn-save:hover {
+                    background-color: #1976D2;
+                }
+            </style>
+
+            <script>
+                function updateMarksTable(students, subjects) {
+                    const tbody = document.getElementById('marksTableBody');
+                    tbody.innerHTML = '';
+
+                    students.forEach(student => {
+                        const tr = document.createElement('tr');
+                        const fullName = `${student.firstname} ${student.lastname}`.trim();
+                        
+                        let subjectsHtml = '<td><div class="subjects-container">';
+                        subjects.forEach(subject => {
+                            subjectsHtml += `
+                                <div class="subject-group">
+                                    <span class="subject-label">${subject.subject_name}</span>
+                                    <input type="number" 
+                                        class="form-control marks-input" 
+                                        data-subject="${subject.id}"
+                                        data-student="${student.id}"
+                                        min="0" 
+                                        max="${subject.max_marks}"
+                                        placeholder="Enter marks">
+                                    <span class="marks-max">/${subject.max_marks}</span>
+                                </div>
+                            `;
+                        });
+                        subjectsHtml += '</div></td>';
+
+                        tr.innerHTML = `
+                            <td>${fullName}</td>
+                            <td>${student.roll_no || 'N/A'}</td>
+                            ${subjectsHtml}
+                            <td>
+                                <button class="btn-save" onclick="saveMarks(${student.id})">
+                                    Save
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Load existing marks for each student
+                    students.forEach(student => loadExistingMarks(student.id));
+                }
+            </script>
         </div>
     </div>
 
@@ -248,63 +329,6 @@
                 option.textContent = item.name || item.class || item.exam_name;
                 select.appendChild(option);
             });
-        }
-
-        function updateMarksTable(students, subjects) {
-            const tbody = document.getElementById('marksTableBody');
-            tbody.innerHTML = '';
-
-            // Update subjects header
-            const subjectHeaders = subjects.map(subject => 
-                `<th>${subject.subject_name} (${subject.max_marks})</th>`
-            ).join('');
-            document.getElementById('subjectsHeader').innerHTML = subjectHeaders;
-
-            // Add student rows
-            students.forEach(student => {
-                const tr = document.createElement('tr');
-                const fullName = `${student.firstname} ${student.lastname}`.trim();
-                tr.innerHTML = `
-                    <td>${fullName}</td>
-                    <td>${student.roll_no || 'N/A'}</td>
-                    ${subjects.map(subject => `
-                        <td>
-                            <input type="number" 
-                                class="form-control marks-input" 
-                                data-subject="${subject.id}"
-                                data-student="${student.id}"
-                                min="0" 
-                                max="${subject.max_marks}"
-                                placeholder="Enter marks"
-                                required>
-                        </td>
-                    `).join('')}
-                    <td>
-                        <button class="btn btn-primary btn-sm" onclick="saveMarks(${student.id})">
-                            <i class="fas fa-save"></i> Save
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Add some styling to make it more readable
-            const style = document.createElement('style');
-            style.textContent = `
-                .table { margin-top: 20px; }
-                .table th { background-color: #f8f9fa; }
-                .marks-input { 
-                    width: 80px;
-                    text-align: center;
-                    padding: 4px;
-                }
-                .table td { vertical-align: middle; }
-                .btn-sm { padding: 4px 8px; }
-            `;
-            document.head.appendChild(style);
-
-            // Load existing marks for each student
-            students.forEach(student => loadExistingMarks(student.id));
         }
 
         async function loadExistingMarks(studentId) {
