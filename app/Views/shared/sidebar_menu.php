@@ -15,6 +15,7 @@
             <li><a href="<?= base_url('exam/subjects') ?>">Add Exam Subjects</a></li>
             <li><a href="<?= base_url('exam/allocation') ?>">Allocate Classes</a></li>
             <li><a href="<?= base_url('exam/marks') ?>">Add Exam Marks</a></li>
+            <li><a href="<?= base_url ('exam/marks/bulk')?>">Bulk Add Exam Marks</a></li>
         </ul>
     </li>
     <li><a href="#" class="<?= strpos(current_url(), 'results') !== false ? 'active' : '' ?>">

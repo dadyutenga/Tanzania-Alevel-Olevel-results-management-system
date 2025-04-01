@@ -406,23 +406,16 @@
     </style>
 <body>
 <div class="dashboard">
-        <!-- Sidebar -->
+        <!-- Replace the old sidebar with the shared one -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-graduation-cap"></i>
                 <h2>Exam Result Management</h2>
             </div>
-            
-            <ul class="sidebar-menu">
-                <li><a href="<?= base_url('dashboard') ?>"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="<?= base_url('student') ?>" class="active"><i class="fas fa-users"></i> Students</a></li>
-                <li><a href="#"><i class="fas fa-file-alt"></i> Exams</a></li>
-                <li><a href="#"><i class="fas fa-chart-bar"></i> Results</a></li>
-                <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
-            </ul>
+            <?= $this->include('shared/sidebar_menu') ?>
         </div>
         
-        <!-- Main Content -->
+        <!-- Rest of the content remains the same -->
         <div class="main-content">
             <div class="header">
                 <h1>Student Management</h1>
