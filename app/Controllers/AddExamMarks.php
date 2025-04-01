@@ -73,15 +73,20 @@ class AddExamMarks extends ResourceController
                 ->where([
                     'student_session.session_id' => $sessionId,
                     'student_session.class_id' => $classId,
-                    'students.is_active' => 'no'
+                    'student_session.is_active' => 'no',  // Changed from students.is_active
+                    'students.is_active' => 'yes'         // Changed to 'yes' as active students
                 ])
                 ->findAll();
+
+            // Log the query for debugging
+            log_message('debug', 'Student Query: ' . $this->studentSessionModel->getLastQuery());
 
             return $this->respond([
                 'status' => 'success',
                 'data' => $students
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AddExamMarks.getStudents] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => $e->getMessage()
