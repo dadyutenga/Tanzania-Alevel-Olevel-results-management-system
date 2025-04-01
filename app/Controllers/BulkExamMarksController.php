@@ -55,12 +55,10 @@ class BulkExamMarksController extends ResourceController
                 ])
                 ->findAll();
 
-            // Get subjects with join to get subject names
+            // Get subjects (simplified query as subject_name is in tz_exam_subjects)
             $db = \Config\Database::connect('second_db');
-            $subjects = $db->table('tz_exam_subjects es')
-                ->select('es.*, s.subject_name')
-                ->join('subjects s', 's.id = es.subject_id')
-                ->where('es.exam_id', $examId)
+            $subjects = $db->table('tz_exam_subjects')
+                ->where('exam_id', $examId)
                 ->get()
                 ->getResultArray();
 
@@ -230,7 +228,7 @@ class BulkExamMarksController extends ResourceController
         try {
             $data = [
                 'title' => 'Bulk Upload Exam Marks',
-                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(), // Changed 'no' to 'yes'
+                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(), // Changed 'yes' to 'no'
                 'exams' => [],
                 'classes' => [],
             ];
@@ -240,7 +238,7 @@ class BulkExamMarksController extends ResourceController
                 $data['current_session'] = $currentSession;
                 $data['exams'] = $this->examModel
                     ->where('session_id', $currentSession['id'])
-                    ->where('is_active', 'yes')
+                    ->where('is_active', 'yes')  // Changed 'no' to 'yes'
                     ->findAll();
             }
 
@@ -256,7 +254,7 @@ class BulkExamMarksController extends ResourceController
             $exams = $this->examModel
                 ->where([
                     'session_id' => $sessionId,
-                    'is_active' => 'yes'
+                    'is_active' => 'yes'  // Changed 'no' to 'yes'
                 ])
                 ->findAll();
 
