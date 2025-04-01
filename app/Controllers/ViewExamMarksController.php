@@ -205,4 +205,30 @@ class ViewExamMarksController extends ResourceController
             ], 500);
         }
     }
+
+    public function getExams()
+    {
+        try {
+            $sessionId = $this->request->getGet('session_id');
+
+            if (!$sessionId) {
+                throw new \Exception('Session ID is required');
+            }
+
+            $exams = $this->examModel
+                ->where('session_id', $sessionId)
+                ->findAll();
+
+            return $this->respond([
+                'status' => 'success',
+                'data' => $exams
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', '[ViewExamMarks.getExams] Error: ' . $e->getMessage());
+            return $this->respond([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

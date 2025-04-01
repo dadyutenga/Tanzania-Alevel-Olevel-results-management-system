@@ -55,6 +55,16 @@ $routes->group('exam', static function ($routes) {
 
     // Bulk Exam Marks routes
     $routes->get('marks/bulk', 'BulkExamMarksController::index');
+    
+    // View Exam Marks routes
+    $routes->group('marks/view', static function ($routes) {
+        $routes->get('/', 'ViewExamMarksController::index');
+        $routes->get('getExams', 'ViewExamMarksController::getExams');
+        $routes->get('getExamClasses', 'ViewExamMarksController::getExamClasses');
+        $routes->get('getStudentMarks', 'ViewExamMarksController::getStudentMarks');
+        $routes->post('update/(:num)', 'ViewExamMarksController::update/$1');
+        $routes->post('delete/(:num)', 'ViewExamMarksController::delete/$1');
+    });
     $routes->get('marks/bulk/getExams/(:num)', 'BulkExamMarksController::getExams/$1');
     $routes->get('marks/bulk/getClasses/(:num)', 'BulkExamMarksController::getClasses/$1');
     $routes->get('marks/bulk/downloadTemplate', 'BulkExamMarksController::downloadTemplate');
@@ -66,13 +76,5 @@ $routes->group('exam', static function ($routes) {
     $routes->get('view/getExams', 'ViewExamController::getExams');
     $routes->post('view/update/(:num)', 'ViewExamController::update/$1');
     $routes->post('view/delete/(:num)', 'ViewExamController::delete/$1');
-
-    // View Exam Marks routes
-    $routes->get('marks/view', 'ViewExamMarksController::index');
-    $routes->get('marks/view/getExams', 'ViewExamMarksController::getExams');
-    $routes->get('marks/view/getExamClasses', 'ViewExamMarksController::getExamClasses');
-    $routes->get('marks/view/getStudentMarks', 'ViewExamMarksController::getStudentMarks');
-    $routes->post('marks/view/update/(:num)', 'ViewExamMarksController::update/$1');
-    $routes->post('marks/view/delete/(:num)', 'ViewExamMarksController::delete/$1');
 });
 
