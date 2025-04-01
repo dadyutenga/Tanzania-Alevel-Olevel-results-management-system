@@ -16,6 +16,7 @@
             <li><a href="<?= base_url('exam/allocation') ?>"><i class="fas fa-chalkboard"></i> Allocate Classes</a></li>
             <li><a href="<?= base_url('exam/marks') ?>"><i class="fas fa-pen"></i> Add Exam Marks</a></li>
             <li><a href="<?= base_url ('exam/marks/bulk')?>"><i class="fas fa-upload"></i> Bulk Add Exam Marks</a></li>
+            <li><a href="<?= base_url('exam/view') ?>"><i class="fas fa-file-alt"></i> View Exam</a></li
         </ul>
     </li>
     <li><a href="#" class="<?= strpos(current_url(), 'results') !== false ? 'active' : '' ?>">

@@ -59,4 +59,11 @@ $routes->group('exam', static function ($routes) {
     $routes->get('marks/bulk/getClasses/(:num)', 'BulkExamMarksController::getClasses/$1');
     $routes->get('marks/bulk/downloadTemplate', 'BulkExamMarksController::downloadTemplate');
     $routes->post('marks/bulk/uploadMarks', 'BulkExamMarksController::uploadMarks');
+
+    // View Exam routes
+    $routes->get('view', 'ViewExamController::index');
+    $routes->get('view/getSessions', 'ViewExamController::getSessions');
+    $routes->get('view/getExams', 'ViewExamController::getExams');
+    $routes->post('view/update/(:num)', 'ViewExamController::update/$1');
+    $routes->post('view/delete/(:num)', 'ViewExamController::delete/$1');
 });
