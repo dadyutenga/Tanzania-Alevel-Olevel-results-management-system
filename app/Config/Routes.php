@@ -52,4 +52,11 @@ $routes->group('exam', static function ($routes) {
     $routes->get('marks/students', 'AddExamMarks::getStudents');
     $routes->get('marks/existing/(:num)/(:num)', 'AddExamMarks::getExistingMarks/$1/$2');
     $routes->post('marks/save', 'AddExamMarks::saveMarks');
+
+    // Bulk Exam Marks routes
+    $routes->get('marks/bulk', 'BulkExamMarksController::index');
+    $routes->get('marks/bulk/getExams/(:num)', 'BulkExamMarksController::getExams/$1');
+    $routes->get('marks/bulk/getClasses/(:num)', 'BulkExamMarksController::getClasses/$1');
+    $routes->get('marks/bulk/downloadTemplate', 'BulkExamMarksController::downloadTemplate');
+    $routes->post('marks/bulk/uploadMarks', 'BulkExamMarksController::uploadMarks');
 });

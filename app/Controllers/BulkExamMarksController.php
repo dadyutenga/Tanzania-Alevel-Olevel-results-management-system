@@ -6,15 +6,21 @@ use App\Models\ExamModel;
 use App\Models\ExamClassModel;
 use App\Models\StudentSessionModel;
 use App\Models\ExamSubjectMarkModel;
+use App\Models\SessionModel;
+use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\RESTful\ResourceController;
 
 class BulkExamMarksController extends ResourceController
 {
+    use ResponseTrait;
+
     protected $examModel;
     protected $examClassModel;
     protected $studentSessionModel;
     protected $examSubjectMarkModel;
+    protected $sessionModel;
     protected $format = 'json';
+    protected $db;
 
     public function __construct()
     {
@@ -22,6 +28,8 @@ class BulkExamMarksController extends ResourceController
         $this->examClassModel = new ExamClassModel();
         $this->studentSessionModel = new StudentSessionModel();
         $this->examSubjectMarkModel = new ExamSubjectMarkModel();
+        $this->sessionModel = new SessionModel();
+        $this->db = \Config\Database::connect('second_db');
     }
 
     public function downloadTemplate()
@@ -47,12 +55,18 @@ class BulkExamMarksController extends ResourceController
                 ])
                 ->findAll();
 
-            // Get subjects
+            // Get subjects with join to get subject names
             $db = \Config\Database::connect('second_db');
-            $subjects = $db->table('tz_exam_subjects')
-                ->where('exam_id', $examId)
+            $subjects = $db->table('tz_exam_subjects es')
+                ->select('es.*, s.subject_name')
+                ->join('subjects s', 's.id = es.subject_id')
+                ->where('es.exam_id', $examId)
                 ->get()
                 ->getResultArray();
+
+            if (empty($subjects)) {
+                throw new \Exception('No subjects found for this exam');
+            }
 
             // Create CSV headers
             $headers = ['Student ID', 'Student Name', 'Roll Number'];
@@ -86,16 +100,14 @@ class BulkExamMarksController extends ResourceController
 
             // Set headers for download
             $filename = "exam_marks_template_" . date('Y-m-d_His') . ".csv";
-            header('Content-Type: text/csv');
-            header('Content-Disposition: attachment; filename="' . $filename . '"');
-
-            return $this->response->setBody($csv);
+            
+            return $this->response
+                ->setHeader('Content-Type', 'text/csv')
+                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->setBody($csv);
 
         } catch (\Exception $e) {
-            return $this->respond([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            return $this->fail($e->getMessage(), 500);
         }
     }
 
@@ -104,7 +116,7 @@ class BulkExamMarksController extends ResourceController
         try {
             $examId = $this->request->getPost('exam_id');
             $classId = $this->request->getPost('class_id');
-            $sessionId = $this->request->getPost('session_id');
+            $sessionId = $this->request->getPost('session_id'); // Changed from getVar to getPost
 
             if (!$examId || !$classId || !$sessionId) {
                 throw new \Exception('Missing required parameters');
@@ -120,16 +132,28 @@ class BulkExamMarksController extends ResourceController
             }
 
             // Start transaction
-            $db = \Config\Database::connect('second_db');
-            $db->transStart();
+            $this->db->transStart();
 
             $handle = fopen($file->getTempName(), 'r');
+            if ($handle === false) {
+                throw new \Exception('Failed to open uploaded file');
+            }
+
             $headers = fgetcsv($handle);
+            if ($headers === false) {
+                throw new \Exception('Failed to read CSV headers');
+            }
+
             $subjectIds = [];
-            
-            // Extract subject IDs from headers
+            // Extract subject IDs from headers (every second column starting from index 3)
             for ($i = 3; $i < count($headers); $i += 2) {
-                $subjectIds[] = $headers[$i + 1];
+                if (isset($headers[$i + 1])) {
+                    $subjectIds[] = $headers[$i + 1];
+                }
+            }
+
+            if (empty($subjectIds)) {
+                throw new \Exception('No subject IDs found in CSV');
             }
 
             $successCount = 0;
@@ -175,11 +199,14 @@ class BulkExamMarksController extends ResourceController
 
             fclose($handle);
 
-            $db->transComplete();
+            $this->db->transComplete();
 
-            if ($db->transStatus() === false) {
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
                 throw new \Exception('Failed to save marks');
             }
+            
+            $this->db->transCommit();
 
             return $this->respond([
                 'status' => 'success',
@@ -188,9 +215,88 @@ class BulkExamMarksController extends ResourceController
             ]);
 
         } catch (\Exception $e) {
+            if (isset($this->db) && $this->db->transStatus() !== false) {
+                $this->db->transRollback();
+            }
+            if (isset($handle)) {
+                fclose($handle);
+            }
+            return $this->fail('Failed to process CSV: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function index()
+    {
+        try {
+            $data = [
+                'title' => 'Bulk Upload Exam Marks',
+                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(), // Changed 'no' to 'yes'
+                'exams' => [],
+                'classes' => [],
+            ];
+
+            $currentSession = $this->sessionModel->getCurrentSession();
+            if ($currentSession) {
+                $data['current_session'] = $currentSession;
+                $data['exams'] = $this->examModel
+                    ->where('session_id', $currentSession['id'])
+                    ->where('is_active', 'yes')
+                    ->findAll();
+            }
+
+            return view('exam/BulkUploadExamMarks', $data);
+        } catch (\Exception $e) {
+            return $this->fail('Failed to load bulk upload page: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function getExams($sessionId)
+    {
+        try {
+            $exams = $this->examModel
+                ->where([
+                    'session_id' => $sessionId,
+                    'is_active' => 'yes'
+                ])
+                ->findAll();
+
+            return $this->respond([
+                'status' => 'success',
+                'data' => $exams
+            ]);
+        } catch (\Exception $e) {
             return $this->respond([
                 'status' => 'error',
-                'message' => 'Failed to process CSV: ' . $e->getMessage()
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClasses($sessionId)
+    {
+        try {
+            $db = \Config\Database::connect('second_db');
+            $classes = $db->table('classes c')
+                ->select('c.id, c.class')
+                ->join('tz_exam_classes ec', 'c.id = ec.class_id')
+                ->join('tz_exams e', 'e.id = ec.exam_id')
+                ->where([
+                    'e.session_id' => $sessionId,
+                    'e.is_active' => 'yes',
+                    'c.is_active' => 'no'
+                ])
+                ->groupBy('c.id')
+                ->get()
+                ->getResultArray();
+
+            return $this->respond([
+                'status' => 'success',
+                'data' => $classes
+            ]);
+        } catch (\Exception $e) {
+            return $this->respond([
+                'status' => 'error',
+                'message' => $e->getMessage()
             ], 500);
         }
     }
