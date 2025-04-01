@@ -42,7 +42,7 @@
             min-height: 100vh;
         }
 
-        /* Sidebar (consistent with AddExamSubject.php) */
+        /* Sidebar styles (consistent with AddExamSubject.php) */
         .sidebar {
             background-color: var(--accent);
             color: var(--primary);
@@ -74,6 +74,32 @@
             opacity: 0.9;
         }
 
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.675rem 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .sidebar-menu i {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
         /* Main Content */
         .main-content {
             grid-column: 2;
@@ -82,6 +108,9 @@
         }
 
         .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 2rem;
         }
 
@@ -91,7 +120,7 @@
             color: var(--text-primary);
         }
 
-        /* Card/Form Container */
+        /* Form Container */
         .form-container {
             background: var(--primary);
             border-radius: var(--radius);
@@ -110,36 +139,44 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: var(--text-secondary);
+            color: var(--text-primary);
         }
 
         .form-control {
             width: 100%;
-            padding: 0.625rem 1rem;
+            padding: 0.75rem 1rem;
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            font-size: 0.875rem;
-            background-color: var(--primary);
-            color: var(--text-primary);
+            font-size: 0.925rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(30, 40, 55, 0.1);
+            outline: none;
         }
 
         /* Buttons */
         .btn {
-            padding: 0.625rem 1.25rem;
-            border: none;
+            padding: 0.75rem 1.5rem;
             border-radius: var(--radius);
             font-weight: 500;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.875rem;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
+        }
+
+        .btn i {
+            font-size: 1rem;
         }
 
         .btn-primary {
             background-color: var(--accent);
-            color: var(--primary);
+            color: #fff;
+            border: none;
         }
 
         .btn-primary:hover {
@@ -149,10 +186,11 @@
         .btn-success {
             background-color: var(--success);
             color: white;
+            border: none;
         }
 
         .btn-success:hover {
-            opacity: 0.9;
+            background-color: #2daa7d;
         }
 
         /* Alerts */
@@ -161,26 +199,31 @@
             margin-bottom: 1.5rem;
             border-radius: var(--radius);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.75rem;
         }
 
+        .alert i {
+            font-size: 1.25rem;
+            margin-top: 0.125rem;
+        }
+
         .alert-info {
-            background-color: rgba(49, 196, 141, 0.1);
-            border: 1px solid var(--success);
+            background-color: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.5);
             color: var(--text-primary);
         }
 
         .alert-danger {
             background-color: rgba(229, 62, 62, 0.1);
-            border: 1px solid var(--danger);
+            border: 1px solid rgba(229, 62, 62, 0.5);
             color: var(--text-primary);
             display: none;
         }
 
         .alert-success {
             background-color: rgba(49, 196, 141, 0.1);
-            border: 1px solid var(--success);
+            border: 1px solid rgba(49, 196, 141, 0.5);
             color: var(--text-primary);
             display: none;
         }
@@ -196,9 +239,11 @@
             .dashboard {
                 grid-template-columns: 1fr;
             }
+            
             .sidebar {
                 display: none;
             }
+            
             .main-content {
                 grid-column: 1;
             }
@@ -236,8 +281,14 @@
                     </div>
                 </div>
 
-                <div class="alert alert-danger" id="errorAlert"></div>
-                <div class="alert alert-success" id="successAlert"></div>
+                <div class="alert alert-danger" id="errorAlert">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div id="errorMessage"></div>
+                </div>
+                <div class="alert alert-success" id="successAlert">
+                    <i class="fas fa-check-circle"></i>
+                    <div id="successMessage"></div>
+                </div>
 
                 <form id="examSelectionForm">
                     <div class="form-group">
@@ -383,14 +434,16 @@
 
         function showError(message) {
             const alert = document.getElementById('errorAlert');
-            alert.textContent = message;
+            const messageDiv = document.getElementById('errorMessage');
+            messageDiv.textContent = message;
             alert.style.display = 'flex';
             setTimeout(() => alert.style.display = 'none', 5000);
         }
 
         function showSuccess(message) {
             const alert = document.getElementById('successAlert');
-            alert.textContent = message;
+            const messageDiv = document.getElementById('successMessage');
+            messageDiv.textContent = message;
             alert.style.display = 'flex';
             setTimeout(() => alert.style.display = 'none', 5000);
         }
