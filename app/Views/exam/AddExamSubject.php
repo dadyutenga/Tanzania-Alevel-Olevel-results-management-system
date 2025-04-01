@@ -236,11 +236,11 @@
     <div class="dashboard">
         <!-- Sidebar -->
         <div class="sidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-graduation-cap"></i>
-            <h2>Exam Results Management</h2>
-        </div>
-        <?= view('shared/sidebar_menu') ?>
+            <div class="sidebar-header">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Exam Results Management</h2>
+            </div>
+            <?= $this->include('shared/sidebar_menu') ?>
         </div>
 
         <!-- Main Content -->
@@ -533,3 +533,26 @@ function editSubject(subject) {
 </script>
 </body>
 </html>
+
+<script>
+    // Add sidebar menu functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const expandableMenus = document.querySelectorAll('.expandable');
+        expandableMenus.forEach(menu => {
+            menu.addEventListener('click', function(e) {
+                e.preventDefault();
+                const submenu = this.nextElementSibling;
+                const toggleIcon = this.querySelector('.toggle-icon');
+                
+                // Toggle submenu visibility
+                if (submenu.style.display === 'none' || submenu.style.display === '') {
+                    submenu.style.display = 'block';
+                    toggleIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    submenu.style.display = 'none';
+                    toggleIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+    });
+</script>
