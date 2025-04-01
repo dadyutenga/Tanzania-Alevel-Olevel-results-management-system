@@ -57,6 +57,7 @@ class BulkExamMarksController extends ResourceController
 
             // Get subjects (simplified query as subject_name is in tz_exam_subjects)
             $db = \Config\Database::connect('second_db');
+            // Get subjects
             $subjects = $db->table('tz_exam_subjects')
                 ->where('exam_id', $examId)
                 ->get()
@@ -66,24 +67,43 @@ class BulkExamMarksController extends ResourceController
                 throw new \Exception('No subjects found for this exam');
             }
 
-            // Create CSV headers
+            // Create CSV headers - simplified and structured
             $headers = ['Student ID', 'Student Name', 'Roll Number'];
             foreach ($subjects as $subject) {
-                $headers[] = $subject['subject_name'] . ' (Max: ' . $subject['max_marks'] . ')';
+                $headers[] = $subject['subject_name'];
                 $headers[] = $subject['id']; // Hidden subject ID
             }
 
-            // Create CSV content
+            // Create CSV content with structure
             $output = fopen('php://temp', 'w+');
+            
+            // Add a title row
+            fputcsv($output, ['EXAM MARKS TEMPLATE']);
+            fputcsv($output, []); // Empty line for spacing
+            
+            // Add max marks row
+            $maxMarksRow = ['', '', ''];
+            foreach ($subjects as $subject) {
+                $maxMarksRow[] = "Maximum Marks: {$subject['max_marks']}";
+                $maxMarksRow[] = ''; // For hidden ID column
+            }
+            fputcsv($output, $maxMarksRow);
+            fputcsv($output, []); // Empty line for spacing
+            
+            // Add the main headers
             fputcsv($output, $headers);
+            
+            // Add a separator line
+            $separator = array_fill(0, count($headers), str_repeat('-', 15));
+            fputcsv($output, $separator);
 
+            // Add student rows
             foreach ($students as $student) {
                 $row = [
                     $student['id'],
                     $student['firstname'] . ' ' . $student['lastname'],
                     $student['roll_no']
                 ];
-                // Add empty columns for marks
                 foreach ($subjects as $subject) {
                     $row[] = ''; // Empty mark field
                     $row[] = $subject['id']; // Hidden subject ID
@@ -91,12 +111,14 @@ class BulkExamMarksController extends ResourceController
                 fputcsv($output, $row);
             }
 
-            // Get CSV content
+            // Add footer separator
+            fputcsv($output, $separator);
+
+            // Get CSV content and return
             rewind($output);
             $csv = stream_get_contents($output);
             fclose($output);
 
-            // Set headers for download
             $filename = "exam_marks_template_" . date('Y-m-d_His') . ".csv";
             
             return $this->response
