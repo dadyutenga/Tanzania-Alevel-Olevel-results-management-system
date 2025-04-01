@@ -125,8 +125,7 @@ class AddExamMarks extends ResourceController
                 'exam_id' => 'required|numeric',
                 'student_id' => 'required|numeric',
                 'class_id' => 'required|numeric',
-                'session_id' => 'required|numeric',
-                'marks' => 'required|array'
+                'session_id' => 'required|numeric'
             ];
 
             if (!$this->validate($rules)) {
@@ -137,39 +136,46 @@ class AddExamMarks extends ResourceController
                 ], 400);
             }
 
-            $db = \Config\Database::connect('second_db');
-            $db->transStart();
-
             $examId = $this->request->getPost('exam_id');
             $studentId = $this->request->getPost('student_id');
             $classId = $this->request->getPost('class_id');
             $sessionId = $this->request->getPost('session_id');
-            $marks = $this->request->getPost('marks');
+            $marks = json_decode($this->request->getPost('marks'), true);
 
-            // Delete existing marks if any
-            $db->table('tz_exam_subject_marks')
-                ->where([
-                    'exam_id' => $examId,
-                    'student_id' => $studentId
-                ])
-                ->delete();
+            if (!is_array($marks)) {
+                throw new \Exception('Invalid marks data format');
+            }
+
+            $examSubjectMarkModel = new \App\Models\ExamSubjectMarkModel();
+            
+            // Start transaction
+            $examSubjectMarkModel->db->transStart();
+
+            // Delete existing marks
+            $examSubjectMarkModel->where([
+                'exam_id' => $examId,
+                'student_id' => $studentId
+            ])->delete();
 
             // Insert new marks
             foreach ($marks as $subjectId => $mark) {
-                $db->table('tz_exam_subject_marks')->insert([
+                $markData = [
                     'exam_id' => $examId,
                     'student_id' => $studentId,
                     'class_id' => $classId,
                     'session_id' => $sessionId,
                     'exam_subject_id' => $subjectId,
-                    'marks_obtained' => $mark,
-                    'created_at' => date('Y-m-d H:i:s')
-                ]);
+                    'marks_obtained' => $mark
+                ];
+
+                if (!$examSubjectMarkModel->insert($markData)) {
+                    throw new \Exception('Failed to save marks: ' . implode(', ', $examSubjectMarkModel->errors()));
+                }
             }
 
-            $db->transComplete();
+            $examSubjectMarkModel->db->transComplete();
 
-            if ($db->transStatus() === false) {
+            if ($examSubjectMarkModel->db->transStatus() === false) {
                 throw new \RuntimeException('Failed to save marks');
             }
 

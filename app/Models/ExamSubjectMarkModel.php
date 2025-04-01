@@ -30,7 +30,7 @@ class ExamSubjectMarkModel extends Model
         'class_id' => 'required|numeric|is_not_unique[classes.id]',
         'session_id' => 'required|numeric|is_not_unique[sessions.id]',
         'exam_subject_id' => 'required|numeric|is_not_unique[tz_exam_subjects.id]',
-        'marks_obtained' => 'permit_empty|numeric'
+        'marks_obtained' => 'numeric|permit_empty'
     ];
 
     // Relationships based on SQL foreign keys
@@ -58,4 +58,4 @@ class ExamSubjectMarkModel extends Model
     {
         return $this->belongsTo('App\Models\ExamSubjectModel', 'exam_subject_id', 'id');
     }
-} 
+}
