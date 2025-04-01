@@ -8,43 +8,22 @@
     <style>
         /* Update root variables to match the screenshot */
         :root {
-            --primary: #f8f9fa;
-            --primary-dark: #f1f3f5;
-            --secondary: #e9ecef;
-            --accent: #1e2837;        /* Dark blue from screenshot */
-            --accent-light: #2a374b;  /* Lighter blue for hover */
-            --accent-hover: #2f3f57;  /* Hover state blue */
-            --text-primary: #1a1f36;
-            --text-secondary: #4a5568;
+            --primary: #ffffff;
+            --primary-dark: #f8fafc;
+            --secondary: #f1f5f9;
+            --accent: #1e293b;
+            --accent-light: #334155;
+            --accent-hover: #475569;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
             --border: #e2e8f0;
             --success: #31c48d;
             --warning: #f59e0b;
             --danger: #e53e3e;
-            --shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-            --radius: 8px;
+            --radius: 6px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 0.925rem;
-            background-color: var(--primary-dark);
-            color: var(--text-primary);
-            line-height: 1.5;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 100vh;
-        }
-
-        /* Sidebar styles from index.php */
+        /* Sidebar styles */
         .sidebar {
             background-color: var(--accent);
             color: #fff;
@@ -58,75 +37,222 @@
         .sidebar-header {
             display: flex;
             align-items: center;
-            padding: 2rem 1.5rem;
-            margin: 0;
-            background-color: var(--accent);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 0.75rem;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--accent-light);
         }
 
-        /* Update menu items */
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-size: 0.875rem;
-        }
-
-        .sidebar-menu a:hover, 
-        .sidebar-menu a.active {
-            background-color: var(--accent-hover);
+        .sidebar-header i {
+            font-size: 1.5rem;
             color: #fff;
         }
 
-        /* Update form styles */
+        .sidebar-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.625rem 0.875rem;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-light);
+            box-shadow: 0 0 0 2px rgba(30, 41, 59, 0.1);
+        }
+
+        /* Button styles */
+        .btn {
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: var(--radius);
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-light);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        /* Header styles */
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Main content padding */
+        .main-content {
+            margin-left: 250px;
+            padding: 1.5rem;
+            background-color: var(--primary-dark);
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Form Container */
         .form-container {
             background: #fff;
             border-radius: var(--radius);
             padding: 2rem;
-            box-shadow: var(--shadow);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
         }
 
-        /* Update button styles */
-        .btn {
-            background-color: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: var(--radius);
-            padding: 0.75rem 1.5rem;
-            font-size: 0.875rem;
+        /* Grid Layout */
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
             font-weight: 500;
-            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.925rem;
             transition: all 0.3s ease;
         }
 
-        .btn:hover {
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(30, 40, 55, 0.1);
+            outline: none;
+        }
+
+        .text-danger {
+            color: var(--danger);
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn i {
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-primary:hover {
             background-color: var(--accent-hover);
         }
 
         .btn-secondary {
-            background-color: #e9ecef;
+            background-color: var(--secondary);
             color: var(--text-primary);
+            border: 1px solid var(--border);
         }
 
         .btn-secondary:hover {
             background-color: #dde1e4;
         }
 
-        /* Update form controls */
-        .form-control {
-            border: 1px solid #e2e8f0;
-            border-radius: var(--radius);
-            padding: 0.75rem 1rem;
-            width: 100%;
-            transition: all 0.3s ease;
+        /* Validation Styles */
+        .is-invalid {
+            border-color: var(--danger);
         }
 
-        .form-control:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(30, 40, 55, 0.1);
+        .is-valid {
+            border-color: var(--success);
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>

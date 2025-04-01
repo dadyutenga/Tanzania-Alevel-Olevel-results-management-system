@@ -6,70 +6,208 @@
     <title>Bulk Upload Exam Marks</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #f8f9fa;
+            --primary-dark: #f1f3f5;
+            --secondary: #e9ecef;
+            --accent: #1a1f36;
+            --accent-light: #2d3748;
+            --text-primary: #1a1f36;
+            --text-secondary: #4a5568;
+            --border: #e2e8f0;
+            --success: #31c48d;
+            --warning: #f59e0b;
+            --danger: #e53e3e;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.925rem;
+            background-color: var(--primary-dark);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
         .dashboard {
             display: grid;
             grid-template-columns: 250px 1fr;
             min-height: 100vh;
         }
+
+        /* Sidebar (consistent with AddExamSubject.php) */
+        .sidebar {
+            background-color: var(--accent);
+            color: var(--primary);
+            padding: 2rem 1rem;
+            position: fixed;
+            width: 250px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header i {
+            font-size: 2rem;
+            margin-right: 0.75rem;
+            opacity: 0.9;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.25rem;
+            letter-spacing: -0.025em;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        /* Main Content */
         .main-content {
+            grid-column: 2;
             padding: 2rem;
-            background: #f4f4f4;
+            background-color: var(--primary-dark);
         }
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 1.5rem;
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Card/Form Container */
+        .form-container {
+            background: var(--primary);
+            border-radius: var(--radius);
             padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
         }
+
+        /* Form Elements */
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
         .form-control {
             width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-top: 0.5rem;
+            padding: 0.625rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            background-color: var(--primary);
+            color: var(--text-primary);
         }
+
+        /* Buttons */
         .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 0.625rem 1.25rem;
             border: none;
-            margin-right: 0.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
         }
+
         .btn-primary {
-            background: #007bff;
-            color: white;
+            background-color: var(--accent);
+            color: var(--primary);
         }
+
+        .btn-primary:hover {
+            background-color: var(--accent-light);
+        }
+
         .btn-success {
-            background: #28a745;
+            background-color: var(--success);
             color: white;
         }
+
+        .btn-success:hover {
+            opacity: 0.9;
+        }
+
+        /* Alerts */
         .alert {
             padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
+
         .alert-info {
-            background: #e3f2fd;
-            border: 1px solid #90caf9;
+            background-color: rgba(49, 196, 141, 0.1);
+            border: 1px solid var(--success);
+            color: var(--text-primary);
         }
+
         .alert-danger {
-            background: #ffebee;
-            border: 1px solid #ffcdd2;
+            background-color: rgba(229, 62, 62, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--text-primary);
             display: none;
         }
+
         .alert-success {
-            background: #e8f5e9;
-            border: 1px solid #a5d6a7;
+            background-color: rgba(49, 196, 141, 0.1);
+            border: 1px solid var(--success);
+            color: var(--text-primary);
             display: none;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                grid-column: 1;
+            }
         }
     </style>
 </head>
 <body>
     <div class="dashboard">
+        <!-- Sidebar (consistent with AddExamSubject.php) -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-graduation-cap"></i>
@@ -78,19 +216,24 @@
             <?= $this->include('shared/sidebar_menu') ?>
         </div>
 
+        <!-- Main Content -->
         <div class="main-content">
-            <h1>Bulk Upload Exam Marks</h1>
+            <div class="header">
+                <h1>Bulk Upload Exam Marks</h1>
+            </div>
 
-            <div class="card">
+            <div class="form-container">
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i>
-                    Follow these steps:
-                    <ol>
-                        <li>Select the exam details below</li>
-                        <li>Download the CSV template</li>
-                        <li>Fill in the marks in the downloaded template</li>
-                        <li>Upload the completed CSV file</li>
-                    </ol>
+                    <div>
+                        <strong>Follow these steps:</strong>
+                        <ol style="margin-top: 0.5rem; padding-left: 1.25rem;">
+                            <li>Select the exam details below</li>
+                            <li>Download the CSV template</li>
+                            <li>Fill in the marks in the downloaded template</li>
+                            <li>Upload the completed CSV file</li>
+                        </ol>
+                    </div>
                 </div>
 
                 <div class="alert alert-danger" id="errorAlert"></div>
@@ -129,7 +272,7 @@
                     </button>
                 </form>
 
-                <hr style="margin: 2rem 0;">
+                <hr>
 
                 <form id="uploadForm" enctype="multipart/form-data">
                     <div class="form-group">
@@ -146,6 +289,7 @@
     </div>
 
     <script>
+        // JavaScript remains unchanged (only CSS/structure updated)
         document.getElementById('session').addEventListener('change', function() {
             fetchExams(this.value);
         });
@@ -240,14 +384,14 @@
         function showError(message) {
             const alert = document.getElementById('errorAlert');
             alert.textContent = message;
-            alert.style.display = 'block';
+            alert.style.display = 'flex';
             setTimeout(() => alert.style.display = 'none', 5000);
         }
 
         function showSuccess(message) {
             const alert = document.getElementById('successAlert');
             alert.textContent = message;
-            alert.style.display = 'block';
+            alert.style.display = 'flex';
             setTimeout(() => alert.style.display = 'none', 5000);
         }
     </script>
