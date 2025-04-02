@@ -80,3 +80,10 @@ $routes->group('exam', static function ($routes) {
     $routes->post('view/delete/(:num)', 'ViewExamController::delete/$1');
 });
 
+$routes->group('results', ['namespace' => 'App\Controllers'], function($routes) {
+    $routes->get('publish', 'ResultGradingController::index');
+    $routes->post('calculate', 'ResultGradingController::calculateResults');
+    $routes->get('by-class', 'ResultGradingController::getResultsByClass');
+    $routes->get('exams', 'ResultGradingController::getExamsByClass');
+});
+

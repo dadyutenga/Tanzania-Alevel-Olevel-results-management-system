@@ -14,7 +14,8 @@
         "africastalking/africastalking": "^3.0",
         "codeigniter4/framework": "^4.0",
         "dompdf/dompdf": "^3.1",
-        "league/csv": "^9.22"
+        "league/csv": "^9.22",
+        "predis/predis": "^2.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
