@@ -10,8 +10,11 @@ use App\Models\StudentModel;
 use App\Models\StudentSessionModel;
 use App\Models\ClassModel;
 use App\Models\ClassSectionModel;
+use App\Models\SessionModel;
 use CodeIgniter\RESTful\ResourceController;
 use Predis\Client as Redis;
+
+
 
 class ResultGradingController extends ResourceController
 {
@@ -26,6 +29,8 @@ class ResultGradingController extends ResourceController
     protected $classModel;
     protected $classSectionModel;
 
+    protected $sessionModel;  // Add this property
+
     public function __construct()
     {
         $this->examModel = new ExamModel();
@@ -36,6 +41,7 @@ class ResultGradingController extends ResourceController
         $this->studentSessionModel = new StudentSessionModel();
         $this->classModel = new ClassModel();
         $this->classSectionModel = new ClassSectionModel();
+        $this->sessionModel = new SessionModel();  // Initialize SessionModel
         
         // Initialize Redis
         $this->redis = new Redis([
@@ -61,6 +67,7 @@ class ResultGradingController extends ResourceController
         }
     }
 
+    // Replace failValidationError with fail
     public function calculateResults()
     {
         try {
@@ -70,7 +77,7 @@ class ResultGradingController extends ResourceController
             $sessionId = $this->request->getVar('session_id');
 
             if (!$examId || !$classId || !$sessionId) {
-                return $this->failValidationError('Exam, Class and Session are required');
+                return $this->fail('Exam, Class and Session are required', 400);
             }
 
             // Get exam details to determine if it's O-Level or A-Level
@@ -267,7 +274,7 @@ class ResultGradingController extends ResourceController
             $sessionId = $this->request->getVar('session_id');
 
             if (!$examId || !$classId || !$sessionId) {
-                return $this->failValidationError('Exam, Class and Session are required');
+                return $this->fail('Exam, Class and Session are required', 400);
             }
 
             $query = $this->examResultModel
@@ -310,7 +317,7 @@ class ResultGradingController extends ResourceController
             $sessionId = $this->request->getVar('session_id');
 
             if (!$classId || !$sessionId) {
-                return $this->failValidationError('Class and Session are required');
+                return $this->fail('Class and Session are required', 400);
             }
 
             $exams = $this->examModel
