@@ -231,4 +231,85 @@ class ViewExamMarksController extends ResourceController
             ], 500);
         }
     }
+
+    public function updateAll()
+    {
+        try {
+            $updates = $this->request->getJSON()->updates;
+            
+            if (empty($updates)) {
+                throw new \Exception('No marks provided for update');
+            }
+
+            $db = \Config\Database::connect();
+            $db->transStart();
+
+            foreach ($updates as $update) {
+                $mark = $this->examSubjectMarkModel->find($update->mark_id);
+                $subject = $this->examSubjectModel->find($mark['exam_subject_id']);
+
+                if ($update->marks_obtained > $subject['max_marks']) {
+                    throw new \Exception("Marks obtained cannot be greater than maximum marks for subject {$subject['subject_name']}");
+                }
+
+                $this->examSubjectMarkModel->update($update->mark_id, [
+                    'marks_obtained' => $update->marks_obtained
+                ]);
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Failed to update marks');
+            }
+
+            return $this->respond([
+                'status' => 'success',
+                'message' => 'All marks updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', '[ViewExamMarks.updateAll] Error: ' . $e->getMessage());
+            return $this->respond([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteAll()
+    {
+        try {
+            $markIds = $this->request->getJSON()->mark_ids;
+            
+            if (empty($markIds)) {
+                throw new \Exception('No marks provided for deletion');
+            }
+
+            $db = \Config\Database::connect();
+            $db->transStart();
+
+            foreach ($markIds as $markId) {
+                if (!$this->examSubjectMarkModel->delete($markId)) {
+                    throw new \Exception('Failed to delete mark ID: ' . $markId);
+                }
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Failed to delete marks');
+            }
+
+            return $this->respond([
+                'status' => 'success',
+                'message' => 'All marks deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', '[ViewExamMarks.deleteAll] Error: ' . $e->getMessage());
+            return $this->respond([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

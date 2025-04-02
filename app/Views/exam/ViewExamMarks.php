@@ -42,7 +42,7 @@
             min-height: 100vh;
         }
 
-        /* Sidebar styles (consistent with AddExamSubject.php) */
+        /* Sidebar styles */
         .sidebar {
             background-color: var(--accent);
             color: var(--primary);
@@ -178,21 +178,53 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
-        }
-
-        .table th, .table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid var(--border);
-            text-align: left;
+            background-color: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .table th {
             background-color: var(--primary-dark);
+            text-align: left;
+            padding: 12px 15px;
             font-weight: 600;
             color: var(--text-primary);
+            border-bottom: 1px solid var(--border);
         }
 
-        /* Buttons */
+        .table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .table tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .subject-mark {
+            background-color: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+
+        .subject-name {
+            font-weight: 600;
+            color: #555;
+            margin-right: 5px;
+        }
+
+        .mark {
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Button styles */
         .btn {
             padding: 0.625rem 1.25rem;
             border: none;
@@ -345,10 +377,7 @@
                             <tr>
                                 <th>Roll No</th>
                                 <th>Student Name</th>
-                                <th>Subject</th>
-                                <th>Marks Obtained</th>
-                                <th>Max Marks</th>
-                                <th>Passing Marks</th>
+                                <th>Subject Marks</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -359,33 +388,21 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div id="editModal" class="modal">
+    <!-- Edit All Modal -->
+    <div id="editAllModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Edit Marks</h3>
+                <h3>Edit All Marks for <span id="editAllStudentName"></span></h3>
             </div>
-            <form id="editForm">
-                <input type="hidden" id="editId">
-                <div class="form-group">
-                    <label>Student Name</label>
-                    <input type="text" id="editStudentName" class="form-control" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Subject</label>
-                    <input type="text" id="editSubject" class="form-control" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Marks Obtained</label>
-                    <input type="number" id="editMarks" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Maximum Marks</label>
-                    <input type="number" id="editMaxMarks" class="form-control" readonly>
+            <form id="editAllForm">
+                <input type="hidden" id="editAllStudentId">
+                <input type="hidden" id="editAllExamId">
+                <div id="marksContainer">
+                    <!-- Marks fields will be added dynamically here -->
                 </div>
                 <div class="modal-actions">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save All</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editAllModal')">Cancel</button>
                 </div>
             </form>
         </div>
@@ -399,9 +416,9 @@
             
             document.getElementById('examFilter').addEventListener('change', loadClasses);
             
-            document.getElementById('editForm').addEventListener('submit', function(e) {
+            document.getElementById('editAllForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                updateMarks();
+                updateAllMarks();
             });
         });
 
@@ -457,62 +474,176 @@
                         const tbody = document.querySelector('#marksTable tbody');
                         tbody.innerHTML = '';
                         
+                        // Group marks by student
+                        const students = {};
                         data.data.forEach(mark => {
-                            tbody.innerHTML += `
-                                <tr>
-                                    <td>${mark.roll_no}</td>
-                                    <td>${mark.firstname} ${mark.lastname}</td>
-                                    <td>${mark.subject_name}</td>
-                                    <td>${mark.marks_obtained}</td>
-                                    <td>${mark.max_marks}</td>
-                                    <td>${mark.passing_marks}</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm" onclick="editMark(${mark.id}, '${mark.firstname} ${mark.lastname}', '${mark.subject_name}', ${mark.marks_obtained}, ${mark.max_marks})">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteMark(${mark.id})">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            `;
+                            if (!students[mark.student_id]) {
+                                students[mark.student_id] = {
+                                    roll_no: mark.roll_no,
+                                    name: `${mark.firstname} ${mark.lastname}`,
+                                    marks: [],
+                                    markIds: []
+                                };
+                            }
+                            students[mark.student_id].marks.push({
+                                subject: mark.subject_name,
+                                obtained: mark.marks_obtained,
+                                max: mark.max_marks,
+                                passing: mark.passing_marks,
+                                id: mark.id,
+                                subject_id: mark.subject_id
+                            });
+                            students[mark.student_id].markIds.push(mark.id);
+                        });
+
+                        // Create table rows
+                        Object.entries(students).forEach(([studentId, student]) => {
+                            const row = document.createElement('tr');
+                            
+                            // Roll No
+                            const rollCell = document.createElement('td');
+                            rollCell.textContent = student.roll_no;
+                            row.appendChild(rollCell);
+                            
+                            // Student Name
+                            const nameCell = document.createElement('td');
+                            nameCell.textContent = student.name;
+                            row.appendChild(nameCell);
+                            
+                            // Subject Marks
+                            const marksCell = document.createElement('td');
+                            student.marks.forEach(mark => {
+                                const markDiv = document.createElement('div');
+                                markDiv.className = 'subject-mark';
+                                
+                                const subjectSpan = document.createElement('span');
+                                subjectSpan.className = 'subject-name';
+                                subjectSpan.textContent = `${mark.subject}:`;
+                                
+                                const markSpan = document.createElement('span');
+                                markSpan.className = 'mark';
+                                markSpan.textContent = `${mark.obtained}/${mark.max}`;
+                                
+                                markDiv.appendChild(subjectSpan);
+                                markDiv.appendChild(markSpan);
+                                marksCell.appendChild(markDiv);
+                            });
+                            row.appendChild(marksCell);
+                            
+                            // Actions
+                            const actionsCell = document.createElement('td');
+                            actionsCell.style.whiteSpace = 'nowrap';
+                            
+                            // Edit button
+                            const editBtn = document.createElement('button');
+                            editBtn.className = 'btn btn-primary btn-sm';
+                            editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit All';
+                            editBtn.onclick = () => editAllMarks(studentId, student.name, student.marks, examId);
+                            editBtn.style.marginRight = '5px';
+                            
+                            // Delete button
+                            const deleteBtn = document.createElement('button');
+                            deleteBtn.className = 'btn btn-danger btn-sm';
+                            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete All';
+                            deleteBtn.onclick = () => deleteAllMarks(student.markIds, student.name);
+                            
+                            actionsCell.appendChild(editBtn);
+                            actionsCell.appendChild(deleteBtn);
+                            
+                            row.appendChild(actionsCell);
+                            tbody.appendChild(row);
                         });
                     }
                 });
         }
 
-        function editMark(id, studentName, subject, marks, maxMarks) {
-            document.getElementById('editId').value = id;
-            document.getElementById('editStudentName').value = studentName;
-            document.getElementById('editSubject').value = subject;
-            document.getElementById('editMarks').value = marks;
-            document.getElementById('editMaxMarks').value = maxMarks;
+        function editAllMarks(studentId, studentName, marks, examId) {
+            document.getElementById('editAllStudentName').textContent = studentName;
+            document.getElementById('editAllStudentId').value = studentId;
+            document.getElementById('editAllExamId').value = examId;
             
-            document.getElementById('editModal').style.display = 'flex';
+            const container = document.getElementById('marksContainer');
+            container.innerHTML = '';
+            
+            marks.forEach(mark => {
+                const group = document.createElement('div');
+                group.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.textContent = mark.subject;
+                
+                const inputGroup = document.createElement('div');
+                inputGroup.style.display = 'flex';
+                inputGroup.style.gap = '10px';
+                inputGroup.style.alignItems = 'center';
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'form-control';
+                input.value = mark.obtained;
+                input.dataset.markId = mark.id;
+                input.dataset.subjectId = mark.subject_id;
+                input.style.flex = '1';
+                
+                const maxSpan = document.createElement('span');
+                maxSpan.textContent = `/ ${mark.max}`;
+                maxSpan.style.minWidth = '50px';
+                
+                inputGroup.appendChild(input);
+                inputGroup.appendChild(maxSpan);
+                
+                group.appendChild(label);
+                group.appendChild(inputGroup);
+                container.appendChild(group);
+            });
+            
+            document.getElementById('editAllModal').style.display = 'flex';
         }
 
-        function updateMarks() {
-            const id = document.getElementById('editId').value;
-            const marks = document.getElementById('editMarks').value;
-            const maxMarks = document.getElementById('editMaxMarks').value;
-
-            if (parseFloat(marks) > parseFloat(maxMarks)) {
-                Swal.fire('Error', 'Marks cannot be greater than maximum marks', 'error');
-                return;
-            }
-
-            fetch(`<?= base_url('exam/marks/view/update') ?>/${id}`, {
+        function updateAllMarks() {
+            const studentId = document.getElementById('editAllStudentId').value;
+            const examId = document.getElementById('editAllExamId').value;
+            const inputs = document.querySelectorAll('#marksContainer input');
+            
+            const updates = [];
+            let hasError = false;
+            
+            inputs.forEach(input => {
+                const markId = input.dataset.markId;
+                const subjectId = input.dataset.subjectId;
+                const marksObtained = input.value;
+                const maxMarks = input.nextElementSibling.textContent.split('/')[1].trim();
+                
+                if (parseFloat(marksObtained) > parseFloat(maxMarks)) {
+                    hasError = true;
+                    input.style.borderColor = 'var(--danger)';
+                    Swal.fire('Error', `Marks for ${input.previousElementSibling.textContent} cannot exceed maximum marks`, 'error');
+                } else {
+                    input.style.borderColor = '';
+                    updates.push({
+                        mark_id: markId,
+                        student_id: studentId,
+                        exam_id: examId,
+                        subject_id: subjectId,
+                        marks_obtained: marksObtained
+                    });
+                }
+            });
+            
+            if (hasError) return;
+            
+            fetch(`<?= base_url('exam/marks/view/updateAll') ?>`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
                 },
-                body: `marks_obtained=${marks}`
+                body: JSON.stringify({ updates })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    Swal.fire('Success', 'Marks updated successfully', 'success');
-                    closeModal('editModal');
+                    Swal.fire('Success', 'All marks updated successfully', 'success');
+                    closeModal('editAllModal');
                     searchMarks();
                 } else {
                     Swal.fire('Error', data.message, 'error');
@@ -520,24 +651,28 @@
             });
         }
 
-        function deleteMark(id) {
+        function deleteAllMarks(markIds, studentName) {
             Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
+                title: `Delete all marks for ${studentName}?`,
+                text: "This will remove all subject marks for this student in this exam!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
+                confirmButtonText: 'Yes, delete all!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`<?= base_url('exam/marks/view/delete') ?>/${id}`, {
-                        method: 'POST'
+                    fetch(`<?= base_url('exam/marks/view/deleteAll') ?>`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ mark_ids: markIds })
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            Swal.fire('Deleted!', 'Mark has been deleted.', 'success');
+                            Swal.fire('Deleted!', 'All marks have been deleted.', 'success');
                             searchMarks();
                         } else {
                             Swal.fire('Error', data.message, 'error');

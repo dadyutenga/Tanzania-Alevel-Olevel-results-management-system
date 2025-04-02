@@ -57,13 +57,15 @@ $routes->group('exam', static function ($routes) {
     $routes->get('marks/bulk', 'BulkExamMarksController::index');
     
     // View Exam Marks routes
-    $routes->group('marks/view', static function ($routes) {
+    $routes->group('exam/marks/view', static function ($routes) {
         $routes->get('/', 'ViewExamMarksController::index');
         $routes->get('getExams', 'ViewExamMarksController::getExams');
         $routes->get('getExamClasses', 'ViewExamMarksController::getExamClasses');
         $routes->get('getStudentMarks', 'ViewExamMarksController::getStudentMarks');
         $routes->post('update/(:num)', 'ViewExamMarksController::update/$1');
         $routes->post('delete/(:num)', 'ViewExamMarksController::delete/$1');
+        $routes->post('updateAll', 'ViewExamMarksController::updateAll'); // New route
+        $routes->post('deleteAll', 'ViewExamMarksController::deleteAll'); // New route
     });
     $routes->get('marks/bulk/getExams/(:num)', 'BulkExamMarksController::getExams/$1');
     $routes->get('marks/bulk/getClasses/(:num)', 'BulkExamMarksController::getClasses/$1');
