@@ -235,10 +235,10 @@
                         </div>
                         <h3 class="stat-card-title">Total Students</h3>
                     </div>
-                    <div class="stat-card-value">2,451</div>
+                    <div class="stat-card-value"><?= number_format($totalStudents) ?></div>
                     <div class="stat-card-trend">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>12.5% this month</span>
+                        <i class="fas fa-arrow-<?= $studentGrowth > 0 ? 'up' : 'down' ?>"></i>
+                        <span><?= $studentGrowth ?>% this month</span>
                     </div>
                 </div>
 
@@ -250,10 +250,10 @@
                         </div>
                         <h3 class="stat-card-title">Active Exams</h3>
                     </div>
-                    <div class="stat-card-value">8</div>
+                    <div class="stat-card-value"><?= $activeExams ?></div>
                     <div class="stat-card-trend">
                         <i class="fas fa-arrow-up"></i>
-                        <span>3 new this week</span>
+                        <span><?= $newExamsThisWeek ?> new this week</span>
                     </div>
                 </div>
 
@@ -265,10 +265,10 @@
                         </div>
                         <h3 class="stat-card-title">Completed Exams</h3>
                     </div>
-                    <div class="stat-card-value">124</div>
+                    <div class="stat-card-value"><?= $completedExams ?></div>
                     <div class="stat-card-trend">
                         <i class="fas fa-arrow-up"></i>
-                        <span>28 this month</span>
+                        <span><?= $completedExams ?> this month</span>
                     </div>
                 </div>
             </div>
