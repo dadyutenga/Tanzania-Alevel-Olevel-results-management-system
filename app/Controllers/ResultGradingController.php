@@ -12,14 +12,9 @@ use App\Models\ClassModel;
 use App\Models\ClassSectionModel;
 use App\Models\SessionModel;
 use CodeIgniter\RESTful\ResourceController;
-use Predis\Client as Redis;
-
-
 
 class ResultGradingController extends ResourceController
 {
-    protected $redis;
-
     protected $examModel;
     protected $examSubjectModel;
     protected $examSubjectMarkModel;
@@ -28,8 +23,7 @@ class ResultGradingController extends ResourceController
     protected $studentSessionModel;
     protected $classModel;
     protected $classSectionModel;
-
-    protected $sessionModel;  // Add this property
+    protected $sessionModel;
 
     public function __construct()
     {
@@ -41,22 +35,19 @@ class ResultGradingController extends ResourceController
         $this->studentSessionModel = new StudentSessionModel();
         $this->classModel = new ClassModel();
         $this->classSectionModel = new ClassSectionModel();
-        $this->sessionModel = new SessionModel();  // Initialize SessionModel
-        
-        // Initialize Redis
-        $this->redis = new Redis([
-            'scheme' => 'tcp',
-            'host'   => '127.0.0.1',
-            'port'   => 6379,
-        ]);
+        $this->sessionModel = new SessionModel();
     }
 
     public function index()
     {
         try {
             $data = [
-                'sessions' => $this->sessionModel->findAll(),
-                'classes' => $this->classModel->where('is_active', 'yes')->findAll()
+                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
+                'classes' => $this->classModel->where('is_active', 'no')->findAll(),
+                'levels' => [
+                    ['id' => 4, 'name' => 'O-Level'],
+                    ['id' => 6, 'name' => 'A-Level']
+                ]
             ];
             
             return view('results/PublishExamResult', $data);
@@ -67,7 +58,29 @@ class ResultGradingController extends ResourceController
         }
     }
 
-    // Replace failValidationError with fail
+    public function getBySession($sessionId)
+    {
+        try {
+            if (!$sessionId) {
+                return $this->fail('Session ID is required', 400);
+            }
+
+            $exams = $this->examModel
+                ->where('session_id', $sessionId)
+                ->where('is_active', 'no')
+                ->findAll();
+
+            return $this->respond([
+                'status' => 'success',
+                'data' => $exams
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', '[ResultGrading.getBySession] Error: ' . $e->getMessage());
+            return $this->fail($e->getMessage());
+        }
+    }
+
+    // In calculateResults method, update the student query
     public function calculateResults()
     {
         try {
@@ -75,26 +88,20 @@ class ResultGradingController extends ResourceController
             $classId = $this->request->getVar('class_id');
             $sectionId = $this->request->getVar('section_id');
             $sessionId = $this->request->getVar('session_id');
+            $level = $this->request->getVar('level'); // Add level parameter
 
-            if (!$examId || !$classId || !$sessionId) {
-                return $this->fail('Exam, Class and Session are required', 400);
+            if (!$examId || !$classId || !$sessionId || !$level) {
+                return $this->fail('Exam, Class, Session and Level are required', 400);
             }
 
-            // Get exam details to determine if it's O-Level or A-Level
-            $exam = $this->examModel->find($examId);
-            $isALevel = $exam['level'] == 6; // Assuming level 6 is A-Level
+            $isALevel = $level == 6;
 
-            // Get students in the class/section
-            $query = $this->studentSessionModel
+            // Get students in the class
+            $students = $this->studentSessionModel
                 ->where('class_id', $classId)
                 ->where('session_id', $sessionId)
-                ->where('is_active', 'yes');
-
-            if ($sectionId) {
-                $query->where('section_id', $sectionId);
-            }
-
-            $students = $query->findAll();
+                ->where('is_active', 'no')
+                ->findAll();
 
             $results = [];
             foreach ($students as $student) {
@@ -169,22 +176,10 @@ class ResultGradingController extends ResourceController
             $exam = $this->examModel->find($examId);
             $isALevel = $exam['level'] == 6;
 
-            // Try to get cached results
-            $cacheKey = "results_{$examId}_{$classId}_{$sessionId}";
-            $cachedResults = $this->redis->get($cacheKey);
-
-            if ($cachedResults) {
-                return $this->respond([
-                    'status' => 'success',
-                    'data' => json_decode($cachedResults, true),
-                    'source' => 'cache'
-                ]);
-            }
-
+            // Remove Redis cache check and just return the results
             return $this->respond([
                 'status' => 'success',
-                'data' => $results,
-                'source' => 'database'
+                'data' => $results
             ]);
 
         } catch (\Exception $e) {
@@ -270,14 +265,13 @@ class ResultGradingController extends ResourceController
         try {
             $examId = $this->request->getVar('exam_id');
             $classId = $this->request->getVar('class_id');
-            $sectionId = $this->request->getVar('section_id');
             $sessionId = $this->request->getVar('session_id');
 
             if (!$examId || !$classId || !$sessionId) {
                 return $this->fail('Exam, Class and Session are required', 400);
             }
 
-            $query = $this->examResultModel
+            $results = $this->examResultModel
                 ->select('
                     tz_exam_results.*,
                     students.firstname,
@@ -290,20 +284,14 @@ class ResultGradingController extends ResourceController
                     'tz_exam_results.exam_id' => $examId,
                     'tz_exam_results.class_id' => $classId,
                     'tz_exam_results.session_id' => $sessionId,
-                    'student_session.is_active' => 'yes'
-                ]);
-
-            if ($sectionId) {
-                $query->where('student_session.section_id', $sectionId);
-            }
-
-            $results = $query->findAll();
+                    'student_session.is_active' => 'no'
+                ])
+                ->findAll();
 
             return $this->respond([
                 'status' => 'success',
                 'data' => $results
             ]);
-
         } catch (\Exception $e) {
             log_message('error', '[ResultGrading.getResultsByClass] Error: ' . $e->getMessage());
             return $this->fail($e->getMessage());
@@ -322,6 +310,7 @@ class ResultGradingController extends ResourceController
 
             $exams = $this->examModel
                 ->where('session_id', $sessionId)
+                ->where('is_active', 'yes')  // Changed from 'no' to 'yes'
                 ->findAll();
 
             return $this->respond([
@@ -329,6 +318,7 @@ class ResultGradingController extends ResourceController
                 'data' => $exams
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[ResultGrading.getBySession] Error: ' . $e->getMessage());
             return $this->fail($e->getMessage());
         }
     }

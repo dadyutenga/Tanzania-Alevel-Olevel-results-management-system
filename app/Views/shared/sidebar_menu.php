@@ -18,11 +18,18 @@
             <li><a href="<?= base_url ('exam/marks/bulk')?>"><i class="fas fa-upload"></i> Bulk Add Exam Marks</a></li>
             <li><a href="<?= base_url('exam/view') ?>"><i class="fas fa-file-alt"></i> View Exam</a></li>
             <li><a href="<?= base_url('exam/marks/view') ?>"><i class="fas fa-eye"></i> View Exam Marks</a></li>
+            <li><a href="<?= base_url('results/publish') ?>"><i class="fas fa-chart-bar"></i> Publish Results</a></li>
         </ul>
     </li>
-    <li><a href="#" class="<?= strpos(current_url(), 'results') !== false ? 'active' : '' ?>">
-        <i class="fas fa-chart-bar"></i> Results
-    </a></li>
+    <li>
+        <a href="#" class="expandable <?= strpos(current_url(), 'results') !== false ? 'active' : '' ?>">
+            <i class="fas fa-chart-bar"></i> Results
+            <i class="fas fa-chevron-down toggle-icon" style="margin-left:auto;"></i>
+        </a>
+        <ul class="submenu" style="display: <?= strpos(current_url(), 'results') !== false ? 'block' : 'none' ?>; padding-left: 1rem;">
+            <li><a href="<?= base_url('results/publish') ?>"><i class="fas fa-chart-bar"></i> Publish Results</a></li>
+        </ul>
+    </li>
     <li><a href="#" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">
         <i class="fas fa-cog"></i> Settings
     </a></li>

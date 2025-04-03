@@ -29,6 +29,9 @@ $routes->group('exam', static function ($routes) {
     $routes->get('getSessions', 'AddExamController::getSessions');
     $routes->post('store', 'AddExamController::store');
     
+    // Add this route for exam session fetching
+    $routes->get('getBySession/(:num)', 'ResultGradingController::getBySession/$1');
+    
     // Exam Subject routes
     $routes->get('subjects', 'AddExamSubjectController::index');
     $routes->get('subjects/(:num)', 'AddExamSubjectController::index/$1');
@@ -86,4 +89,3 @@ $routes->group('results', ['namespace' => 'App\Controllers'], function($routes) 
     $routes->get('by-class', 'ResultGradingController::getResultsByClass');
     $routes->get('exams', 'ResultGradingController::getExamsByClass');
 });
-
