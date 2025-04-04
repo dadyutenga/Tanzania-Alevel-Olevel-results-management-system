@@ -1,11 +1,85 @@
-the   process  is  this
-1.  we  need  to select the  class  to  publish  the  result  for  based  on  session filtering 
-2.  We  need  to  select  we  are  going  to Calcuate Result   based  on O-Level way  or  A-level way 
-3.  After  selecting the  the  O-level  or  A-level 
-4. the  Marks   from  the  table  is  fecthed  from  the  based  on the  class  selected 6.  if  we  selectted the  o -level   we  are  going  to use  o lvele  division calcuation  if  its  alevel  we  are  going  to  use  it  
-7. after that  we  save  the  results  in the  result  table  
-8.and  please  make sure  we  do  this  in  our  controller 
-9.  and  also  read  the  models  to  give  out the correct code  and  the  functioning  code   after  that  dont  forget  to  inlude  loading  of  the  view  to  be used  
-app\Views\results\PublishExamResult.php 
+the  sql  for fetchjinf  the   data   for the    and the  subjects  
 
-  
+
+
+SELECT 
+    s.id AS student_id,
+    CONCAT(s.firstname, ' ', COALESCE(s.middlename, ''), ' ', s.lastname) AS full_name,
+    c.class AS class_name,
+    cs.section_id AS section,
+    te.exam_name,
+    tes.subject_name,
+    tesm.marks_obtained
+FROM 
+    students s
+INNER JOIN 
+    student_session ss ON s.id = ss.student_id
+INNER JOIN 
+    classes c ON ss.class_id = c.id
+INNER JOIN 
+    class_sections cs ON ss.section_id = cs.section_id AND ss.class_id = cs.class_id
+INNER JOIN 
+    tz_exam_classes tec ON tec.class_id = ss.class_id AND tec.session_id = ss.session_id
+INNER JOIN 
+    tz_exams te ON te.id = tec.exam_id
+INNER JOIN 
+    tz_exam_subjects tes ON tes.exam_id = te.id
+LEFT JOIN  
+    tz_exam_subject_marks tesm ON tesm.student_id = s.id 
+                              AND tesm.exam_subject_id = tes.id
+                              AND tesm.exam_id = te.id
+                              AND tesm.class_id = ss.class_id
+WHERE 
+    ss.class_id = 1
+    AND ss.section_id = 1
+    AND ss.session_id = 19
+    AND s.is_active = 'yes'
+    AND te.is_active = 'yes'
+ORDER BY 
+    full_name, te.exam_name, tes.subject_name;
+
+
+
+
+the script   for  fetching  form  the table s  of  student   and    subject  ,  subject_marks  and  exams  
+
+
+
+    SELECT 
+    s.id AS student_id,
+    CONCAT(s.firstname, ' ', COALESCE(s.middlename, ''), ' ', s.lastname) AS full_name,
+    c.class AS class_name,
+    cs.section_id AS section,
+    te.exam_name,
+    ter.total_points,
+    ter.division,
+    ter.division_description
+FROM 
+    students s
+INNER JOIN student_session ss ON s.id = ss.student_id
+INNER JOIN classes c ON ss.class_id = c.id
+INNER JOIN class_sections cs ON ss.section_id = cs.section_id AND ss.class_id = cs.class_id
+INNER JOIN tz_exam_classes tec ON tec.class_id = ss.class_id AND tec.session_id = ss.session_id
+INNER JOIN tz_exams te ON te.id = tec.exam_id
+INNER JOIN tz_exam_results ter ON ter.student_id = s.id 
+                               AND ter.exam_id = te.id
+                               AND ter.class_id = ss.class_id
+                               AND ter.session_id = ss.session_id
+WHERE 
+    ss.class_id = 1
+    AND ss.session_id = 19
+    AND s.is_active = 'yes'
+    AND te.is_active = 'yes'
+ORDER BY 
+    full_name,
+    te.exam_name;
+
+
+
+THE  sql   schema   creation   script  is   for  fetching  data  from  the  database  and  displaying  it  in  a  table  format.
+
+
+
+the   process   outline  
+
+1.

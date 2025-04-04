@@ -148,3 +148,50 @@ Fix countAllResults(false) Issue
 
     Use a cloned query to count total records before applying limit
 
+
+
+    SELECT 
+    s.id AS student_id,
+    s.roll_no,
+    CONCAT(s.firstname, ' ', COALESCE(s.middlename, ''), ' ', s.lastname) AS full_name,
+    c.class AS class_name,
+    cs.section_id AS section,
+    te.exam_name,
+    tes.subject_name,
+    tesm.marks_obtained,
+    tes.max_marks,
+    tes.passing_marks,
+    CASE 
+        WHEN tesm.marks_obtained >= tes.passing_marks THEN 'Pass' 
+        WHEN tesm.marks_obtained IS NULL THEN 'Pending'
+        ELSE 'Fail' 
+    END AS status
+FROM 
+    students s
+JOIN 
+    student_session ss ON s.id = ss.student_id
+JOIN 
+    classes c ON ss.class_id = c.id
+JOIN 
+    class_sections cs ON ss.section_id = cs.section_id AND ss.class_id = cs.class_id
+JOIN 
+    tz_exam_classes tec ON tec.class_id = ss.class_id AND tec.session_id = ss.session_id
+JOIN 
+    tz_exams te ON te.id = tec.exam_id
+JOIN 
+    tz_exam_subjects tes ON tes.exam_id = te.id
+LEFT JOIN  -- Using LEFT JOIN to include students even if marks aren't entered yet
+    tz_exam_subject_marks tesm ON tesm.student_id = s.id 
+                              AND tesm.exam_subject_id = tes.id
+                              AND tesm.exam_id = te.id
+                              AND tesm.class_id = ss.class_id
+WHERE 
+    ss.class_id = 1          -- Your filters
+    AND ss.section_id = 1
+    AND ss.session_id = 19
+    AND s.is_active = 'yes'
+    AND te.is_active = 'yes'
+ORDER BY 
+    full_name, te.exam_name, tes.subject_name;
+
+
