@@ -36,6 +36,7 @@ class ResultGradingController extends ResourceController
         $this->classModel = new ClassModel();
         $this->classSectionModel = new ClassSectionModel();
         $this->sessionModel = new SessionModel();
+ 
     }
 
     public function showPublishPage()
@@ -72,17 +73,23 @@ class ResultGradingController extends ResourceController
             }
     
             $exams = $this->examModel
-                ->select('tz_exams.id, tz_exams.exam_name, tz_exams.exam_date, 
-                         classes.id as class_id, classes.class as class_name, 
-                         sessions.id as session_id, sessions.session as session_name')
+                ->select('
+                    tz_exams.id AS exam_id,
+                    tz_exams.exam_name,
+                    tz_exams.exam_date,
+                    classes.id AS class_id,
+                    classes.class AS class_name,
+                    sessions.id AS session_id,
+                    sessions.session AS session_name
+                ')
                 ->join('tz_exam_classes', 'tz_exam_classes.exam_id = tz_exams.id')
                 ->join('classes', 'tz_exam_classes.class_id = classes.id')
                 ->join('sessions', 'tz_exams.session_id = sessions.id')
                 ->where('tz_exams.session_id', $sessionId)
                 ->where('tz_exam_classes.class_id', $classId)
                 ->where('tz_exams.is_active', 'yes')
-                ->orderBy('tz_exams.exam_date', 'DESC')
-                ->orderBy('classes.class', 'ASC')
+                ->orderBy('tz_exams.exam_date')
+                ->orderBy('classes.class')
                 ->findAll();
     
             return $this->response->setJSON([

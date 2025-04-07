@@ -314,11 +314,15 @@
                         updateExamDropdown();
                     });
                     
+                    // Update the event listeners to remove section-related code
                     document.getElementById('class').addEventListener('change', function() {
                         updateExamDropdown();
-                        fetchSections(this.value);
                     });
-
+                    
+                    document.getElementById('session').addEventListener('change', function() {
+                        updateExamDropdown();
+                    });
+                    
                     async function updateExamDropdown() {
                         const sessionId = document.getElementById('session').value;
                         const classId = document.getElementById('class').value;
@@ -338,7 +342,7 @@
                             if (data.status === 'success') {
                                 data.data.forEach(exam => {
                                     const option = document.createElement('option');
-                                    option.value = exam.id;
+                                    option.value = exam.exam_id;
                                     option.textContent = exam.exam_name;
                                     examSelect.appendChild(option);
                                 });
@@ -365,7 +369,7 @@
                                 data.data.forEach(section => {
                                     const option = document.createElement('option');
                                     option.value = section.id;
-                                    option.textContent = section.section_name;
+                                    option.textContent = section.section_name; // Also fixed property name
                                     sectionSelect.appendChild(option);
                                 });
                             }
@@ -559,7 +563,7 @@
 
         async function fetchSections(classId) {
             try {
-                const response = await fetch(`<?= base_url('classes/getSections/') ?>${classId}`);
+                const response = await fetch(`<?= base_url('results/getSections/') ?>${classId}`);
                 const data = await response.json();
                 
                 const sectionSelect = document.getElementById('section');
@@ -580,7 +584,7 @@
 
         async function fetchExams(sessionId) {
             try {
-                const response = await fetch(`<?= base_url('exam/getBySession/') ?>${sessionId}`);
+                const response = await fetch(`<?= base_url('results/getExamsBySession/') ?>${sessionId}`);
                 const data = await response.json();
                 
                 const examSelect = document.getElementById('exam');
