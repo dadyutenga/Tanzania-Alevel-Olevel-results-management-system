@@ -307,21 +307,19 @@
                     </div>
                 </div>
 
-                <!-- Update JavaScript for form submission -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" onclick="calculateResults()">
+                        <i class="fas fa-calculator"></i> Calculate and Publish Results
+                    </button>
+                </div>
+
+                <div id="results" class="mt-4"></div>
+
+                <!-- Single script section -->
                 <script>
                     // Single event listeners for dependent dropdowns
-                    document.getElementById('session').addEventListener('change', function() {
-                        updateExamDropdown();
-                    });
-                    
-                    // Update the event listeners to remove section-related code
-                    document.getElementById('class').addEventListener('change', function() {
-                        updateExamDropdown();
-                    });
-                    
-                    document.getElementById('session').addEventListener('change', function() {
-                        updateExamDropdown();
-                    });
+                    document.getElementById('session').addEventListener('change', updateExamDropdown);
+                    document.getElementById('class').addEventListener('change', updateExamDropdown);
                     
                     async function updateExamDropdown() {
                         const sessionId = document.getElementById('session').value;
@@ -352,32 +350,6 @@
                         }
                     }
 
-                    async function fetchSections(classId) {
-                        if (!classId) {
-                            document.getElementById('section').innerHTML = '<option value="">All Sections</option>';
-                            return;
-                        }
-
-                        try {
-                            const response = await fetch(`<?= base_url('results/getSections/') ?>${classId}`);
-                            const data = await response.json();
-                            
-                            const sectionSelect = document.getElementById('section');
-                            sectionSelect.innerHTML = '<option value="">All Sections</option>';
-                            
-                            if (data.status === 'success') {
-                                data.data.forEach(section => {
-                                    const option = document.createElement('option');
-                                    option.value = section.id;
-                                    option.textContent = section.section_name; // Also fixed property name
-                                    sectionSelect.appendChild(option);
-                                });
-                            }
-                        } catch (error) {
-                            console.error('Error fetching sections:', error);
-                        }
-                    }
-
                     async function calculateResults() {
                         const examId = document.getElementById('exam').value;
                         const classId = document.getElementById('class').value;
@@ -397,14 +369,9 @@
                             const response = await fetch('<?= base_url('results/process-grades') ?>', {
                                 method: 'POST',
                                 headers: {
-                                    'Content-Type': 'application/json',
+                                    'Content-Type': 'application/x-www-form-urlencoded',
                                 },
-                                body: JSON.stringify({
-                                    exam_id: examId,
-                                    class_id: classId,
-                                    level: levelId,
-                                    session_id: sessionId
-                                })
+                                body: `exam_id=${examId}&class_id=${classId}&level_id=${levelId}&session_id=${sessionId}`
                             });
 
                             const data = await response.json();
@@ -412,7 +379,7 @@
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Success',
-                                    text: 'Results calculated successfully',
+                                    text: data.message || 'Results calculated successfully',
                                     showConfirmButton: false,
                                     timer: 1500
                                 });
@@ -468,140 +435,9 @@
                         `;
                     }
                 </script>
-                <div class="form-actions">
-                    <button onclick="calculateResults()" class="btn btn-primary">
-                        <i class="fas fa-calculator"></i> Calculate and Publish Results
-                    </button>
-                </div>
-
-                <div id="results" class="mt-4"></div>
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // Add your JavaScript code for handling form submission and displaying results
-        async function calculateResults() {
-            const examId = document.getElementById('exam').value;
-            const classId = document.getElementById('class').value;
-            const sectionId = document.getElementById('section').value;
-            const sessionId = document.getElementById('session').value;
-
-            if (!examId || !classId || !sessionId) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Please select all required fields'
-                });
-                return;
-            }
-
-            try {
-                const response = await fetch('<?= base_url('results/calculate') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `exam_id=${examId}&class_id=${classId}&section_id=${sectionId}&session_id=${sessionId}`
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Results calculated and published successfully',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                    // Display results
-                    displayResults(data.data);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to calculate results: ' + data.message
-                    });
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while calculating results'
-                });
-            }
-        }
-
-        function displayResults(results) {
-            const resultsContainer = document.getElementById('results');
-            // Implement your results display logic here
-            resultsContainer.innerHTML = '<div class="alert alert-success">Results have been published successfully</div>';
-        }
-
-        // Add event listeners for dependent dropdowns
-        document.getElementById('class').addEventListener('change', function() {
-            const classId = this.value;
-            if (classId) {
-                // Fetch sections for this class
-                fetchSections(classId);
-            } else {
-                document.getElementById('section').innerHTML = '<option value="">All Sections</option>';
-            }
-        });
-
-        document.getElementById('session').addEventListener('change', function() {
-            const sessionId = this.value;
-            if (sessionId) {
-                // Fetch exams for this session
-                fetchExams(sessionId);
-            } else {
-                document.getElementById('exam').innerHTML = '<option value="">Select Exam</option>';
-            }
-        });
-
-        async function fetchSections(classId) {
-            try {
-                const response = await fetch(`<?= base_url('results/getSections/') ?>${classId}`);
-                const data = await response.json();
-                
-                const sectionSelect = document.getElementById('section');
-                sectionSelect.innerHTML = '<option value="">All Sections</option>';
-                
-                if (data.status === 'success') {
-                    data.data.forEach(section => {
-                        const option = document.createElement('option');
-                        option.value = section.id;
-                        option.textContent = section.section;
-                        sectionSelect.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Error fetching sections:', error);
-            }
-        }
-
-        async function fetchExams(sessionId) {
-            try {
-                const response = await fetch(`<?= base_url('results/getExamsBySession/') ?>${sessionId}`);
-                const data = await response.json();
-                
-                const examSelect = document.getElementById('exam');
-                examSelect.innerHTML = '<option value="">Select Exam</option>';
-                
-                if (data.status === 'success') {
-                    data.data.forEach(exam => {
-                        const option = document.createElement('option');
-                        option.value = exam.id;
-                        option.textContent = exam.exam_name;
-                        examSelect.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Error fetching exams:', error);
-            }
-        }
-    </script>
 </body>
 </html>

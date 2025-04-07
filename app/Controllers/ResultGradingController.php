@@ -170,7 +170,8 @@ class ResultGradingController extends ResourceController
         try {
             $examId = $this->request->getPost('exam_id');
             $classId = $this->request->getPost('class_id');
-            $levelId = $this->request->getPost('level_id');
+            $levelId = $this->request->getPost('level_id'); // View sends 'level' instead of 'level_id'
+            $sessionId = $this->request->getPost('session_id'); // Add session ID
 
             if (!$examId || !$classId || !$levelId) {
                 return $this->response->setJSON([
@@ -183,12 +184,12 @@ class ResultGradingController extends ResourceController
             switch ($levelId) {
                 case '4': // O-Level
                     $oLevelController = new OLevelController();
-                    $result = $oLevelController->processOLevelGrades($examId, $classId);
+                    $result = $oLevelController->processOLevelGrades($examId, $classId, null, $sessionId);
                     break;
                 
                 case '6': // A-Level
                     $aLevelController = new ALevelController();
-                    $result = $aLevelController->processALevelGrades($examId, $classId);
+                    $result = $aLevelController->processALevelGrades($examId, $classId, null, $sessionId);
                     break;
 
                 default:

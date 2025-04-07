@@ -90,4 +90,5 @@ $routes->group('results', ['namespace' => 'App\Controllers'], function($routes) 
     $routes->get('getExams', 'ResultGradingController::getExams');
     $routes->get('getSections/(:num)', 'ResultGradingController::getSections/$1');
     $routes->get('getExamsBySession/(:num)', 'ResultGradingController::getExamsBySession/$1');
+  
 });
