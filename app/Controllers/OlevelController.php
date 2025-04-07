@@ -57,7 +57,57 @@ class OLevelController extends ResultGradingController
                 ['min' => 0, 'grade' => 'F', 'points' => 6]
             ];
 
-            return $this->calculateGrades($marks, $gradeScale);
+            // Group marks by student
+            $studentGroups = [];
+            foreach ($marks as $mark) {
+                if (!isset($studentGroups[$mark->student_id])) {
+                    $studentGroups[$mark->student_id] = [];
+                }
+                $studentGroups[$mark->student_id][] = $mark;
+            }
+
+            // Process each student individually
+            foreach ($studentGroups as $studentId => $studentMarks) {
+                try {
+                    // Check if student has any marks
+                    if (empty($studentMarks)) {
+                        continue;
+                    }
+
+                    $result = $this->processStudentGrades($studentMarks, $gradeScale);
+                    
+                    // Check if result exists for this student
+                    $existingResult = $this->examResultModel
+                        ->where('student_id', $studentId)
+                        ->where('exam_id', $examId)
+                        ->where('class_id', $classId)
+                        ->first();
+
+                    $resultData = [
+                        'student_id' => $studentId,
+                        'exam_id' => $examId,
+                        'class_id' => $classId,
+                        'session_id' => $sessionId,
+                        'total_points' => $result['total_points'],
+                        'division' => $result['division'],
+                        'division_description' => $this->getDivisionDescription($result['division'])
+                    ];
+
+                    if ($existingResult) {
+                        // Update existing record
+                        $this->examResultModel->update($existingResult->id, $resultData);
+                    } else {
+                        // Insert new record
+                        $this->examResultModel->insert($resultData);
+                    }
+                    
+                } catch (\Exception $e) {
+                    log_message('error', '[OLevel.processGrades] Error processing student ID ' . $studentId . ': ' . $e->getMessage());
+                    continue;
+                }
+            }
+
+            return ['status' => 'success', 'message' => 'All student grades processed'];
 
         } catch (\Exception $e) {
             log_message('error', '[OLevel.processGrades] Error: ' . $e->getMessage());
@@ -65,27 +115,18 @@ class OLevelController extends ResultGradingController
         }
     }
 
-    private function calculateGrades($marks, $gradeScale)
+    private function processStudentGrades($studentMarks, $gradeScale)
     {
-        $results = [];
-        $studentMarks = [];
-        $requiredSubjects = 7; // O-Level requires best 7 subjects
+        $subjects = [];
+        $requiredSubjects = 7;
 
-        // First pass: Group all subjects by student
-        foreach ($marks as $mark) {
-            if (!isset($studentMarks[$mark->student_id])) {
-                $studentMarks[$mark->student_id] = [
-                    'student_id' => $mark->student_id,
-                    'name' => $mark->full_name,
-                    'class' => $mark->class_name,
-                    'section' => $mark->section,
-                    'subjects' => [],
-                    'total_points' => 0
-                ];
+        foreach ($studentMarks as $mark) {
+            if (!isset($mark->marks_obtained)) {
+                continue;
             }
-
+            
             $grade = $this->getGrade($mark->marks_obtained, $gradeScale);
-            $studentMarks[$mark->student_id]['subjects'][] = [
+            $subjects[] = [
                 'subject' => $mark->subject_name,
                 'marks' => $mark->marks_obtained,
                 'grade' => $grade['grade'],
@@ -93,31 +134,41 @@ class OLevelController extends ResultGradingController
             ];
         }
 
-        // Second pass: Calculate grades based on best 7 subjects
-        foreach ($studentMarks as $studentId => $data) {
-            // Sort subjects by points (ascending since A=1, F=6)
-            usort($data['subjects'], function($a, $b) {
-                return $a['points'] - $b['points'];
-            });
-
-            // Take best 7 subjects (or all if less than 7)
-            $bestSubjects = array_slice($data['subjects'], 0, $requiredSubjects);
-            
-            // Calculate total points from best 7 subjects
-            $totalPoints = 0;
-            foreach ($bestSubjects as $subject) {
-                $totalPoints += $subject['points'];
-            }
-
-            $data['subjects'] = $bestSubjects;
-            $data['total_points'] = $totalPoints;
-            $data['subject_count'] = count($bestSubjects);
-            $data['division'] = $this->calculateDivision($totalPoints / $data['subject_count']);
-
-            $results[] = $data;
+        if (empty($subjects)) {
+            throw new \Exception('No valid subjects found for student');
         }
 
-        return ['status' => 'success', 'data' => $results];
+        // Sort subjects by points (ascending since A=1, F=6)
+        usort($subjects, function($a, $b) {
+            return $a['points'] - $b['points'];
+        });
+
+        // Take best 7 subjects
+        $bestSubjects = array_slice($subjects, 0, $requiredSubjects);
+        
+        // Calculate total points
+        $totalPoints = 0;
+        foreach ($bestSubjects as $subject) {
+            $totalPoints += $subject['points'];
+        }
+
+        $subjectCount = count($bestSubjects);
+        return [
+            'total_points' => $totalPoints,
+            'division' => $this->calculateDivision($totalPoints / $subjectCount)
+        ];
+    }
+
+    private function getDivisionDescription($division)
+    {
+        $descriptions = [
+            'DIVISION I' => 'Excellent',
+            'DIVISION II' => 'Very Good',
+            'DIVISION III' => 'Good',
+            'DIVISION IV' => 'Satisfactory',
+            'FAIL' => 'Fail'
+        ];
+        return $descriptions[$division] ?? 'Unknown';
     }
 
     private function getGrade($marks, $gradeScale)
