@@ -82,4 +82,25 @@ THE  sql   schema   creation   script  is   for  fetching  data  from  the  data
 
 the   process   outline  
 
-1.
+
+SELECT 
+    e.id AS exam_id,
+    e.exam_name,
+    e.exam_date,
+    e.is_active,
+    ec.class_id,
+    c.class AS class_name
+FROM 
+    tz_exams e
+JOIN 
+    tz_exam_classes ec ON e.id = ec.exam_id
+JOIN 
+    classes c ON ec.class_id = c.id
+WHERE 
+    e.session_id = 19
+    AND ec.class_id = 1
+    AND e.is_active = 'yes'
+ORDER BY 
+    e.exam_date DESC;
+
+FETCHING  THE  DATA  

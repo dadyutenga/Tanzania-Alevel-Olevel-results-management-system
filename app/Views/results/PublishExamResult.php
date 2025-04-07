@@ -309,6 +309,71 @@
 
                 <!-- Update JavaScript for form submission -->
                 <script>
+                    // Single event listeners for dependent dropdowns
+                    document.getElementById('session').addEventListener('change', function() {
+                        updateExamDropdown();
+                    });
+                    
+                    document.getElementById('class').addEventListener('change', function() {
+                        updateExamDropdown();
+                        fetchSections(this.value);
+                    });
+
+                    async function updateExamDropdown() {
+                        const sessionId = document.getElementById('session').value;
+                        const classId = document.getElementById('class').value;
+                        
+                        if (!sessionId || !classId) {
+                            document.getElementById('exam').innerHTML = '<option value="">Select Exam</option>';
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`<?= base_url('results/getExams') ?>?session_id=${sessionId}&class_id=${classId}`);
+                            const data = await response.json();
+                            
+                            const examSelect = document.getElementById('exam');
+                            examSelect.innerHTML = '<option value="">Select Exam</option>';
+                            
+                            if (data.status === 'success') {
+                                data.data.forEach(exam => {
+                                    const option = document.createElement('option');
+                                    option.value = exam.id;
+                                    option.textContent = exam.exam_name;
+                                    examSelect.appendChild(option);
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error fetching exams:', error);
+                        }
+                    }
+
+                    async function fetchSections(classId) {
+                        if (!classId) {
+                            document.getElementById('section').innerHTML = '<option value="">All Sections</option>';
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`<?= base_url('results/getSections/') ?>${classId}`);
+                            const data = await response.json();
+                            
+                            const sectionSelect = document.getElementById('section');
+                            sectionSelect.innerHTML = '<option value="">All Sections</option>';
+                            
+                            if (data.status === 'success') {
+                                data.data.forEach(section => {
+                                    const option = document.createElement('option');
+                                    option.value = section.id;
+                                    option.textContent = section.section_name;
+                                    sectionSelect.appendChild(option);
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error fetching sections:', error);
+                        }
+                    }
+
                     async function calculateResults() {
                         const examId = document.getElementById('exam').value;
                         const classId = document.getElementById('class').value;
@@ -325,12 +390,17 @@
                         }
 
                         try {
-                            const response = await fetch('<?= base_url('results/calculate') ?>', {
+                            const response = await fetch('<?= base_url('results/process-grades') ?>', {
                                 method: 'POST',
                                 headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Content-Type': 'application/json',
                                 },
-                                body: `exam_id=${examId}&class_id=${classId}&level=${levelId}&session_id=${sessionId}`
+                                body: JSON.stringify({
+                                    exam_id: examId,
+                                    class_id: classId,
+                                    level: levelId,
+                                    session_id: sessionId
+                                })
                             });
 
                             const data = await response.json();
@@ -338,7 +408,7 @@
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Success',
-                                    text: 'Results calculated and published successfully',
+                                    text: 'Results calculated successfully',
                                     showConfirmButton: false,
                                     timer: 1500
                                 });
@@ -347,7 +417,7 @@
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Error',
-                                    text: 'Failed to calculate results: ' + data.message
+                                    text: data.message || 'Failed to calculate results'
                                 });
                             }
                         } catch (error) {
@@ -358,6 +428,40 @@
                                 text: 'An error occurred while calculating results'
                             });
                         }
+                    }
+
+                    function displayResults(results) {
+                        const resultsContainer = document.getElementById('results');
+                        if (!results || results.length === 0) {
+                            resultsContainer.innerHTML = '<div class="alert alert-info">No results found</div>';
+                            return;
+                        }
+
+                        resultsContainer.innerHTML = `
+                            <div class="results-table">
+                                <h3>Published Results</h3>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Total Marks</th>
+                                            <th>Average</th>
+                                            <th>Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${results.map(result => `
+                                            <tr>
+                                                <td>${result.firstname} ${result.lastname}</td>
+                                                <td>${result.total_points}</td>
+                                                <td>${result.average || '-'}</td>
+                                                <td>${result.division || '-'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
                     }
                 </script>
                 <div class="form-actions">
