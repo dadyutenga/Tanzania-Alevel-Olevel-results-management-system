@@ -164,4 +164,48 @@ class ResultGradingController extends ResourceController
             ]);
         }
     }
+
+    public function processGradeCalculation()
+    {
+        try {
+            $examId = $this->request->getPost('exam_id');
+            $classId = $this->request->getPost('class_id');
+            $levelId = $this->request->getPost('level_id');
+
+            if (!$examId || !$classId || !$levelId) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Exam ID, Class ID, and Level ID are required'
+                ]);
+            }
+
+            // Route to appropriate controller based on level
+            switch ($levelId) {
+                case '4': // O-Level
+                    $oLevelController = new OLevelController();
+                    $result = $oLevelController->processOLevelGrades($examId, $classId);
+                    break;
+                
+                case '6': // A-Level
+                    $aLevelController = new ALevelController();
+                    $result = $aLevelController->processALevelGrades($examId, $classId);
+                    break;
+
+                default:
+                    return $this->response->setJSON([
+                        'status' => 'error',
+                        'message' => 'Invalid level selected'
+                    ]);
+            }
+
+            return $this->response->setJSON($result);
+
+        } catch (\Exception $e) {
+            log_message('error', '[ResultGrading.processGradeCalculation] Error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Failed to process grades'
+            ]);
+        }
+    }
 }
