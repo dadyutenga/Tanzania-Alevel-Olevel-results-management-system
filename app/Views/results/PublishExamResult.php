@@ -313,9 +313,7 @@
                     </button>
                 </div>
 
-                <div id="results" class="mt-4"></div>
-
-                <!-- Single script section -->
+                <!-- Remove the results div and modify the script -->
                 <script>
                     // Single event listeners for dependent dropdowns
                     document.getElementById('session').addEventListener('change', updateExamDropdown);
@@ -379,11 +377,18 @@
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Success',
-                                    text: data.message || 'Results calculated successfully',
-                                    showConfirmButton: false,
-                                    timer: 1500
+                                    text: 'Results have been calculated and published successfully',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'OK'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        // Reset the form
+                                        document.getElementById('exam').value = '';
+                                        document.getElementById('class').value = '';
+                                        document.getElementById('level').value = '';
+                                        document.getElementById('session').value = '';
+                                    }
                                 });
-                                displayResults(data.data);
                             } else {
                                 Swal.fire({
                                     icon: 'error',
@@ -399,40 +404,6 @@
                                 text: 'An error occurred while calculating results'
                             });
                         }
-                    }
-
-                    function displayResults(results) {
-                        const resultsContainer = document.getElementById('results');
-                        if (!results || results.length === 0) {
-                            resultsContainer.innerHTML = '<div class="alert alert-info">No results found</div>';
-                            return;
-                        }
-
-                        resultsContainer.innerHTML = `
-                            <div class="results-table">
-                                <h3>Published Results</h3>
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Student</th>
-                                            <th>Total Marks</th>
-                                            <th>Average</th>
-                                            <th>Grade</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${results.map(result => `
-                                            <tr>
-                                                <td>${result.firstname} ${result.lastname}</td>
-                                                <td>${result.total_points}</td>
-                                                <td>${result.average || '-'}</td>
-                                                <td>${result.division || '-'}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        `;
                     }
                 </script>
             </div>
