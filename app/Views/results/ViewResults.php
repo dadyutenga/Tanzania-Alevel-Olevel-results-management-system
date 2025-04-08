@@ -6,6 +6,7 @@
     <title>Exam Result Management - View Results</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Modern Color Scheme */
         :root {
             --primary: #f8f9fa;
             --primary-dark: #f1f3f5;
@@ -42,7 +43,7 @@
             min-height: 100vh;
         }
 
-        /* Sidebar styles */
+        /* Sidebar */
         .sidebar {
             background-color: var(--accent);
             color: var(--primary);
@@ -57,7 +58,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 2rem;
-            padding: 1.5rem 1rem;
+            padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -70,14 +71,15 @@
         .sidebar-header h2 {
             font-size: 1.25rem;
             letter-spacing: -0.025em;
-            font-weight: 600;
-            opacity: 0.9;
         }
 
-        /* Sidebar Menu Styles */
         .sidebar-menu {
             list-style: none;
             margin-top: 2rem;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
         }
 
         .sidebar-menu a {
@@ -116,16 +118,15 @@
         }
 
         .header h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--text-primary);
+            font-size: 1.5rem;
+            letter-spacing: -0.025em;
         }
 
         /* Form Container */
         .form-container {
             background: var(--primary);
-            border-radius: var(--radius);
             padding: 1.5rem;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
             margin-bottom: 1.5rem;
@@ -277,18 +278,28 @@
                 overflow-x: auto;
             }
         }
+
+        /* Additional utility classes */
+        .bg-purple-soft { background-color: rgba(126, 87, 194, 0.1); }
+        .text-purple { color: #7e57c2; }
+        .bg-blue-soft { background-color: rgba(66, 153, 225, 0.1); }
+        .text-blue { color: #4299e1; }
+        .bg-orange-soft { background-color: rgba(245, 158, 11, 0.1); }
+        .text-orange { color: #f59e0b; }
     </style>
 </head>
 <body>
     <div class="dashboard">
+        <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-graduation-cap"></i>
                 <h2>Exam Results Management</h2>
             </div>
-            <?= $this->include('shared/sidebar_menu') ?>
+            <?= view('shared/sidebar_menu') ?>
         </div>
         
+        <!-- Main Content -->
         <div class="main-content">
             <div class="header">
                 <h1>View Exam Results</h1>
@@ -467,89 +478,3 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
-
-<style>
-    :root {
-        --primary: #4f46e5;
-        --primary-dark: #4338ca;
-        --sidebar-bg: #1e1b4b;
-        --sidebar-hover: #312e81;
-        --text-light: #f8fafc;
-        --text-dark: #1e293b;
-        --card-bg: #ffffff;
-        --body-bg: #f1f5f9;
-        --success: #10b981;
-        --warning: #f59e0b;
-        --danger: #ef4444;
-        --info: #3b82f6;
-        --border-radius: 8px;
-        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --transition: all 0.2s ease;
-    }
-
-    /* Update body and main content */
-    body {
-        background-color: var(--body-bg);
-        color: var(--text-dark);
-    }
-
-    .main-content {
-        background-color: var(--body-bg);
-    }
-
-    /* Update form container */
-    .form-container {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    /* Update buttons */
-    .btn-primary {
-        background-color: var(--primary);
-        color: var(--text-light);
-    }
-
-    .btn-primary:hover {
-        background-color: var(--primary-dark);
-    }
-
-    /* Update table styles */
-    .results-table {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .results-table th {
-        background-color: var(--primary);
-        color: var(--text-light);
-    }
-
-    .results-table tr:hover {
-        background-color: var(--body-bg);
-    }
-
-    /* Update form controls */
-    .form-control {
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        transition: var(--transition);
-    }
-
-    .form-control:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-    }
-
-    /* Update card hover effects */
-    .form-container {
-        transition: var(--transition);
-    }
-
-    .form-container:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-</style>
