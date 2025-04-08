@@ -104,3 +104,39 @@ ORDER BY
     e.exam_date DESC;
 
 FETCHING  THE  DATA  
+
+
+
+
+
+SELECT 
+    s.id AS student_id,
+    CONCAT(s.firstname, ' ', COALESCE(s.middlename, ''), ' ', s.lastname) AS full_name,
+    c.class AS class_name,
+    te.exam_name,
+    ter.total_points,
+    ter.division
+FROM 
+    students s
+INNER JOIN student_session ss ON s.id = ss.student_id
+INNER JOIN classes c ON ss.class_id = c.id
+INNER JOIN class_sections cs ON ss.section_id = cs.section_id AND ss.class_id = cs.class_id
+INNER JOIN tz_exam_classes tec ON tec.class_id = ss.class_id AND tec.session_id = ss.session_id
+INNER JOIN tz_exams te ON te.id = tec.exam_id
+INNER JOIN tz_exam_results ter ON ter.student_id = s.id 
+                               AND ter.exam_id = te.id
+                               AND ter.class_id = ss.class_id
+                               AND ter.session_id = ss.session_id
+WHERE 
+    ss.class_id = 1
+    AND ss.session_id = 19
+    AND ss.section_id = 1  -- Section filter remains active
+    AND s.is_active = 'yes'
+    AND te.is_active = 'yes'
+ORDER BY 
+    full_name,
+    te.exam_name;
+
+
+
+ama  using  session filtering  
