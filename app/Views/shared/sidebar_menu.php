@@ -18,7 +18,6 @@
             <li><a href="<?= base_url ('exam/marks/bulk')?>"><i class="fas fa-upload"></i> Bulk Add Exam Marks</a></li>
             <li><a href="<?= base_url('exam/view') ?>"><i class="fas fa-file-alt"></i> View Exam</a></li>
             <li><a href="<?= base_url('exam/marks/view') ?>"><i class="fas fa-eye"></i> View Exam Marks</a></li>
-            <li><a href="<?= base_url('results/publish') ?>"><i class="fas fa-chart-bar"></i> Publish Results</a></li>
         </ul>
     </li>
     <li>

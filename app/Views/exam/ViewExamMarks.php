@@ -685,6 +685,39 @@
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
+
+        // Add this script for expandable sidebar
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add expandable sidebar functionality
+            const expandableLinks = document.querySelectorAll('.expandable');
+            expandableLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const submenu = this.nextElementSibling;
+                    const toggleIcon = this.querySelector('.toggle-icon');
+                    if (submenu.style.display === 'none' || submenu.style.display === '') {
+                        submenu.style.display = 'block';
+                        toggleIcon.classList.remove('fa-chevron-down');
+                        toggleIcon.classList.add('fa-chevron-up');
+                    } else {
+                        submenu.style.display = 'none';
+                        toggleIcon.classList.remove('fa-chevron-up');
+                        toggleIcon.classList.add('fa-chevron-down');
+                    }
+                });
+            });
+
+            // Combine with your existing DOMContentLoaded event handlers
+            const sessionFilter = document.getElementById('sessionFilter');
+            sessionFilter.addEventListener('change', loadExams);
+            
+            document.getElementById('examFilter').addEventListener('change', loadClasses);
+            
+            document.getElementById('editAllForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                updateAllMarks();
+            });
+        });
     </script>
 </body>
 </html>

@@ -447,6 +447,39 @@
             alert.style.display = 'flex';
             setTimeout(() => alert.style.display = 'none', 5000);
         }
+
+        // Add this script for expandable sidebar
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add expandable sidebar functionality
+            const expandableLinks = document.querySelectorAll('.expandable');
+            expandableLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const submenu = this.nextElementSibling;
+                    const toggleIcon = this.querySelector('.toggle-icon');
+                    if (submenu.style.display === 'none' || submenu.style.display === '') {
+                        submenu.style.display = 'block';
+                        toggleIcon.classList.remove('fa-chevron-down');
+                        toggleIcon.classList.add('fa-chevron-up');
+                    } else {
+                        submenu.style.display = 'none';
+                        toggleIcon.classList.remove('fa-chevron-up');
+                        toggleIcon.classList.add('fa-chevron-down');
+                    }
+                });
+            });
+
+            // Combine with your existing event listeners
+            document.getElementById('session').addEventListener('change', function() {
+                fetchExams(this.value);
+            });
+
+            document.getElementById('exam').addEventListener('change', function() {
+                if (document.getElementById('session').value) {
+                    fetchClasses(document.getElementById('session').value);
+                }
+            });
+        });
     </script>
 </body>
 </html>
