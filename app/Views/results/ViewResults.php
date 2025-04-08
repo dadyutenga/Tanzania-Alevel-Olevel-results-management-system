@@ -467,3 +467,192 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
+
+<style>
+    :root {
+        --primary: #4f46e5;
+        --primary-dark: #4338ca;
+        --sidebar-bg: #1e1b4b;
+        --sidebar-hover: #312e81;
+        --text-light: #f8fafc;
+        --text-dark: #1e293b;
+        --card-bg: #ffffff;
+        --body-bg: #f1f5f9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #3b82f6;
+        --border-radius: 8px;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --transition: all 0.2s ease;
+    }
+
+    /* Sidebar with expand/collapse functionality */
+    .sidebar-menu .submenu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .sidebar-menu .expanded .submenu {
+        max-height: 500px; /* Adjust based on your content */
+    }
+
+    .sidebar-menu .toggle-icon {
+        margin-left: auto;
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar-menu .expanded .toggle-icon {
+        transform: rotate(180deg);
+    }
+
+    /* Remove duplicate styles and keep only the updated ones */
+    body {
+        background-color: var(--body-bg);
+        color: var(--text-dark);
+    }
+
+    .main-content {
+        background-color: var(--body-bg);
+    }
+
+    /* Update form container */
+    .form-container {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Update buttons */
+    .btn-primary {
+        background-color: var(--primary);
+        color: var(--text-light);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-dark);
+    }
+
+    /* Update table styles */
+    .results-table {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .results-table th {
+        background-color: var(--primary);
+        color: var(--text-light);
+    }
+
+    .results-table tr:hover {
+        background-color: var(--body-bg);
+    }
+
+    /* Update form controls */
+    .form-control {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Update card hover effects */
+    .form-container {
+        transition: var(--transition);
+    }
+
+    .form-container:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    
+        /* Update sidebar styles */
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            color: var(--text-light);
+            padding: 2rem 1rem;
+            position: fixed;
+            width: 250px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header i {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+            color: var(--primary);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: var(--sidebar-hover);
+            color: white;
+        }
+
+        .sidebar-menu i {
+            font-size: 1.1rem;
+            width: 1.5rem;
+            text-align: center;
+            margin-right: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+    
+</style>
+
+// Add expand/collapse functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const expandableLinks = document.querySelectorAll('.sidebar-menu .expandable');
+    
+    expandableLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const parent = this.parentElement;
+            const submenu = this.nextElementSibling;
+            const toggleIcon = this.querySelector('.toggle-icon');
+            
+            parent.classList.toggle('expanded');
+            toggleIcon.classList.toggle('fa-chevron-down');
+            toggleIcon.classList.toggle('fa-chevron-up');
+        });
+    });
+});
