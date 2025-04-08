@@ -154,17 +154,16 @@ class ViewResultsModel extends ResourceController
             $classId = $this->request->getPost('class_id');
             $sessionId = $this->request->getPost('session_id');
             $examId = $this->request->getPost('exam_id');
-            $levelId = $this->request->getPost('level_id');
-
-            if (!$classId || !$sessionId || !$examId || !$levelId) {
+            // Remove level_id check since it's not used
+            
+            if (!$classId || !$sessionId || !$examId) {
                 return $this->response->setJSON([
                     'status' => 'error',
-                    'message' => 'All filter parameters are required'
+                    'message' => 'Class, Session and Exam are required'
                 ]);
             }
 
             $results = $this->fetchResults($classId, $sessionId, $examId);
-
             return $this->response->setJSON($results);
 
         } catch (\Exception $e) {
