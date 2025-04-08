@@ -170,28 +170,27 @@ class ResultGradingController extends ResourceController
         try {
             $examId = $this->request->getPost('exam_id');
             $classId = $this->request->getPost('class_id');
-            $levelId = $this->request->getPost('level_id'); // View sends 'level' instead of 'level_id'
-            $sessionId = $this->request->getPost('session_id'); // Add session ID
+            $levelId = $this->request->getPost('level_id');
+            $sessionId = $this->request->getPost('session_id');
 
-            if (!$examId || !$classId || !$levelId) {
+            if (!$examId || !$classId || !$levelId || !$sessionId) {
                 return $this->response->setJSON([
                     'status' => 'error',
-                    'message' => 'Exam ID, Class ID, and Level ID are required'
+                    'message' => 'All parameters are required'
                 ]);
             }
 
-            // Route to appropriate controller based on level
             switch ($levelId) {
                 case '4': // O-Level
                     $oLevelController = new OLevelController();
                     $result = $oLevelController->processOLevelGrades($examId, $classId, null, $sessionId);
-                    break;
-                
+                    return $this->response->setJSON($result); // Return the result directly
+                    
                 case '6': // A-Level
                     $aLevelController = new ALevelController();
                     $result = $aLevelController->processALevelGrades($examId, $classId, null, $sessionId);
-                    break;
-
+                    return $this->response->setJSON($result);
+                
                 default:
                     return $this->response->setJSON([
                         'status' => 'error',
@@ -199,13 +198,11 @@ class ResultGradingController extends ResourceController
                     ]);
             }
 
-            return $this->response->setJSON($result);
-
         } catch (\Exception $e) {
             log_message('error', '[ResultGrading.processGradeCalculation] Error: ' . $e->getMessage());
             return $this->response->setJSON([
                 'status' => 'error',
-                'message' => 'Failed to process grades'
+                'message' => 'Failed to process grades: ' . $e->getMessage()
             ]);
         }
     }

@@ -70,23 +70,17 @@ class OLevelController extends ResultGradingController
                 $studentGroups[$mark['student_id']][] = $mark;
             }
 
-            // Process each student individually
+            $processedResults = [];
+            $successCount = 0;
+            
             foreach ($studentGroups as $studentId => $studentMarks) {
                 try {
-                    // Check if student has any marks
                     if (empty($studentMarks)) {
                         continue;
                     }
 
                     $result = $this->processStudentGrades($studentMarks, $gradeScale);
                     
-                    // Check if result exists for this student
-                    $existingResult = $this->examResultModel
-                        ->where('student_id', $studentId)
-                        ->where('exam_id', $examId)
-                        ->where('class_id', $classId)
-                        ->first();
-
                     $resultData = [
                         'student_id' => $studentId,
                         'exam_id' => $examId,
@@ -97,26 +91,62 @@ class OLevelController extends ResultGradingController
                         'division_description' => $this->getDivisionDescription($result['division'])
                     ];
 
+                    // Check if result exists
+                    $existingResult = $this->examResultModel
+                        ->where([
+                            'student_id' => $studentId,
+                            'exam_id' => $examId,
+                            'class_id' => $classId,
+                            'session_id' => $sessionId
+                        ])
+                        ->first();
+
                     if ($existingResult) {
-                        // Update existing record
-                        $this->examResultModel->update($existingResult->id, $resultData);
+                        $this->examResultModel->update($existingResult['id'], $resultData);
                     } else {
-                        // Insert new record
                         $this->examResultModel->insert($resultData);
                     }
                     
+                    $successCount++;
+                    $processedResults[] = array_merge($resultData, [
+                        'student_name' => $studentMarks[0]['full_name'] ?? 'Unknown'
+                    ]);
+
                 } catch (\Exception $e) {
-                    log_message('error', '[OLevel.processGrades] Error processing student ID ' . $studentId . ': ' . $e->getMessage());
+                    log_message('error', '[OLevel.processGrades] Student ID ' . $studentId . ' Error: ' . $e->getMessage());
                     continue;
                 }
             }
 
-            return ['status' => 'success', 'message' => 'All student grades processed'];
+            if ($successCount === 0) {
+                return [
+                    'status' => 'error',
+                    'message' => 'No results were processed successfully'
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'message' => $successCount . ' student grades processed successfully',
+                'data' => $processedResults
+            ];
 
         } catch (\Exception $e) {
             log_message('error', '[OLevel.processGrades] Error: ' . $e->getMessage());
-            return ['status' => 'error', 'message' => 'Failed to process O-Level grades'];
+            return [
+                'status' => 'error',
+                'message' => 'Failed to process grades: ' . $e->getMessage()
+            ];
         }
+    }
+
+    private function calculateDivision($average)
+    {
+        if ($average <= 2) return 'I';     // Changed from 'DIVISION I' to 'I'
+        if ($average <= 3) return 'II';    // Changed from 'DIVISION II' to 'II'
+        if ($average <= 4) return 'III';   // Changed from 'DIVISION III' to 'III'
+        if ($average <= 5) return 'IV';    // Changed from 'DIVISION IV' to 'IV'
+        return 'F';                        // Changed from 'FAIL' to 'F'
     }
 
     private function processStudentGrades($studentMarks, $gradeScale)
@@ -183,14 +213,5 @@ class OLevelController extends ResultGradingController
             }
         }
         return end($gradeScale);
-    }
-
-    private function calculateDivision($average)
-    {
-        if ($average <= 2) return 'DIVISION I';
-        if ($average <= 3) return 'DIVISION II';
-        if ($average <= 4) return 'DIVISION III';
-        if ($average <= 5) return 'DIVISION IV';
-        return 'FAIL';
     }
 }
