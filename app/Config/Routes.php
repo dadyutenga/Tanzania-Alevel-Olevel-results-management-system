@@ -95,5 +95,6 @@ $routes->group('results', ['namespace' => 'App\Controllers'], function($routes) 
     $routes->get('view', 'ViewResultsModel::showResultsPage');  // Changed from view-results to view
     $routes->get('view/getExams', 'ViewResultsModel::getExams');  // Updated path
     $routes->post('view/getFilteredResults', 'ViewResultsModel::getFilteredResults');  // Updated path
-    $routes->get('view/fetchResults/(:num)/(:num)/(:num)', 'ViewResultsModel::fetchResults/$1/$2/$3');  // Updated path
+    $routes->get('view/fetchResults/(:num)/(:num)/(:num)', 'ViewResultsModel::fetchResults/$1/$2/$3'); 
+    $routes->post('view/getStudentSubjectMarks', 'ViewResultsModel::getStudentSubjectMarks');
 });

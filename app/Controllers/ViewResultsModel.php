@@ -174,4 +174,68 @@ class ViewResultsModel extends ResourceController
             ]);
         }
     }
+
+    public function getStudentSubjectMarks()
+    {
+        try {
+            $studentId = $this->request->getPost('student_id');
+            $examId = $this->request->getPost('exam_id');
+            
+            if (!$studentId || !$examId) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Student ID and Exam ID are required'
+                ]);
+            }
+
+            $subjectMarks = $this->examSubjectMarkModel
+                ->select('
+                    tz_exam_subjects.subject_name,
+                    tz_exam_subjects.max_marks,
+                    tz_exam_subjects.passing_marks,
+                    tz_exam_subject_marks.marks_obtained
+                ')
+                ->join('tz_exam_subjects', 'tz_exam_subjects.id = tz_exam_subject_marks.exam_subject_id')
+                ->where('tz_exam_subject_marks.student_id', $studentId)
+                ->where('tz_exam_subject_marks.exam_id', $examId)
+                ->findAll();
+
+            // Convert marks to grades
+            foreach ($subjectMarks as &$mark) {
+                $percentage = ($mark['marks_obtained'] / $mark['max_marks']) * 100;
+                $mark['grade'] = $this->calculateGrade($percentage);
+            }
+
+            return $this->response->setJSON([
+                'status' => 'success',
+                'data' => $subjectMarks
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', '[ViewResults.getStudentSubjectMarks] Error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Failed to fetch subject marks'
+            ]);
+        }
+    }
+
+    private function calculateGrade($percentage)
+    {
+        $gradeScale = [
+            ['min' => 75, 'grade' => 'A', 'points' => 1],
+            ['min' => 65, 'grade' => 'B+', 'points' => 2],
+            ['min' => 55, 'grade' => 'B', 'points' => 3],
+            ['min' => 45, 'grade' => 'C', 'points' => 4],
+            ['min' => 35, 'grade' => 'D', 'points' => 5],
+            ['min' => 0, 'grade' => 'F', 'points' => 6]
+        ];
+
+        foreach ($gradeScale as $grade) {
+            if ($percentage >= $grade['min']) {
+                return $grade['grade'];
+            }
+        }
+        return 'F';
+    }
 }

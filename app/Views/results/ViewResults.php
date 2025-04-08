@@ -468,8 +468,75 @@
                         // Implement download functionality
                     }
 
-                    function viewDetails(studentId) {
-                        // Implement view details functionality
+                    async function viewDetails(studentId) {
+                        const examId = document.getElementById('exam').value;
+                        
+                        try {
+                            const response = await fetch('<?= base_url('results/view/getStudentSubjectMarks') ?>', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `student_id=${studentId}&exam_id=${examId}`
+                            });
+
+                            const data = await response.json();
+                            if (data.status === 'success') {
+                                showSubjectMarksModal(data.data);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: data.message || 'Failed to fetch subject marks'
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred while fetching subject marks'
+                            });
+                        }
+                    }
+
+                    function showSubjectMarksModal(subjectMarks) {
+                        let tableHtml = `
+                            <table class="results-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Maximum Marks</th>
+                                        <th>Marks Obtained</th>
+                                        <th>Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+
+                        subjectMarks.forEach(mark => {
+                            tableHtml += `
+                                <tr>
+                                    <td>${mark.subject_name}</td>
+                                    <td>${mark.max_marks}</td>
+                                    <td>${mark.marks_obtained}</td>
+                                    <td>${mark.grade}</td>
+                                </tr>
+                            `;
+                        });
+
+                        tableHtml += `
+                                </tbody>
+                            </table>
+                        `;
+
+                        Swal.fire({
+                            title: 'Subject-wise Marks',
+                            html: tableHtml,
+                            width: '800px',
+                            showCloseButton: true,
+                            showConfirmButton: false
+                        });
                     }
                 </script>
             </div>
