@@ -543,5 +543,27 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Add this script for expandable sidebar -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const expandableLinks = document.querySelectorAll('.expandable');
+            expandableLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const submenu = this.nextElementSibling;
+                    const toggleIcon = this.querySelector('.toggle-icon');
+                    if (submenu.style.display === 'none' || submenu.style.display === '') {
+                        submenu.style.display = 'block';
+                        toggleIcon.classList.remove('fa-chevron-down');
+                        toggleIcon.classList.add('fa-chevron-up');
+                    } else {
+                        submenu.style.display = 'none';
+                        toggleIcon.classList.remove('fa-chevron-up');
+                        toggleIcon.classList.add('fa-chevron-down');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
