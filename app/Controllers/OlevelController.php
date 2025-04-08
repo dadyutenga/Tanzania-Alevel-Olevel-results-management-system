@@ -12,6 +12,7 @@ class OLevelController extends ResultGradingController
     public function processOLevelGrades($examId, $classId, $sectionId = null, $sessionId = null)
     {
         try {
+            // Fix the query by starting with students and using proper join order
             $query = $this->examSubjectMarkModel
                 ->select('
                     s.id AS student_id,
@@ -22,14 +23,17 @@ class OLevelController extends ResultGradingController
                     tes.subject_name,
                     tesm.marks_obtained
                 ')
-                ->join('students s', 's.id = tesm.student_id')
+                ->from('students s')  // Start with students table
                 ->join('student_session ss', 's.id = ss.student_id')
                 ->join('classes c', 'ss.class_id = c.id')
                 ->join('class_sections cs', 'ss.section_id = cs.section_id AND ss.class_id = cs.class_id')
                 ->join('tz_exam_classes tec', 'tec.class_id = ss.class_id AND tec.session_id = ss.session_id')
                 ->join('tz_exams te', 'te.id = tec.exam_id')
                 ->join('tz_exam_subjects tes', 'tes.exam_id = te.id')
-                ->join('tz_exam_subject_marks tesm', 'tesm.student_id = s.id AND tesm.exam_subject_id = tes.id AND tesm.exam_id = te.id AND tesm.class_id = ss.class_id')
+                ->join('tz_exam_subject_marks tesm', 'tesm.student_id = s.id 
+                    AND tesm.exam_subject_id = tes.id 
+                    AND tesm.exam_id = te.id 
+                    AND tesm.class_id = ss.class_id', 'left')
                 ->where('te.id', $examId)
                 ->where('ss.class_id', $classId)
                 ->where('s.is_active', 'yes')
@@ -60,10 +64,10 @@ class OLevelController extends ResultGradingController
             // Group marks by student
             $studentGroups = [];
             foreach ($marks as $mark) {
-                if (!isset($studentGroups[$mark->student_id])) {
-                    $studentGroups[$mark->student_id] = [];
+                if (!isset($studentGroups[$mark['student_id']])) {  // Changed from $mark->student_id to $mark['student_id']
+                    $studentGroups[$mark['student_id']] = [];
                 }
-                $studentGroups[$mark->student_id][] = $mark;
+                $studentGroups[$mark['student_id']][] = $mark;
             }
 
             // Process each student individually
@@ -121,14 +125,14 @@ class OLevelController extends ResultGradingController
         $requiredSubjects = 7;
 
         foreach ($studentMarks as $mark) {
-            if (!isset($mark->marks_obtained)) {
+            if (!isset($mark['marks_obtained'])) {  // Changed from $mark->marks_obtained to $mark['marks_obtained']
                 continue;
             }
             
-            $grade = $this->getGrade($mark->marks_obtained, $gradeScale);
+            $grade = $this->getGrade($mark['marks_obtained'], $gradeScale);
             $subjects[] = [
-                'subject' => $mark->subject_name,
-                'marks' => $mark->marks_obtained,
+                'subject' => $mark['subject_name'],  // Changed from $mark->subject_name to $mark['subject_name']
+                'marks' => $mark['marks_obtained'],
                 'grade' => $grade['grade'],
                 'points' => $grade['points']
             ];
