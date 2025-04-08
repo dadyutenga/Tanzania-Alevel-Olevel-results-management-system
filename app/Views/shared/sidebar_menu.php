@@ -28,6 +28,7 @@
         </a>
         <ul class="submenu" style="display: <?= strpos(current_url(), 'results') !== false ? 'block' : 'none' ?>; padding-left: 1rem;">
             <li><a href="<?= base_url('results/publish') ?>"><i class="fas fa-chart-bar"></i> Publish Results</a></li>
+            <li><a href="<?= base_url('results/view')?>"><i class="fas fa-eye"></i> View Results</a></li>
         </ul>
     </li>
     <li><a href="#" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">

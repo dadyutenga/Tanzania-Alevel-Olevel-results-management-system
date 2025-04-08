@@ -91,4 +91,88 @@ class ViewResultsModel extends ResourceController
             ];
         }
     }
+
+    public function showResultsPage()
+    {
+        try {
+            $data = [
+                'sessions' => $this->sessionModel->findAll(),
+                'classes' => $this->classModel->findAll()
+            ];
+            
+            return view('results/ViewResults', $data);
+        } catch (\Exception $e) {
+            log_message('error', '[ViewResults.showResultsPage] Error: ' . $e->getMessage());
+            return redirect()->to(base_url('dashboard'))
+                ->with('error', 'Failed to load results page');
+        }
+    }
+
+    public function getExams()
+    {
+        try {
+            $sessionId = $this->request->getGet('session_id');
+            $classId = $this->request->getGet('class_id');
+            
+            if (!$sessionId || !$classId) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Both session_id and class_id are required'
+                ]);
+            }
+    
+            $exams = $this->examModel
+                ->select('
+                    tz_exams.id AS exam_id,
+                    tz_exams.exam_name,
+                    tz_exams.exam_date
+                ')
+                ->join('tz_exam_classes', 'tz_exam_classes.exam_id = tz_exams.id')
+                ->where('tz_exams.session_id', $sessionId)
+                ->where('tz_exam_classes.class_id', $classId)
+                ->where('tz_exams.is_active', 'yes')
+                ->orderBy('tz_exams.exam_date', 'DESC')
+                ->findAll();
+    
+            return $this->response->setJSON([
+                'status' => 'success',
+                'data' => $exams
+            ]);
+    
+        } catch (\Exception $e) {
+            log_message('error', '[ViewResults.getExams] Error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Failed to fetch exams'
+            ]);
+        }
+    }
+
+    public function getFilteredResults()
+    {
+        try {
+            $classId = $this->request->getPost('class_id');
+            $sessionId = $this->request->getPost('session_id');
+            $examId = $this->request->getPost('exam_id');
+            $levelId = $this->request->getPost('level_id');
+
+            if (!$classId || !$sessionId || !$examId || !$levelId) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'All filter parameters are required'
+                ]);
+            }
+
+            $results = $this->fetchResults($classId, $sessionId, $examId);
+
+            return $this->response->setJSON($results);
+
+        } catch (\Exception $e) {
+            log_message('error', '[ViewResults.getFilteredResults] Error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Failed to fetch filtered results'
+            ]);
+        }
+    }
 }
