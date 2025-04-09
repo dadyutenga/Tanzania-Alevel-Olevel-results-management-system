@@ -9,6 +9,11 @@ use App\Models\ExamSubjectMarkModel;
 use App\Models\SessionModel;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\RESTful\ResourceController;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class BulkExamMarksController extends ResourceController
 {
@@ -43,6 +48,10 @@ class BulkExamMarksController extends ResourceController
                 throw new \Exception('Missing required parameters');
             }
 
+            // Get exam details
+            $exam = $this->examModel->find($examId);
+            $class = $this->db->table('classes')->where('id', $classId)->get()->getRowArray();
+
             // Get students
             $students = $this->studentSessionModel
                 ->select('students.id, students.firstname, students.lastname, students.roll_no')
@@ -55,10 +64,8 @@ class BulkExamMarksController extends ResourceController
                 ])
                 ->findAll();
 
-            // Get subjects (simplified query as subject_name is in tz_exam_subjects)
-            $db = \Config\Database::connect('second_db');
             // Get subjects
-            $subjects = $db->table('tz_exam_subjects')
+            $subjects = $this->db->table('tz_exam_subjects')
                 ->where('exam_id', $examId)
                 ->get()
                 ->getResultArray();
@@ -67,64 +74,118 @@ class BulkExamMarksController extends ResourceController
                 throw new \Exception('No subjects found for this exam');
             }
 
-            // Create CSV headers - simplified and structured
-            $headers = ['Student ID', 'Student Name', 'Roll Number'];
+            // Create new Spreadsheet
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Set column widths
+            $sheet->getColumnDimension('A')->setWidth(12);  // Student ID
+            $sheet->getColumnDimension('B')->setWidth(30);  // Student Name
+            $sheet->getColumnDimension('C')->setWidth(12);  // Roll No
+
+            // Set title and headers
+            $sheet->mergeCells('A1:C1');
+            $sheet->setCellValue('A1', 'EXAM MARKS TEMPLATE');
+            $sheet->mergeCells('A2:C2');
+            $sheet->setCellValue('A2', $exam['exam_name'] . ' - ' . $class['class']);
+            $sheet->mergeCells('A3:C3');
+            $sheet->setCellValue('A3', 'Date: ' . date('Y-m-d'));
+
+            // Style the header
+            $headerStyle = [
+                'font' => [
+                    'bold' => true,
+                    'size' => 14
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E2EFDA']
+                ]
+            ];
+            $sheet->getStyle('A1:C3')->applyFromArray($headerStyle);
+
+            // Set column headers
+            $sheet->setCellValue('A5', 'Student ID');
+            $sheet->setCellValue('B5', 'Student Name');
+            $sheet->setCellValue('C5', 'Roll No.');
+
+            // Add subjects and their max marks
+            $col = 'D';
             foreach ($subjects as $subject) {
-                $headers[] = $subject['subject_name'];
-                $headers[] = $subject['id']; // Hidden subject ID
+                $sheet->getColumnDimension($col)->setWidth(15);
+                $sheet->setCellValue($col . '5', $subject['subject_name']);
+                $sheet->setCellValue($col . '6', 'Max: ' . $subject['max_marks']);
+                $col++;
             }
 
-            // Create CSV content with structure
-            $output = fopen('php://temp', 'w+');
-            
-            // Add a title row
-            fputcsv($output, ['EXAM MARKS TEMPLATE']);
-            fputcsv($output, []); // Empty line for spacing
-            
-            // Add max marks row
-            $maxMarksRow = ['', '', ''];
-            foreach ($subjects as $subject) {
-                $maxMarksRow[] = "Maximum Marks: {$subject['max_marks']}";
-                $maxMarksRow[] = ''; // For hidden ID column
-            }
-            fputcsv($output, $maxMarksRow);
-            fputcsv($output, []); // Empty line for spacing
-            
-            // Add the main headers
-            fputcsv($output, $headers);
-            
-            // Add a separator line
-            $separator = array_fill(0, count($headers), str_repeat('-', 15));
-            fputcsv($output, $separator);
+            // Style the column headers
+            $columnHeaderStyle = [
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'F2F2F2']
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN
+                    ]
+                ]
+            ];
+            $sheet->getStyle('A5:' . --$col . '6')->applyFromArray($columnHeaderStyle);
 
-            // Add student rows
+            // Add students
+            $row = 7;
             foreach ($students as $student) {
-                $row = [
-                    $student['id'],
-                    $student['firstname'] . ' ' . $student['lastname'],
-                    $student['roll_no']
-                ];
+                $sheet->setCellValue('A' . $row, $student['id']);
+                $sheet->setCellValue('B' . $row, $student['firstname'] . ' ' . $student['lastname']);
+                $sheet->setCellValue('C' . $row, $student['roll_no']);
+                
+                // Add empty cells for marks with validation
+                $markCol = 'D';
                 foreach ($subjects as $subject) {
-                    $row[] = ''; // Empty mark field
-                    $row[] = $subject['id']; // Hidden subject ID
+                    // Add data validation for marks
+                    $validation = $sheet->getCell($markCol . $row)->getDataValidation();
+                    $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_WHOLE);
+                    $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
+                    $validation->setAllowBlank(true);
+                    $validation->setFormula1(0);
+                    $validation->setFormula2($subject['max_marks']);
+                    $validation->setErrorTitle('Invalid Mark');
+                    $validation->setError('Please enter a number between 0 and ' . $subject['max_marks']);
+                    $validation->setPromptTitle('Allowed Mark');
+                    $validation->setPrompt("Enter mark between 0 and {$subject['max_marks']}");
+                    $validation->setShowErrorMessage(true);
+                    $validation->setShowDropDown(true);
+                    $markCol++;
                 }
-                fputcsv($output, $row);
+                $row++;
             }
 
-            // Add footer separator
-            fputcsv($output, $separator);
+            // Style the data rows
+            $dataStyle = [
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN
+                    ]
+                ]
+            ];
+            $sheet->getStyle('A7:' . $col . ($row-1))->applyFromArray($dataStyle);
 
-            // Get CSV content and return
-            rewind($output);
-            $csv = stream_get_contents($output);
-            fclose($output);
+            // Create Excel file
+            $writer = new Xlsx($spreadsheet);
+            $filename = "exam_marks_template_" . date('Y-m-d_His') . ".xlsx";
 
-            $filename = "exam_marks_template_" . date('Y-m-d_His') . ".csv";
-            
-            return $this->response
-                ->setHeader('Content-Type', 'text/csv')
-                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
-                ->setBody($csv);
+            // Set headers for download
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="' . $filename . '"');
+            header('Cache-Control: max-age=0');
+
+            // Save to PHP output
+            $writer->save('php://output');
+            exit;
 
         } catch (\Exception $e) {
             return $this->fail($e->getMessage(), 500);
@@ -136,97 +197,87 @@ class BulkExamMarksController extends ResourceController
         try {
             $examId = $this->request->getPost('exam_id');
             $classId = $this->request->getPost('class_id');
-            $sessionId = $this->request->getPost('session_id'); // Changed from getVar to getPost
+            $sessionId = $this->request->getPost('session_id');
 
             if (!$examId || !$classId || !$sessionId) {
                 throw new \Exception('Missing required parameters');
             }
 
-            $file = $this->request->getFile('csv_file');
+            $file = $this->request->getFile('excel_file');
             if (!$file->isValid()) {
                 throw new \Exception('Invalid file uploaded');
             }
 
-            if ($file->getExtension() !== 'csv') {
-                throw new \Exception('Only CSV files are allowed');
+            if ($file->getExtension() !== 'xlsx') {
+                throw new \Exception('Only Excel (.xlsx) files are allowed');
+            }
+
+            // Load Excel file
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getTempName());
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Get subject mappings
+            $subjects = $this->db->table('tz_exam_subjects')
+                ->where('exam_id', $examId)
+                ->get()
+                ->getResultArray();
+
+            $subjectMap = [];
+            $colMap = [];
+            $col = 'D';
+            foreach ($subjects as $subject) {
+                if ($sheet->getCell($col . '5')->getValue() === $subject['subject_name']) {
+                    $subjectMap[$col] = $subject['id'];
+                }
+                $col++;
             }
 
             // Start transaction
             $this->db->transStart();
 
-            $handle = fopen($file->getTempName(), 'r');
-            if ($handle === false) {
-                throw new \Exception('Failed to open uploaded file');
-            }
-
-            $headers = fgetcsv($handle);
-            if ($headers === false) {
-                throw new \Exception('Failed to read CSV headers');
-            }
-
-            $subjectIds = [];
-            // Extract subject IDs from headers (every second column starting from index 3)
-            for ($i = 3; $i < count($headers); $i += 2) {
-                if (isset($headers[$i + 1])) {
-                    $subjectIds[] = $headers[$i + 1];
-                }
-            }
-
-            if (empty($subjectIds)) {
-                throw new \Exception('No subject IDs found in CSV');
-            }
-
             $successCount = 0;
             $errorCount = 0;
             $errors = [];
 
-            // Process each row
-            while (($row = fgetcsv($handle)) !== false) {
+            // Process each row starting from row 7
+            $row = 7;
+            while ($sheet->getCell('A' . $row)->getValue() !== null) {
                 try {
-                    $studentId = $row[0];
-                    
-                    // Delete existing marks for this student
+                    $studentId = $sheet->getCell('A' . $row)->getValue();
+
+                    // Delete existing marks
                     $this->examSubjectMarkModel->where([
                         'exam_id' => $examId,
                         'student_id' => $studentId
                     ])->delete();
 
-                    // Insert marks for each subject
-                    for ($i = 0; $i < count($subjectIds); $i++) {
-                        $markIndex = ($i * 2) + 3;
-                        $mark = trim($row[$markIndex]);
-                        
+                    // Insert new marks
+                    foreach ($subjectMap as $col => $subjectId) {
+                        $mark = trim($sheet->getCell($col . $row)->getValue());
                         if ($mark !== '') {
-                            $markData = [
+                            $this->examSubjectMarkModel->insert([
                                 'exam_id' => $examId,
                                 'student_id' => $studentId,
                                 'class_id' => $classId,
                                 'session_id' => $sessionId,
-                                'exam_subject_id' => $subjectIds[$i],
+                                'exam_subject_id' => $subjectId,
                                 'marks_obtained' => $mark
-                            ];
-
-                            $this->examSubjectMarkModel->insert($markData);
+                            ]);
                         }
                     }
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
-                    $errors[] = "Row for student ID {$row[0]}: " . $e->getMessage();
-                    continue; // Skip to next student on error
+                    $errors[] = "Row $row (Student ID: {$studentId}): " . $e->getMessage();
                 }
+                $row++;
             }
-
-            fclose($handle);
 
             $this->db->transComplete();
 
             if ($this->db->transStatus() === false) {
-                $this->db->transRollback();
                 throw new \Exception('Failed to save marks');
             }
-            
-            $this->db->transCommit();
 
             return $this->respond([
                 'status' => 'success',
@@ -238,10 +289,7 @@ class BulkExamMarksController extends ResourceController
             if (isset($this->db) && $this->db->transStatus() !== false) {
                 $this->db->transRollback();
             }
-            if (isset($handle)) {
-                fclose($handle);
-            }
-            return $this->fail('Failed to process CSV: ' . $e->getMessage(), 500);
+            return $this->fail('Failed to process Excel file: ' . $e->getMessage(), 500);
         }
     }
 

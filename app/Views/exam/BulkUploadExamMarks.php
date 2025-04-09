@@ -328,7 +328,7 @@
                 <form id="uploadForm" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="csv_file">Upload Completed CSV</label>
-                        <input type="file" id="csv_file" name="csv_file" class="form-control" accept=".csv" required>
+                        <input type="file" id="excel_file" name="excel_file" class="form-control" accept=".xlsx" required>
                     </div>
 
                     <button type="button" class="btn btn-success" onclick="uploadMarks()">
