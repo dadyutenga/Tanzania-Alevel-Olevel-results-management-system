@@ -488,12 +488,11 @@
                             });
 
                             if (response.ok) {
-                                // Create a blob from the PDF stream
                                 const blob = await response.blob();
                                 const url = window.URL.createObjectURL(blob);
                                 const a = document.createElement('a');
                                 a.href = url;
-                                a.download = 'exam_results.pdf';
+                                a.download = 'class_results.pdf';
                                 document.body.appendChild(a);
                                 a.click();
                                 window.URL.revokeObjectURL(url);
