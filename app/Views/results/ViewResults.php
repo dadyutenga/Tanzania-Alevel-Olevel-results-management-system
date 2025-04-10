@@ -464,8 +464,51 @@
                         container.style.display = 'block';
                     }
 
-                    function downloadResults() {
-                        // Implement download functionality
+                    async function downloadResults() {
+                        const examId = document.getElementById('exam').value;
+                        const classId = document.getElementById('class').value;
+                        const sessionId = document.getElementById('session').value;
+
+                        if (!examId || !classId || !sessionId) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Validation Error',
+                                text: 'Please select all required fields'
+                            });
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch('<?= base_url('results/view/downloadPDF') ?>', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `exam_id=${examId}&class_id=${classId}&session_id=${sessionId}`
+                            });
+
+                            if (response.ok) {
+                                // Create a blob from the PDF stream
+                                const blob = await response.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'exam_results.pdf';
+                                document.body.appendChild(a);
+                                a.click();
+                                window.URL.revokeObjectURL(url);
+                                a.remove();
+                            } else {
+                                throw new Error('Failed to download PDF');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to download results'
+                            });
+                        }
                     }
 
                     async function viewDetails(studentId) {
@@ -537,6 +580,42 @@
                             showCloseButton: true,
                             showConfirmButton: false
                         });
+                    }
+
+                    // Add a new function to download individual student result
+                    async function downloadStudentResult(studentId) {
+                        const examId = document.getElementById('exam').value;
+                        
+                        try {
+                            const response = await fetch('<?= base_url('results/view/downloadStudentPDF') ?>', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `student_id=${studentId}&exam_id=${examId}`
+                            });
+
+                            if (response.ok) {
+                                const blob = await response.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'student_result.pdf';
+                                document.body.appendChild(a);
+                                a.click();
+                                window.URL.revokeObjectURL(url);
+                                a.remove();
+                            } else {
+                                throw new Error('Failed to download PDF');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to download student result'
+                            });
+                        }
                     }
                 </script>
             </div>

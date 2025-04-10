@@ -96,4 +96,6 @@ $routes->group('results', ['namespace' => 'App\Controllers'], function($routes) 
     $routes->post('view/getFilteredResults', 'ViewResultsModel::getFilteredResults');  // Updated path
     $routes->get('view/fetchResults/(:num)/(:num)/(:num)', 'ViewResultsModel::fetchResults/$1/$2/$3'); 
     $routes->post('view/getStudentSubjectMarks', 'ViewResultsModel::getStudentSubjectMarks');
+    $routes->post('view/downloadPDF', 'PDFController::generateResultPDF');
+    $routes->post('view/downloadStudentPDF', 'PDFController::generateResultPDF');
 });

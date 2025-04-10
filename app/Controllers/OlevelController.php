@@ -54,11 +54,10 @@ class OLevelController extends ResultGradingController
             // O-Level specific grading logic
             $gradeScale = [
                 ['min' => 75, 'grade' => 'A', 'points' => 1],
-                ['min' => 65, 'grade' => 'B+', 'points' => 2],
-                ['min' => 55, 'grade' => 'B', 'points' => 3],
-                ['min' => 45, 'grade' => 'C', 'points' => 4],
-                ['min' => 35, 'grade' => 'D', 'points' => 5],
-                ['min' => 0, 'grade' => 'F', 'points' => 6]
+                ['min' => 65, 'grade' => 'B', 'points' => 2],
+                ['min' => 45, 'grade' => 'C', 'points' => 3],
+                ['min' => 30, 'grade' => 'D', 'points' => 4],
+                ['min' => 0, 'grade' => 'F', 'points' => 5]
             ];
 
             // Group marks by student

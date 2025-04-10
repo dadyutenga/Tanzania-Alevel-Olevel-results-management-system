@@ -224,11 +224,10 @@ class ViewResultsModel extends ResourceController
     {
         $gradeScale = [
             ['min' => 75, 'grade' => 'A', 'points' => 1],
-            ['min' => 65, 'grade' => 'B+', 'points' => 2],
-            ['min' => 55, 'grade' => 'B', 'points' => 3],
-            ['min' => 45, 'grade' => 'C', 'points' => 4],
-            ['min' => 35, 'grade' => 'D', 'points' => 5],
-            ['min' => 0, 'grade' => 'F', 'points' => 6]
+            ['min' => 65, 'grade' => 'B', 'points' => 2],
+            ['min' => 45, 'grade' => 'C', 'points' => 3],
+            ['min' => 30, 'grade' => 'D', 'points' => 4],
+            ['min' => 0, 'grade' => 'F', 'points' => 5]
         ];
 
         foreach ($gradeScale as $grade) {
@@ -237,5 +236,110 @@ class ViewResultsModel extends ResourceController
             }
         }
         return 'F';
+    }
+
+    public function generateResultsPDF($examId, $classId, $sessionId)
+    {
+        try {
+            // Get all results for the selected exam, class and session
+            $results = $this->fetchResults($classId, $sessionId, $examId)['data'];
+            
+            $pdfData = [];
+            foreach ($results as $result) {
+                // Get subject marks for each student
+                $subjectMarks = $this->examSubjectMarkModel
+                    ->select('
+                        tz_exam_subjects.subject_name,
+                        tz_exam_subject_marks.marks_obtained,
+                        tz_exam_subjects.max_marks
+                    ')
+                    ->join('tz_exam_subjects', 'tz_exam_subjects.id = tz_exam_subject_marks.exam_subject_id')
+                    ->where('tz_exam_subject_marks.student_id', $result['student_id'])
+                    ->where('tz_exam_subject_marks.exam_id', $examId)
+                    ->findAll();
+
+                // Calculate grades for each subject
+                foreach ($subjectMarks as &$mark) {
+                    $percentage = ($mark['marks_obtained'] / $mark['max_marks']) * 100;
+                    $mark['grade'] = $this->calculateGrade($percentage);
+                }
+
+                $pdfData[] = [
+                    'student_name' => $result['full_name'],
+                    'class' => $result['class_name'],
+                    'section' => $result['section'],
+                    'total_points' => $result['total_points'],
+                    'division' => $result['division'],
+                    'subjects' => $subjectMarks
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'data' => $pdfData
+            ];
+
+        } catch (\Exception $e) {
+            log_message('error', '[ViewResults.generateResultsPDF] Error: ' . $e->getMessage());
+            return [
+                'status' => 'error',
+                'message' => 'Failed to generate PDF data'
+            ];
+        }
+    }
+
+    public function downloadResultPDF($studentId, $examId)
+    {
+        try {
+            // Get student details and marks
+            $studentMarks = $this->examSubjectMarkModel
+                ->select('
+                    students.id AS student_id,
+                    CONCAT(students.firstname, " ", COALESCE(students.middlename, ""), " ", students.lastname) AS full_name,
+                    classes.class AS class_name,
+                    class_sections.section_id AS section,
+                    tz_exams.exam_name,
+                    tz_exam_subjects.subject_name,
+                    tz_exam_subject_marks.marks_obtained,
+                    tz_exam_subjects.max_marks,
+                    tz_exam_results.total_points,
+                    tz_exam_results.division
+                ')
+                ->join('students', 'students.id = tz_exam_subject_marks.student_id')
+                ->join('student_session', 'students.id = student_session.student_id')
+                ->join('classes', 'student_session.class_id = classes.id')
+                ->join('class_sections', 'student_session.section_id = class_sections.section_id')
+                ->join('tz_exams', 'tz_exams.id = tz_exam_subject_marks.exam_id')
+                ->join('tz_exam_subjects', 'tz_exam_subjects.id = tz_exam_subject_marks.exam_subject_id')
+                ->join('tz_exam_results', 'tz_exam_results.student_id = students.id AND tz_exam_results.exam_id = tz_exams.id')
+                ->where('students.id', $studentId)
+                ->where('tz_exam_subject_marks.exam_id', $examId)
+                ->findAll();
+
+            if (empty($studentMarks)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'No results found for this student'
+                ];
+            }
+
+            // Process grades for each subject
+            foreach ($studentMarks as &$mark) {
+                $percentage = ($mark['marks_obtained'] / $mark['max_marks']) * 100;
+                $mark['grade'] = $this->calculateGrade($percentage);
+            }
+
+            return [
+                'status' => 'success',
+                'data' => $studentMarks
+            ];
+
+        } catch (\Exception $e) {
+            log_message('error', '[ViewResults.downloadResultPDF] Error: ' . $e->getMessage());
+            return [
+                'status' => 'error',
+                'message' => 'Failed to generate PDF'
+            ];
+        }
     }
 }
