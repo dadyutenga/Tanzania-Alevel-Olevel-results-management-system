@@ -139,13 +139,14 @@ class OLevelController extends ResultGradingController
         }
     }
 
-    private function calculateDivision($average)
+    private function calculateDivision($totalPoints)
     {
-        if ($average <= 2) return 'I';     // Changed from 'DIVISION I' to 'I'
-        if ($average <= 3) return 'II';    // Changed from 'DIVISION II' to 'II'
-        if ($average <= 4) return 'III';   // Changed from 'DIVISION III' to 'III'
-        if ($average <= 5) return 'IV';    // Changed from 'DIVISION IV' to 'IV'
-        return 'F';                        // Changed from 'FAIL' to 'F'
+        if ($totalPoints >= 7 && $totalPoints <= 17) return 'I';     // Division I: 7-17 points (Excellent)
+        if ($totalPoints >= 18 && $totalPoints <= 21) return 'II';   // Division II: 18-21 points (Very Good)
+        if ($totalPoints >= 22 && $totalPoints <= 25) return 'III';  // Division III: 22-25 points (Good)
+        if ($totalPoints >= 26 && $totalPoints <= 33) return 'IV';   // Division IV: 26-33 points (Satisfactory)
+        if ($totalPoints >= 34 && $totalPoints <= 35) return 'O';    // Division O: 34-35 points (Fail)
+        return 'F';                                                   // Fallback for any other case
     }
 
     private function processStudentGrades($studentMarks, $gradeScale)
@@ -188,7 +189,7 @@ class OLevelController extends ResultGradingController
         $subjectCount = count($bestSubjects);
         return [
             'total_points' => $totalPoints,
-            'division' => $this->calculateDivision($totalPoints / $subjectCount)
+            'division' => $this->calculateDivision($totalPoints)
         ];
     }
 
