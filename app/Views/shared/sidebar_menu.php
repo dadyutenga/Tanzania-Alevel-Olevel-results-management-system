@@ -33,4 +33,11 @@
     <li><a href="#" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">
         <i class="fas fa-cog"></i> Settings
     </a></li>
+
+    <li class="logout-section">
+        <a href="<?= base_url('logout') ?>" class="logout-link">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </li>
+
 </ul>

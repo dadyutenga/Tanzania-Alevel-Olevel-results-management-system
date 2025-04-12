@@ -16,7 +16,7 @@
             --text-primary: #1a1f36;
             --text-secondary: #4a5568;
             --border: #e2e8f0;
-            --success: #31c48d;
+            --success:rgb(49, 196, 141);
             --warning: #f59e0b;
             --danger: #e53e3e;
             --shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
