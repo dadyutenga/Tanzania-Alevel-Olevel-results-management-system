@@ -63,7 +63,7 @@ class OLevelController extends ResultGradingController
             // Group marks by student
             $studentGroups = [];
             foreach ($marks as $mark) {
-                if (!isset($studentGroups[$mark['student_id']])) {  // Changed from $mark->student_id to $mark['student_id']
+                if (!isset($studentGroups[$mark['student_id']])) {
                     $studentGroups[$mark['student_id']] = [];
                 }
                 $studentGroups[$mark['student_id']][] = $mark;
@@ -108,7 +108,8 @@ class OLevelController extends ResultGradingController
                     
                     $successCount++;
                     $processedResults[] = array_merge($resultData, [
-                        'student_name' => $studentMarks[0]['full_name'] ?? 'Unknown'
+                        'student_name' => $studentMarks[0]['full_name'] ?? 'Unknown',
+                        'debug_info' => $result['debug_info'] ?? [] // Add debug information to response
                     ]);
 
                 } catch (\Exception $e) {
@@ -141,66 +142,134 @@ class OLevelController extends ResultGradingController
 
     private function calculateDivision($totalPoints)
     {
-        if ($totalPoints >= 7 && $totalPoints <= 17) return 'I';     // Division I: 7-17 points (Excellent)
-        if ($totalPoints >= 18 && $totalPoints <= 21) return 'II';   // Division II: 18-21 points (Very Good)
-        if ($totalPoints >= 22 && $totalPoints <= 25) return 'III';  // Division III: 22-25 points (Good)
-        if ($totalPoints >= 26 && $totalPoints <= 33) return 'IV';   // Division IV: 26-33 points (Satisfactory)
-        if ($totalPoints >= 34 && $totalPoints <= 35) return 'O';    // Division O: 34-35 points (Fail)
-        return 'F';                                                   // Fallback for any other case
+        // Division ranges based on total points from best 7 subjects
+        if ($totalPoints >= 7 && $totalPoints <= 17) return 'I';     // Division I: 7-17 points
+        if ($totalPoints >= 18 && $totalPoints <= 21) return 'II';   // Division II: 18-21 points
+        if ($totalPoints >= 22 && $totalPoints <= 25) return 'III';  // Division III: 22-25 points
+        if ($totalPoints >= 26 && $totalPoints <= 33) return 'IV';   // Division IV: 26-33 points
+        else return 'O';    
+                                                          // Division F: > 35 points
     }
 
     private function processStudentGrades($studentMarks, $gradeScale)
     {
         $subjects = [];
         $requiredSubjects = 7;
+        $debugInfo = [
+            'student_name' => $studentMarks[0]['full_name'] ?? 'Unknown',
+            'all_subjects' => [],
+            'best_subjects' => [],
+            'total_points' => 0
+        ];
 
+        // First, collect all valid subjects
         foreach ($studentMarks as $mark) {
-            if (!isset($mark['marks_obtained'])) {  // Changed from $mark->marks_obtained to $mark['marks_obtained']
+            // Skip empty or invalid marks
+            if (!isset($mark['marks_obtained']) || 
+                $mark['marks_obtained'] === '' || 
+                $mark['marks_obtained'] === null) {
                 continue;
             }
             
             $grade = $this->getGrade($mark['marks_obtained'], $gradeScale);
-            $subjects[] = [
-                'subject' => $mark['subject_name'],  // Changed from $mark->subject_name to $mark['subject_name']
+            $subjectInfo = [
+                'subject' => $mark['subject_name'],
                 'marks' => $mark['marks_obtained'],
                 'grade' => $grade['grade'],
                 'points' => $grade['points']
             ];
+            
+            $subjects[] = $subjectInfo;
+            $debugInfo['all_subjects'][] = $subjectInfo;
+
+            // Log for debugging
+            log_message('debug', sprintf(
+                "Initial Subject Data - Student: %s, Subject: %s, Marks: %d, Grade: %s, Points: %d",
+                $debugInfo['student_name'],
+                $mark['subject_name'],
+                $mark['marks_obtained'],
+                $grade['grade'],
+                $grade['points']
+            ));
         }
 
-        if (empty($subjects)) {
-            throw new \Exception('No valid subjects found for student');
+        // Validate minimum subjects requirement
+        if (count($subjects) < $requiredSubjects) {
+            throw new \Exception(sprintf(
+                'Student %s has insufficient subjects: %d (required: %d)',
+                $debugInfo['student_name'],
+                count($subjects),
+                $requiredSubjects
+            ));
         }
 
-        // Sort subjects by points (ascending since A=1, F=6)
-        usort($subjects, function($a, $b) {
-            return $a['points'] - $b['points'];
+        // Sort subjects by points (ascending: best grades first)
+        usort($subjects, function ($a, $b) {
+            return $a['points'] <=> $b['points'];  // Using spaceship operator for cleaner comparison
         });
 
-        // Take best 7 subjects
-        $bestSubjects = array_slice($subjects, 0, $requiredSubjects);
-        
-        // Calculate total points
-        $totalPoints = 0;
-        foreach ($bestSubjects as $subject) {
-            $totalPoints += $subject['points'];
+        // Log sorted subjects
+        log_message('debug', "Sorted subjects for {$debugInfo['student_name']}:");
+        foreach ($subjects as $subject) {
+            log_message('debug', sprintf(
+                "Subject: %s, Points: %d",
+                $subject['subject'],
+                $subject['points']
+            ));
         }
 
-        $subjectCount = count($bestSubjects);
+        // Pick the best 7 subjects
+        $bestSubjects = array_slice($subjects, 0, 7);
+        $debugInfo['best_subjects'] = $bestSubjects;
+
+        // Log best 7 subjects
+        log_message('debug', "Best 7 subjects selected for {$debugInfo['student_name']}:");
+        foreach ($bestSubjects as $subject) {
+            log_message('debug', sprintf(
+                "Selected Subject: %s, Points: %d",
+                $subject['subject'],
+                $subject['points']
+            ));
+        }
+
+        // Sum their points using array_column for cleaner code
+        $totalPoints = array_sum(array_column($bestSubjects, 'points'));
+        $debugInfo['total_points'] = $totalPoints;
+
+        // Log total points
+        log_message('debug', sprintf(
+            "Total Points for %s: %d",
+            $debugInfo['student_name'],
+            $totalPoints
+        ));
+
+        // Calculate division
+        $division = $this->calculateDivision($totalPoints);
+
+        // Log final division
+        log_message('debug', sprintf(
+            "Final Division for %s: %s (Points: %d)",
+            $debugInfo['student_name'],
+            $division,
+            $totalPoints
+        ));
+
         return [
             'total_points' => $totalPoints,
-            'division' => $this->calculateDivision($totalPoints)
+            'division' => $division,
+            'debug_info' => $debugInfo
         ];
     }
 
     private function getDivisionDescription($division)
     {
         $descriptions = [
-            'DIVISION I' => 'Excellent',
-            'DIVISION II' => 'Very Good',
-            'DIVISION III' => 'Good',
-            'DIVISION IV' => 'Satisfactory',
-            'FAIL' => 'Fail'
+            'I' => 'Excellent',
+            'II' => 'Very Good',
+            'III' => 'Good',
+            'IV' => 'Satisfactory',
+            'O' => 'Fail'
+         
         ];
         return $descriptions[$division] ?? 'Unknown';
     }
