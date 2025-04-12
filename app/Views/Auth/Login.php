@@ -187,8 +187,8 @@
       text-decoration: underline;
     }
 
-    /* Notification styles */
-    .notification {
+    /* ================== ALERT STYLES ================== */
+    .alert {
       position: fixed;
       top: 1.5rem;
       right: 1.5rem;
@@ -196,65 +196,76 @@
       border-radius: var(--border-radius);
       background-color: white;
       color: var(--text-dark);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      box-shadow: var(--shadow);
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      transform: translateX(calc(100% + 1.5rem));
-      transition: transform 0.3s ease;
       z-index: 1000;
       max-width: 400px;
+      border-left: 4px solid;
+      opacity: 0;
+      transform: translateX(calc(100% + 1.5rem));
+      transition: all 0.3s ease;
     }
 
-    .notification.show {
+    .alert.show {
+      opacity: 1;
       transform: translateX(0);
     }
 
-    .notification-icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+    /* Alert Types */
+    .alert-success {
+      border-left-color: var(--success);
     }
 
-    .notification-success .notification-icon {
-      background-color: rgba(16, 185, 129, 0.1);
+    .alert-danger {
+      border-left-color: var(--danger);
+    }
+
+    .alert-warning {
+      border-left-color: var(--warning);
+    }
+
+    .alert-info {
+      border-left-color: var(--info);
+    }
+
+    /* Alert Icons */
+    .alert i {
+      font-size: 1.25rem;
+    }
+
+    .alert-success i {
       color: var(--success);
     }
 
-    .notification-error .notification-icon {
-      background-color: rgba(239, 68, 68, 0.1);
+    .alert-danger i {
       color: var(--danger);
     }
 
-    .notification-warning .notification-icon {
-      background-color: rgba(245, 158, 11, 0.1);
+    .alert-warning i {
       color: var(--warning);
     }
 
-    .notification-info .notification-icon {
-      background-color: rgba(59, 130, 246, 0.1);
+    .alert-info i {
       color: var(--info);
     }
 
-    .notification-content {
+    .alert-content {
       flex: 1;
     }
 
-    .notification-title {
+    .alert-title {
       font-weight: 600;
       margin-bottom: 0.25rem;
     }
 
-    .notification-message {
+    .alert-message {
       font-size: 0.875rem;
       color: #64748b;
     }
 
-    .notification-close {
+    .alert-close {
       background: none;
       border: none;
       color: #94a3b8;
@@ -264,24 +275,20 @@
       transition: var(--transition);
     }
 
-    .notification-close:hover {
+    .alert-close:hover {
       color: var(--text-dark);
     }
 
-    .notification-progress {
+    /* Alert Progress Bar */
+    .alert-progress {
       position: absolute;
       bottom: 0;
       left: 0;
       height: 3px;
-      background-color: var(--primary-light);
       width: 100%;
       transform-origin: left;
-      animation: progress 5s linear forwards;
-    }
-
-    @keyframes progress {
-      from { transform: scaleX(1); }
-      to { transform: scaleX(0); }
+      background-color: currentColor;
+      opacity: 0.2;
     }
 
     /* Responsive */
@@ -289,10 +296,62 @@
       .login-container {
         max-width: 100%;
       }
+
+      .alert {
+        max-width: 90%;
+        right: 1rem;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Alerts Container -->
+  <div id="alerts-container">
+    <?php if (session('error')) : ?>
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        <div class="alert-content">
+          <div class="alert-title">Error</div>
+          <div class="alert-message"><?= session('error') ?></div>
+        </div>
+        <button class="alert-close">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="alert-progress"></div>
+      </div>
+    <?php endif; ?>
+
+    <?php if (session('errors')) : ?>
+      <?php foreach (session('errors') as $error) : ?>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle"></i>
+          <div class="alert-content">
+            <div class="alert-title">Validation Error</div>
+            <div class="alert-message"><?= $error ?></div>
+          </div>
+          <button class="alert-close">
+            <i class="fas fa-times"></i>
+          </button>
+          <div class="alert-progress"></div>
+        </div>
+      <?php endforeach ?>
+    <?php endif; ?>
+
+    <?php if (session('message')) : ?>
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <div class="alert-content">
+          <div class="alert-title">Success</div>
+          <div class="alert-message"><?= session('message') ?></div>
+        </div>
+        <button class="alert-close">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="alert-progress"></div>
+      </div>
+    <?php endif; ?>
+  </div>
+
   <div class="login-container">
     <div class="login-header">
       <div class="logo">
@@ -300,8 +359,6 @@
       </div>
       <h1>Exam Results Management</h1>
     </div>
-
-    <?= view('Auth/_message_block') ?>
 
     <form class="login-form" action="<?= base_url('login') ?>" method="post">
       <?= csrf_field() ?>
@@ -363,74 +420,35 @@
     </div>
   </div>
 
-  <div class="notification notification-success" id="notificationSuccess">
-    <div class="notification-icon">
-      <i class="fas fa-check"></i>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">Success</div>
-      <div class="notification-message">You have successfully logged in!</div>
-    </div>
-    <button class="notification-close">
-      <i class="fas fa-times"></i>
-    </button>
-    <div class="notification-progress"></div>
-  </div>
-
-  <div class="notification notification-error" id="notificationError">
-    <div class="notification-icon">
-      <i class="fas fa-exclamation-triangle"></i>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">Error</div>
-      <div class="notification-message">Invalid username or password. Please try again.</div>
-    </div>
-    <button class="notification-close">
-      <i class="fas fa-times"></i>
-    </button>
-    <div class="notification-progress"></div>
-  </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const loginForm = document.getElementById('loginForm');
-      const notificationSuccess = document.getElementById('notificationSuccess');
-      const notificationError = document.getElementById('notificationError');
+      // Show all alerts
+      const alerts = document.querySelectorAll('.alert');
       
-      document.querySelectorAll('.notification-close').forEach(button => {
-        button.addEventListener('click', function() {
-          this.closest('.notification').classList.remove('show');
-        });
-      });
-
-      function autoCloseNotification(notification) {
+      alerts.forEach(alert => {
+        // Show alert
         setTimeout(() => {
-          notification.classList.remove('show');
+          alert.classList.add('show');
+        }, 100);
+
+        // Auto-hide after 5 seconds
+        const autoHide = setTimeout(() => {
+          alert.classList.remove('show');
+          setTimeout(() => alert.remove(), 300);
         }, 5000);
-      }
 
-      function showNotification(notification) {
-        notification.classList.add('show');
-        autoCloseNotification(notification);
-      }
-
-      loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        
-        if (username && password) {
-          showNotification(notificationSuccess);
-          
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 1500);
-        } else {
-          showNotification(notificationError);
+        // Close button functionality
+        const closeBtn = alert.querySelector('.alert-close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            clearTimeout(autoHide);
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 300);
+          });
         }
       });
 
+      // Form animations
       const formGroups = document.querySelectorAll('.form-group');
       formGroups.forEach((group, index) => {
         group.style.opacity = '0';

@@ -482,15 +482,32 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const registerForm = document.getElementById('registerForm');
-      const notificationSuccess = document.getElementById('notificationSuccess');
-      const notificationError = document.getElementById('notificationError');
-      const notificationWarning = document.getElementById('notificationWarning');
+      // Get message elements
+      const messages = document.querySelectorAll('.alert');
+      
+      // Show messages with animation if they exist
+      messages.forEach(message => {
+        message.style.opacity = '0';
+        message.style.transform = 'translateY(-20px)';
+        message.style.transition = 'all 0.5s ease';
+        
+        setTimeout(() => {
+          message.style.opacity = '1';
+          message.style.transform = 'translateY(0)';
+        }, 100);
+
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+          message.style.opacity = '0';
+          message.style.transform = 'translateY(-20px)';
+        }, 5000);
+      });
+
+      // Password strength meter
       const passwordInput = document.getElementById('password');
-      const confirmPasswordInput = document.getElementById('password_confirm');
       const passwordStrengthMeter = document.getElementById('passwordStrengthMeter');
       const passwordStrengthText = document.getElementById('passwordStrengthText');
-      
+
       // Close notification when close button is clicked
       document.querySelectorAll('.notification-close').forEach(button => {
         button.addEventListener('click', function() {
@@ -559,8 +576,8 @@
         });
       }
 
-      // Add animation to form elements
-      const formGroups = document.querySelectorAll('.form-group, .form-row, .form-check');
+      // Form animations
+      const formGroups = document.querySelectorAll('.form-group');
       formGroups.forEach((group, index) => {
         group.style.opacity = '0';
         group.style.transform = 'translateY(20px)';
