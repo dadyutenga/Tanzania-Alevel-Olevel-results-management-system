@@ -109,14 +109,29 @@
 
     .form-group .input-with-icon input {
       padding-left: 2.5rem;
+      padding-right: 2.5rem;
     }
 
-    .form-group .input-with-icon i {
+    .form-group .input-with-icon i:not(.password-toggle) {
       position: absolute;
       left: 1rem;
       top: 50%;
       transform: translateY(-50%);
       color: #94a3b8;
+    }
+
+    .form-group .password-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .form-group .password-toggle:hover {
+      color: var(--primary);
     }
 
     .form-check {
@@ -386,6 +401,7 @@
           <input type="password" id="password" name="password" 
                  class="<?php if (session('errors.password')) : ?>is-invalid<?php endif ?>"
                  placeholder="Enter your password" required>
+          <i class="fas fa-eye password-toggle" id="togglePassword"></i>
         </div>
         <?php if (session('errors.password')) : ?>
           <div class="invalid-feedback">
@@ -461,6 +477,22 @@
           group.style.transform = 'translateY(0)';
         }, 100);
       });
+
+      // Password toggle functionality
+      const togglePassword = document.querySelector('#togglePassword');
+      const password = document.querySelector('#password');
+      
+      if (togglePassword && password) {
+        togglePassword.addEventListener('click', function() {
+          // Toggle the type attribute
+          const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+          password.setAttribute('type', type);
+          
+          // Toggle the eye icon
+          this.classList.toggle('fa-eye');
+          this.classList.toggle('fa-eye-slash');
+        });
+      }
     });
   </script>
 </body>
