@@ -551,40 +551,13 @@
       });
 
       // Handle form submission
-      registerForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const firstName = document.getElementById('firstName').value;
-        const lastName = document.getElementById('lastName').value;
-        const email = document.getElementById('email').value;
-        const userType = document.getElementById('userType').value;
-        const password = passwordInput.value;
-        const confirmPassword = confirmPasswordInput.value;
-        const terms = document.getElementById('terms').checked;
-        
-        // Check if passwords match
-        if (password !== confirmPassword) {
-          showNotification(notificationWarning);
-          return;
-        }
-        
-        // Check if terms are accepted
-        if (!terms) {
-          const notificationMessage = notificationError.querySelector('.notification-message');
-          notificationMessage.textContent = 'You must accept the Terms of Service and Privacy Policy.';
-          showNotification(notificationError);
-          return;
-        }
-        
-        // In a real application, you would send this data to a server for registration
-        // For demo purposes, we'll just show a success notification
-        showNotification(notificationSuccess);
-        
-        // Redirect to login page after a delay (for demo purposes)
-        setTimeout(() => {
-          window.location.href = 'login.html';
-        }, 2000);
-      });
+      if (registerForm) {
+        registerForm.addEventListener('submit', function(e) {
+          // Remove the preventDefault() if it exists
+          // Let the form submit naturally to the server
+          // The Auth.php redirects config will handle the redirect
+        });
+      }
 
       // Add animation to form elements
       const formGroups = document.querySelectorAll('.form-group, .form-row, .form-check');
