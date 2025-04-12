@@ -300,34 +300,59 @@
       </div>
       <h1>Exam Results Management</h1>
     </div>
-    <form class="login-form" id="loginForm">
+
+    <!-- Add Shield's message block for errors/success messages -->
+    <?= view('App\Views\Auth\_message_block') ?>
+
+    <!-- Update form to work with Shield -->
+    <form class="login-form" action="<?= url_to('login') ?>" method="post">
+      <?= csrf_field() ?>
+
       <div class="form-group">
-        <label for="username">Username or Email</label>
+        <label for="email">Email</label>
         <div class="input-with-icon">
-          <i class="fas fa-user"></i>
-          <input type="text" id="username" name="username" placeholder="Enter your username or email" required>
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="email" name="email" 
+                 value="<?= old('email') ?>"
+                 class="<?php if (session('errors.email')) : ?>is-invalid<?php endif ?>"
+                 placeholder="Enter your email" required>
         </div>
       </div>
+
       <div class="form-group">
         <label for="password">Password</label>
         <div class="input-with-icon">
           <i class="fas fa-lock"></i>
-          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+          <input type="password" id="password" name="password" 
+                 class="<?php if (session('errors.password')) : ?>is-invalid<?php endif ?>"
+                 placeholder="Enter your password" required>
         </div>
       </div>
+
+      <!-- Remember me checkbox - only show if enabled in Shield config -->
+      <?php if (setting('Auth.sessionConfig')['allowRemembering']): ?>
       <div class="form-check">
-        <input type="checkbox" id="remember" name="remember">
+        <input type="checkbox" id="remember" name="remember" 
+               <?php if (old('remember')): ?> checked<?php endif ?>>
         <label for="remember">Remember me</label>
       </div>
+      <?php endif; ?>
+
       <div class="forgot-password">
-        <a href="#">Forgot password?</a>
+        <?php if (setting('Auth.allowForgotPassword')) : ?>
+          <a href="<?= url_to('forgot') ?>">Forgot password?</a>
+        <?php endif; ?>
       </div>
+
       <button type="submit" class="login-btn">
         <i class="fas fa-sign-in-alt"></i> Login
       </button>
     </form>
+
     <div class="login-footer">
-      <p>Don't have an account? <a href="register.html">Register here</a></p>
+      <?php if (setting('Auth.allowRegistration')) : ?>
+        <p>Don't have an account? <a href="<?= url_to('register') ?>">Register here</a></p>
+      <?php endif; ?>
     </div>
   </div>
 

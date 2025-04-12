@@ -341,71 +341,69 @@
       </div>
       <h1>Create Your Account</h1>
     </div>
-    <form class="register-form" id="registerForm">
+
+    <!-- Add Shield's message block for errors/success messages -->
+    <?= view('App\Views\Auth\_message_block') ?>
+
+    <!-- Update form to work with Shield -->
+    <form class="register-form" action="<?= url_to('register') ?>" method="post">
+      <?= csrf_field() ?>
+
       <div class="form-row">
         <div class="form-group">
-          <label for="firstName">First Name</label>
+          <label for="username">Username</label>
           <div class="input-with-icon">
             <i class="fas fa-user"></i>
-            <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="lastName">Last Name</label>
-          <div class="input-with-icon">
-            <i class="fas fa-user"></i>
-            <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" required>
+            <input type="text" id="username" name="username" 
+                   value="<?= old('username') ?>"
+                   class="<?php if (session('errors.username')) : ?>is-invalid<?php endif ?>"
+                   placeholder="Choose a username" required>
           </div>
         </div>
       </div>
+
       <div class="form-group">
         <label for="email">Email Address</label>
         <div class="input-with-icon">
           <i class="fas fa-envelope"></i>
-          <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+          <input type="email" id="email" name="email" 
+                 value="<?= old('email') ?>"
+                 class="<?php if (session('errors.email')) : ?>is-invalid<?php endif ?>"
+                 placeholder="Enter your email address" required>
         </div>
       </div>
-      <div class="form-group">
-        <label for="userType">User Type</label>
-        <div class="input-with-icon">
-          <i class="fas fa-user-tag"></i>
-          <select id="userType" name="userType" required>
-            <option value="" disabled selected>Select user type</option>
-            <option value="admin">Administrator</option>
-            <option value="teacher">Teacher</option>
-            <option value="student">Student</option>
-            <option value="parent">Parent</option>
-          </select>
-        </div>
-      </div>
+      
       <div class="form-group">
         <label for="password">Password</label>
         <div class="input-with-icon">
           <i class="fas fa-lock"></i>
-          <input type="password" id="password" name="password" placeholder="Create a password" required>
+          <input type="password" id="password" name="password"
+                 class="<?php if (session('errors.password')) : ?>is-invalid<?php endif ?>"
+                 placeholder="Create a password" required>
         </div>
         <div class="password-strength">
           <div class="password-strength-meter" id="passwordStrengthMeter"></div>
         </div>
         <div class="password-strength-text" id="passwordStrengthText"></div>
       </div>
+
       <div class="form-group">
-        <label for="confirmPassword">Confirm Password</label>
+        <label for="pass_confirm">Confirm Password</label>
         <div class="input-with-icon">
           <i class="fas fa-lock"></i>
-          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+          <input type="password" id="pass_confirm" name="pass_confirm"
+                 class="<?php if (session('errors.pass_confirm')) : ?>is-invalid<?php endif ?>"
+                 placeholder="Confirm your password" required>
         </div>
       </div>
-      <div class="form-check">
-        <input type="checkbox" id="terms" name="terms" required>
-        <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
-      </div>
+
       <button type="submit" class="register-btn">
         <i class="fas fa-user-plus"></i> Create Account
       </button>
     </form>
+
     <div class="register-footer">
-      <p>Already have an account? <a href="login.html">Login here</a></p>
+      <p>Already have an account? <a href="<?= url_to('login') ?>">Login here</a></p>
     </div>
   </div>
 
@@ -459,7 +457,7 @@
       const notificationError = document.getElementById('notificationError');
       const notificationWarning = document.getElementById('notificationWarning');
       const passwordInput = document.getElementById('password');
-      const confirmPasswordInput = document.getElementById('confirmPassword');
+      const confirmPasswordInput = document.getElementById('pass_confirm');
       const passwordStrengthMeter = document.getElementById('passwordStrengthMeter');
       const passwordStrengthText = document.getElementById('passwordStrengthText');
       
@@ -574,4 +572,5 @@
     });
   </script>
 </body>
+</html>
 </html>
