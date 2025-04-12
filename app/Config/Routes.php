@@ -118,3 +118,10 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->post('view/downloadStudentPDF', 'PDFController::generateResultPDF');
     });
 });
+
+$routes->group('public/results', ['namespace' => 'App\Controllers'], function($routes) {
+    $routes->get('/', 'StudenResultController::showStudentResultsPage');
+    $routes->get('getExams', 'StudenResultController::getExams');
+    $routes->post('getFilteredStudentResults', 'StudenResultController::getFilteredStudentResults');
+    $routes->post('getStudentSubjectMarks', 'StudenResultController::getStudentSubjectMarks');
+});
