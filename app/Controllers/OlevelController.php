@@ -9,10 +9,27 @@ class OLevelController extends ResultGradingController
         parent::__construct();
     }
 
-    public function processOLevelGrades($examId, $classId, $sectionId = null, $sessionId = null)
+    public function processOLevelGrades($examId, $classId, $sectionId = null, $sessionId = null, $studentId = null)
     {
         try {
-            // Fix the query by starting with students and using proper join order
+            // Validate input parameters
+            if (!is_numeric($examId) || $examId <= 0) {
+                throw new \Exception('Invalid exam ID');
+            }
+            if (!is_numeric($classId) || $classId <= 0) {
+                throw new \Exception('Invalid class ID');
+            }
+            if ($sectionId !== null && (!is_numeric($sectionId) || $sectionId <= 0)) {
+                throw new \Exception('Invalid section ID');
+            }
+            if ($sessionId !== null && (!is_numeric($sessionId) || $sessionId <= 0)) {
+                throw new \Exception('Invalid session ID');
+            }
+            if ($studentId !== null && (!is_numeric($studentId) || $studentId <= 0)) {
+                throw new \Exception('Invalid student ID');
+            }
+
+            // Build query
             $query = $this->examSubjectMarkModel
                 ->select('
                     s.id AS student_id,
@@ -23,7 +40,7 @@ class OLevelController extends ResultGradingController
                     tes.subject_name,
                     tesm.marks_obtained
                 ')
-                ->from('students s')  // Start with students table
+                ->from('students s')
                 ->join('student_session ss', 's.id = ss.student_id')
                 ->join('classes c', 'ss.class_id = c.id')
                 ->join('class_sections cs', 'ss.section_id = cs.section_id AND ss.class_id = cs.class_id')
@@ -45,13 +62,19 @@ class OLevelController extends ResultGradingController
             if ($sessionId) {
                 $query->where('ss.session_id', $sessionId);
             }
+            if ($studentId) {
+                $query->where('s.id', $studentId);
+            }
 
             $marks = $query->orderBy('full_name')
                           ->orderBy('te.exam_name')
                           ->orderBy('tes.subject_name')
                           ->findAll();
 
-            // O-Level specific grading logic
+            // Log raw marks for debugging
+            log_message('debug', 'Raw marks fetched: ' . json_encode($marks));
+
+            // O-Level grading scale
             $gradeScale = [
                 ['min' => 75, 'grade' => 'A', 'points' => 1],
                 ['min' => 65, 'grade' => 'B', 'points' => 2],
@@ -69,47 +92,60 @@ class OLevelController extends ResultGradingController
                 $studentGroups[$mark['student_id']][] = $mark;
             }
 
+            // Log grouped marks
+            log_message('debug', 'Student groups: ' . json_encode(array_keys($studentGroups)));
+
             $processedResults = [];
             $successCount = 0;
-            
+
             foreach ($studentGroups as $studentId => $studentMarks) {
                 try {
                     if (empty($studentMarks)) {
+                        log_message('error', 'No marks for student ID: ' . $studentId);
                         continue;
                     }
 
                     $result = $this->processStudentGrades($studentMarks, $gradeScale);
-                    
+
                     $resultData = [
                         'student_id' => $studentId,
                         'exam_id' => $examId,
                         'class_id' => $classId,
-                        'session_id' => $sessionId,
+                        'session_id' => $sessionId ?? null,
                         'total_points' => $result['total_points'],
                         'division' => $result['division'],
                         'division_description' => $this->getDivisionDescription($result['division'])
                     ];
 
-                    // Check if result exists
+                    // Log result data before storage
+                    log_message('debug', 'Result data for student ' . $studentId . ': ' . json_encode($resultData));
+
+                    // Store result
                     $existingResult = $this->examResultModel
                         ->where([
                             'student_id' => $studentId,
                             'exam_id' => $examId,
                             'class_id' => $classId,
-                            'session_id' => $sessionId
+                            'session_id' => $sessionId ?? null
                         ])
                         ->first();
 
                     if ($existingResult) {
-                        $this->examResultModel->update($existingResult['id'], $resultData);
+                        if (!$this->examResultModel->update($existingResult['id'], $resultData)) {
+                            log_message('error', 'Failed to update result for student ' . $studentId);
+                            continue;
+                        }
                     } else {
-                        $this->examResultModel->insert($resultData);
+                        if (!$this->examResultModel->insert($resultData)) {
+                            log_message('error', 'Failed to insert result for student ' . $studentId);
+                            continue;
+                        }
                     }
-                    
+
                     $successCount++;
                     $processedResults[] = array_merge($resultData, [
                         'student_name' => $studentMarks[0]['full_name'] ?? 'Unknown',
-                        'debug_info' => $result['debug_info'] ?? [] // Add debug information to response
+                        'debug_info' => $result['debug_info'] ?? []
                     ]);
 
                 } catch (\Exception $e) {
@@ -142,13 +178,11 @@ class OLevelController extends ResultGradingController
 
     private function calculateDivision($totalPoints)
     {
-        // Division ranges based on total points from best 7 subjects
-        if ($totalPoints >= 7 && $totalPoints <= 17) return 'I';     // Division I: 7-17 points
-        if ($totalPoints >= 18 && $totalPoints <= 21) return 'II';   // Division II: 18-21 points
-        if ($totalPoints >= 22 && $totalPoints <= 25) return 'III';  // Division III: 22-25 points
-        if ($totalPoints >= 26 && $totalPoints <= 33) return 'IV';   // Division IV: 26-33 points
-        else return 'O';    
-                                                          // Division F: > 35 points
+        if ($totalPoints >= 7 && $totalPoints <= 17) return 'I';
+        if ($totalPoints >= 18 && $totalPoints <= 21) return 'II';
+        if ($totalPoints >= 22 && $totalPoints <= 25) return 'III';
+        if ($totalPoints >= 26 && $totalPoints <= 33) return 'IV';
+        return 'O';
     }
 
     private function processStudentGrades($studentMarks, $gradeScale)
@@ -161,39 +195,71 @@ class OLevelController extends ResultGradingController
             'best_subjects' => [],
             'total_points' => 0
         ];
+        $subjectNames = []; // Track subjects to prevent duplicates
 
-        // First, collect all valid subjects
         foreach ($studentMarks as $mark) {
-            // Skip empty or invalid marks
+            // Validate marks_obtained
             if (!isset($mark['marks_obtained']) || 
+                !is_numeric($mark['marks_obtained']) || 
                 $mark['marks_obtained'] === '' || 
                 $mark['marks_obtained'] === null) {
+                log_message('error', sprintf(
+                    'Invalid mark for student %s, subject %s: %s',
+                    $debugInfo['student_name'],
+                    $mark['subject_name'] ?? 'Unknown',
+                    json_encode($mark)
+                ));
                 continue;
             }
-            
-            $grade = $this->getGrade($mark['marks_obtained'], $gradeScale);
+
+            $markValue = floatval($mark['marks_obtained']);
+
+            // Validate mark range
+            if ($markValue < 0 || $markValue > 100) {
+                log_message('error', sprintf(
+                    'Out-of-range mark for student %s, subject %s: %f',
+                    $debugInfo['student_name'],
+                    $mark['subject_name'] ?? 'Unknown',
+                    $markValue
+                ));
+                continue;
+            }
+
+            // Check for duplicate subjects
+            $subjectName = strtolower(trim($mark['subject_name']));
+            if (in_array($subjectName, $subjectNames)) {
+                log_message('error', sprintf(
+                    'Duplicate subject for student %s: %s',
+                    $debugInfo['student_name'],
+                    $subjectName
+                ));
+                continue;
+            }
+            $subjectNames[] = $subjectName;
+
+            $grade = $this->getGrade($markValue, $gradeScale);
             $subjectInfo = [
                 'subject' => $mark['subject_name'],
-                'marks' => $mark['marks_obtained'],
+                'marks' => $markValue,
                 'grade' => $grade['grade'],
                 'points' => $grade['points']
             ];
-            
+
             $subjects[] = $subjectInfo;
             $debugInfo['all_subjects'][] = $subjectInfo;
 
-            // Log for debugging
+            // Log subject details
             log_message('debug', sprintf(
-                "Initial Subject Data - Student: %s, Subject: %s, Marks: %d, Grade: %s, Points: %d",
-                $debugInfo['student_name'],
-                $mark['subject_name'],
-                $mark['marks_obtained'],
-                $grade['grade'],
-                $grade['points']
+                'Subject: %s, Marks: %f, Grade: %s, Points: %d for student %s',
+                $subjectInfo['subject'],
+                $subjectInfo['marks'],
+                $subjectInfo['grade'],
+                $subjectInfo['points'],
+                $debugInfo['student_name']
             ));
         }
 
-        // Validate minimum subjects requirement
+        // Validate minimum subjects
         if (count($subjects) < $requiredSubjects) {
             throw new \Exception(sprintf(
                 'Student %s has insufficient subjects: %d (required: %d)',
@@ -203,56 +269,21 @@ class OLevelController extends ResultGradingController
             ));
         }
 
-        // Sort subjects by points (ascending: best grades first)
+        // Sort subjects by points
         usort($subjects, function ($a, $b) {
-            return $a['points'] <=> $b['points'];  // Using spaceship operator for cleaner comparison
+            return $a['points'] <=> $b['points'];
         });
 
-        // Log sorted subjects
-        log_message('debug', "Sorted subjects for {$debugInfo['student_name']}:");
-        foreach ($subjects as $subject) {
-            log_message('debug', sprintf(
-                "Subject: %s, Points: %d",
-                $subject['subject'],
-                $subject['points']
-            ));
-        }
-
-        // Pick the best 7 subjects
+        // Select best 7 subjects
         $bestSubjects = array_slice($subjects, 0, 7);
         $debugInfo['best_subjects'] = $bestSubjects;
 
-        // Log best 7 subjects
-        log_message('debug', "Best 7 subjects selected for {$debugInfo['student_name']}:");
-        foreach ($bestSubjects as $subject) {
-            log_message('debug', sprintf(
-                "Selected Subject: %s, Points: %d",
-                $subject['subject'],
-                $subject['points']
-            ));
-        }
-
-        // Sum their points using array_column for cleaner code
+        // Sum points
         $totalPoints = array_sum(array_column($bestSubjects, 'points'));
         $debugInfo['total_points'] = $totalPoints;
 
-        // Log total points
-        log_message('debug', sprintf(
-            "Total Points for %s: %d",
-            $debugInfo['student_name'],
-            $totalPoints
-        ));
-
         // Calculate division
         $division = $this->calculateDivision($totalPoints);
-
-        // Log final division
-        log_message('debug', sprintf(
-            "Final Division for %s: %s (Points: %d)",
-            $debugInfo['student_name'],
-            $division,
-            $totalPoints
-        ));
 
         return [
             'total_points' => $totalPoints,
@@ -269,7 +300,6 @@ class OLevelController extends ResultGradingController
             'III' => 'Good',
             'IV' => 'Satisfactory',
             'O' => 'Fail'
-         
         ];
         return $descriptions[$division] ?? 'Unknown';
     }

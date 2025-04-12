@@ -36,7 +36,6 @@ class ResultGradingController extends ResourceController
         $this->classModel = new ClassModel();
         $this->classSectionModel = new ClassSectionModel();
         $this->sessionModel = new SessionModel();
- 
     }
 
     public function showPublishPage()
@@ -46,8 +45,7 @@ class ResultGradingController extends ResourceController
                 'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
                 'classes' => $this->classModel->where('is_active', 'no')->findAll(),
                 'levels' => [
-                    ['id' => 4, 'name' => 'O-Level'],
-                    ['id' => 6, 'name' => 'A-Level']
+                    ['id' => 4, 'name' => 'O-Level']
                 ]
             ];
             
@@ -170,33 +168,18 @@ class ResultGradingController extends ResourceController
         try {
             $examId = $this->request->getPost('exam_id');
             $classId = $this->request->getPost('class_id');
-            $levelId = $this->request->getPost('level_id');
             $sessionId = $this->request->getPost('session_id');
 
-            if (!$examId || !$classId || !$levelId || !$sessionId) {
+            if (!$examId || !$classId || !$sessionId) {
                 return $this->response->setJSON([
                     'status' => 'error',
                     'message' => 'All parameters are required'
                 ]);
             }
 
-            switch ($levelId) {
-                case '4': // O-Level
-                    $oLevelController = new OLevelController();
-                    $result = $oLevelController->processOLevelGrades($examId, $classId, null, $sessionId);
-                    return $this->response->setJSON($result); // Return the result directly
-                    
-                case '6': // A-Level
-                    $aLevelController = new ALevelController();
-                    $result = $aLevelController->processALevelGrades($examId, $classId, null, $sessionId);
-                    return $this->response->setJSON($result);
-                
-                default:
-                    return $this->response->setJSON([
-                        'status' => 'error',
-                        'message' => 'Invalid level selected'
-                    ]);
-            }
+            $oLevelController = new OLevelController();
+            $result = $oLevelController->processOLevelGrades($examId, $classId, null, $sessionId);
+            return $this->response->setJSON($result);
 
         } catch (\Exception $e) {
             log_message('error', '[ResultGrading.processGradeCalculation] Error: ' . $e->getMessage());
