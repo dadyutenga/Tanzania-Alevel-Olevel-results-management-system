@@ -24,6 +24,14 @@ $routes->group('', [], function ($routes) {
     // Registration
     $routes->get('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerView');
     $routes->post('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerAction');
+    
+    // Public Student Results Routes
+    $routes->group('public/results', ['namespace' => 'App\Controllers'], function($routes) {
+        $routes->get('/', 'StudenResultController::showStudentResultsPage');
+        $routes->get('getExams', 'StudenResultController::getExams');
+        $routes->post('getFilteredStudentResults', 'StudenResultController::getFilteredStudentResults');
+        $routes->post('getStudentSubjectMarks', 'StudenResultController::getStudentSubjectMarks');
+    });
 });
 
 // Protected routes (require authentication)
@@ -117,11 +125,4 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->post('view/downloadPDF', 'PDFController::generateResultPDF');
         $routes->post('view/downloadStudentPDF', 'PDFController::generateResultPDF');
     });
-});
-
-$routes->group('public/results', ['namespace' => 'App\Controllers'], function($routes) {
-    $routes->get('/', 'StudenResultController::showStudentResultsPage');
-    $routes->get('getExams', 'StudenResultController::getExams');
-    $routes->post('getFilteredStudentResults', 'StudenResultController::getFilteredStudentResults');
-    $routes->post('getStudentSubjectMarks', 'StudenResultController::getStudentSubjectMarks');
 });
