@@ -183,6 +183,110 @@
       text-decoration: underline;
     }
 
+    /* ================== ALERT STYLES ================== */
+    .alert {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      padding: 1rem 1.5rem;
+      border-radius: var(--border-radius);
+      background-color: white;
+      color: var(--text-dark);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 1000;
+      max-width: 400px;
+      border-left: 4px solid;
+      opacity: 0;
+      transform: translateX(calc(100% + 1.5rem));
+      transition: all 0.3s ease;
+    }
+
+    .alert.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Alert Types */
+    .alert-success {
+      border-left-color: var(--success);
+    }
+
+    .alert-danger {
+      border-left-color: var(--danger);
+    }
+
+    .alert-warning {
+      border-left-color: var(--warning);
+    }
+
+    .alert-info {
+      border-left-color: var(--info);
+    }
+
+    /* Alert Icons */
+    .alert i {
+      font-size: 1.25rem;
+    }
+
+    .alert-success i {
+      color: var(--success);
+    }
+
+    .alert-danger i {
+      color: var(--danger);
+    }
+
+    .alert-warning i {
+      color: var(--warning);
+    }
+
+    .alert-info i {
+      color: var(--info);
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .alert-message {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+
+    .alert-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0.25rem;
+      transition: var(--transition);
+    }
+
+    .alert-close:hover {
+      color: var(--text-dark);
+    }
+
+    /* Alert Progress Bar */
+    .alert-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      width: 100%;
+      transform-origin: left;
+      background-color: currentColor;
+      opacity: 0.2;
+    }
+
     /* Notification styles */
     .notification {
       position: fixed;
@@ -330,6 +434,11 @@
         flex-direction: column;
         gap: 1.5rem;
       }
+      
+      .alert {
+        max-width: 90%;
+        right: 1rem;
+      }
     }
 
     .invalid-feedback {
@@ -348,6 +457,53 @@
   </style>
 </head>
 <body>
+  <!-- Alerts Container -->
+  <div id="alerts-container">
+    <?php if (session('error')) : ?>
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        <div class="alert-content">
+          <div class="alert-title">Error</div>
+          <div class="alert-message"><?= session('error') ?></div>
+        </div>
+        <button class="alert-close">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="alert-progress"></div>
+      </div>
+    <?php endif; ?>
+
+    <?php if (session('errors')) : ?>
+      <?php foreach (session('errors') as $error) : ?>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle"></i>
+          <div class="alert-content">
+            <div class="alert-title">Validation Error</div>
+            <div class="alert-message"><?= $error ?></div>
+          </div>
+          <button class="alert-close">
+            <i class="fas fa-times"></i>
+          </button>
+          <div class="alert-progress"></div>
+        </div>
+      <?php endforeach ?>
+    <?php endif; ?>
+
+    <?php if (session('message')) : ?>
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <div class="alert-content">
+          <div class="alert-title">Success</div>
+          <div class="alert-message"><?= session('message') ?></div>
+        </div>
+        <button class="alert-close">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="alert-progress"></div>
+      </div>
+    <?php endif; ?>
+  </div>
+
   <div class="register-container">
     <div class="register-header">
       <div class="logo">
@@ -437,96 +593,38 @@
     </div>
   </div>
 
-  <!-- Notification Templates -->
-  <div class="notification notification-success" id="notificationSuccess">
-    <div class="notification-icon">
-      <i class="fas fa-check"></i>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">Success</div>
-      <div class="notification-message">Your account has been created successfully!</div>
-    </div>
-    <button class="notification-close">
-      <i class="fas fa-times"></i>
-    </button>
-    <div class="notification-progress"></div>
-  </div>
-
-  <div class="notification notification-error" id="notificationError">
-    <div class="notification-icon">
-      <i class="fas fa-exclamation-triangle"></i>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">Error</div>
-      <div class="notification-message">There was an error creating your account. Please try again.</div>
-    </div>
-    <button class="notification-close">
-      <i class="fas fa-times"></i>
-    </button>
-    <div class="notification-progress"></div>
-  </div>
-
-  <div class="notification notification-warning" id="notificationWarning">
-    <div class="notification-icon">
-      <i class="fas fa-exclamation-circle"></i>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">Warning</div>
-      <div class="notification-message">Passwords do not match. Please check and try again.</div>
-    </div>
-    <button class="notification-close">
-      <i class="fas fa-times"></i>
-    </button>
-    <div class="notification-progress"></div>
-  </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Get message elements
-      const messages = document.querySelectorAll('.alert');
+      // Show all alerts
+      const alerts = document.querySelectorAll('.alert');
       
-      // Show messages with animation if they exist
-      messages.forEach(message => {
-        message.style.opacity = '0';
-        message.style.transform = 'translateY(-20px)';
-        message.style.transition = 'all 0.5s ease';
-        
+      alerts.forEach(alert => {
+        // Show alert
         setTimeout(() => {
-          message.style.opacity = '1';
-          message.style.transform = 'translateY(0)';
+          alert.classList.add('show');
         }, 100);
 
-        // Auto hide after 5 seconds
-        setTimeout(() => {
-          message.style.opacity = '0';
-          message.style.transform = 'translateY(-20px)';
+        // Auto-hide after 5 seconds
+        const autoHide = setTimeout(() => {
+          alert.classList.remove('show');
+          setTimeout(() => alert.remove(), 300);
         }, 5000);
+
+        // Close button functionality
+        const closeBtn = alert.querySelector('.alert-close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            clearTimeout(autoHide);
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 300);
+          });
+        }
       });
 
       // Password strength meter
       const passwordInput = document.getElementById('password');
       const passwordStrengthMeter = document.getElementById('passwordStrengthMeter');
       const passwordStrengthText = document.getElementById('passwordStrengthText');
-
-      // Close notification when close button is clicked
-      document.querySelectorAll('.notification-close').forEach(button => {
-        button.addEventListener('click', function() {
-          this.closest('.notification').classList.remove('show');
-        });
-      });
-
-      // Auto-close notifications after 5 seconds
-      function autoCloseNotification(notification) {
-        setTimeout(() => {
-          notification.classList.remove('show');
-        }, 5000);
-      }
-
-      // Show notification
-      function showNotification(notification) {
-        notification.classList.add('show');
-        autoCloseNotification(notification);
-      }
 
       // Check password strength
       function checkPasswordStrength(password) {
@@ -538,7 +636,7 @@
         if (password.match(/[0-9]+/)) strength += 1;
         if (password.match(/[^a-zA-Z0-9]+/)) strength += 1;
         
-        passwordStrengthMeter.className = '';
+        passwordStrengthMeter.className = 'password-strength-meter';
         
         if (password.length === 0) {
           passwordStrengthMeter.style.width = '0';
@@ -566,15 +664,6 @@
       passwordInput.addEventListener('input', function() {
         checkPasswordStrength(this.value);
       });
-
-      // Handle form submission
-      if (registerForm) {
-        registerForm.addEventListener('submit', function(e) {
-          // Remove the preventDefault() if it exists
-          // Let the form submit naturally to the server
-          // The Auth.php redirects config will handle the redirect
-        });
-      }
 
       // Form animations
       const formGroups = document.querySelectorAll('.form-group');
