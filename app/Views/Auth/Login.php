@@ -301,11 +301,9 @@
       <h1>Exam Results Management</h1>
     </div>
 
-    <!-- Add Shield's message block for errors/success messages -->
-    <?= view('App\Views\Auth\_message_block') ?>
+    <?= view('Auth/_message_block') ?>
 
-    <!-- Update form to work with Shield -->
-    <form class="login-form" action="<?= url_to('login') ?>" method="post">
+    <form class="login-form" action="<?= base_url('login') ?>" method="post">
       <?= csrf_field() ?>
 
       <div class="form-group">
@@ -317,6 +315,11 @@
                  class="<?php if (session('errors.email')) : ?>is-invalid<?php endif ?>"
                  placeholder="Enter your email" required>
         </div>
+        <?php if (session('errors.email')) : ?>
+          <div class="invalid-feedback">
+            <?= session('errors.email') ?>
+          </div>
+        <?php endif ?>
       </div>
 
       <div class="form-group">
@@ -327,12 +330,16 @@
                  class="<?php if (session('errors.password')) : ?>is-invalid<?php endif ?>"
                  placeholder="Enter your password" required>
         </div>
+        <?php if (session('errors.password')) : ?>
+          <div class="invalid-feedback">
+            <?= session('errors.password') ?>
+          </div>
+        <?php endif ?>
       </div>
 
-      <!-- Remember me checkbox - only show if enabled in Shield config -->
       <?php if (setting('Auth.sessionConfig')['allowRemembering']): ?>
       <div class="form-check">
-        <input type="checkbox" id="remember" name="remember" 
+        <input type="checkbox" id="remember" name="remember" class="form-check-input" 
                <?php if (old('remember')): ?> checked<?php endif ?>>
         <label for="remember">Remember me</label>
       </div>
@@ -351,12 +358,11 @@
 
     <div class="login-footer">
       <?php if (setting('Auth.allowRegistration')) : ?>
-        <p>Don't have an account? <a href="<?= url_to('register') ?>">Register here</a></p>
+        <p>Don't have an account? <a href="<?= base_url('register') ?>">Register here</a></p>
       <?php endif; ?>
     </div>
   </div>
 
-  <!-- Notification Templates -->
   <div class="notification notification-success" id="notificationSuccess">
     <div class="notification-icon">
       <i class="fas fa-check"></i>
@@ -391,49 +397,40 @@
       const notificationSuccess = document.getElementById('notificationSuccess');
       const notificationError = document.getElementById('notificationError');
       
-      // Close notification when close button is clicked
       document.querySelectorAll('.notification-close').forEach(button => {
         button.addEventListener('click', function() {
           this.closest('.notification').classList.remove('show');
         });
       });
 
-      // Auto-close notifications after 5 seconds
       function autoCloseNotification(notification) {
         setTimeout(() => {
           notification.classList.remove('show');
         }, 5000);
       }
 
-      // Show notification
       function showNotification(notification) {
         notification.classList.add('show');
         autoCloseNotification(notification);
       }
 
-      // Handle form submission
       loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         
-        // Simple validation for demo purposes
         if (username && password) {
-          // In a real application, you would send this data to a server for authentication
-          // For demo purposes, we'll just show a success notification
           showNotification(notificationSuccess);
           
-          // Redirect to dashboard after a delay (for demo purposes)
           setTimeout(() => {
-            window.location.href = 'index.html'; // Redirect to dashboard
+            window.location.href = 'index.html';
           }, 1500);
         } else {
           showNotification(notificationError);
         }
       });
 
-      // Add animation to form elements
       const formGroups = document.querySelectorAll('.form-group');
       formGroups.forEach((group, index) => {
         group.style.opacity = '0';

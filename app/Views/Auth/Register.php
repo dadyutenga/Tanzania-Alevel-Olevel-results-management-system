@@ -331,6 +331,20 @@
         gap: 1.5rem;
       }
     }
+
+    .invalid-feedback {
+      color: var(--danger);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .is-invalid {
+      border-color: var(--danger) !important;
+    }
+
+    .is-invalid:focus {
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+    }
   </style>
 </head>
 <body>
@@ -342,25 +356,10 @@
       <h1>Create Your Account</h1>
     </div>
 
-    <!-- Add Shield's message block for errors/success messages -->
-    <?= view('App\Views\Auth\_message_block') ?>
+    <?= view('Auth/_message_block') ?>
 
-    <!-- Update form to work with Shield -->
-    <form class="register-form" action="<?= url_to('register') ?>" method="post">
+    <form class="register-form" action="<?= base_url('register') ?>" method="post">
       <?= csrf_field() ?>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <div class="input-with-icon">
-            <i class="fas fa-user"></i>
-            <input type="text" id="username" name="username" 
-                   value="<?= old('username') ?>"
-                   class="<?php if (session('errors.username')) : ?>is-invalid<?php endif ?>"
-                   placeholder="Choose a username" required>
-          </div>
-        </div>
-      </div>
 
       <div class="form-group">
         <label for="email">Email Address</label>
@@ -371,6 +370,27 @@
                  class="<?php if (session('errors.email')) : ?>is-invalid<?php endif ?>"
                  placeholder="Enter your email address" required>
         </div>
+        <?php if (session('errors.email')) : ?>
+          <div class="invalid-feedback">
+            <?= session('errors.email') ?>
+          </div>
+        <?php endif ?>
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <div class="input-with-icon">
+          <i class="fas fa-user"></i>
+          <input type="text" id="username" name="username" 
+                 value="<?= old('username') ?>"
+                 class="<?php if (session('errors.username')) : ?>is-invalid<?php endif ?>"
+                 placeholder="Choose a username" required>
+        </div>
+        <?php if (session('errors.username')) : ?>
+          <div class="invalid-feedback">
+            <?= session('errors.username') ?>
+          </div>
+        <?php endif ?>
       </div>
       
       <div class="form-group">
@@ -381,6 +401,11 @@
                  class="<?php if (session('errors.password')) : ?>is-invalid<?php endif ?>"
                  placeholder="Create a password" required>
         </div>
+        <?php if (session('errors.password')) : ?>
+          <div class="invalid-feedback">
+            <?= session('errors.password') ?>
+          </div>
+        <?php endif ?>
         <div class="password-strength">
           <div class="password-strength-meter" id="passwordStrengthMeter"></div>
         </div>
@@ -388,13 +413,18 @@
       </div>
 
       <div class="form-group">
-        <label for="pass_confirm">Confirm Password</label>
+        <label for="password_confirm">Confirm Password</label>
         <div class="input-with-icon">
           <i class="fas fa-lock"></i>
-          <input type="password" id="pass_confirm" name="pass_confirm"
-                 class="<?php if (session('errors.pass_confirm')) : ?>is-invalid<?php endif ?>"
+          <input type="password" id="password_confirm" name="password_confirm"
+                 class="<?php if (session('errors.password_confirm')) : ?>is-invalid<?php endif ?>"
                  placeholder="Confirm your password" required>
         </div>
+        <?php if (session('errors.password_confirm')) : ?>
+          <div class="invalid-feedback">
+            <?= session('errors.password_confirm') ?>
+          </div>
+        <?php endif ?>
       </div>
 
       <button type="submit" class="register-btn">
@@ -403,7 +433,7 @@
     </form>
 
     <div class="register-footer">
-      <p>Already have an account? <a href="<?= url_to('login') ?>">Login here</a></p>
+      <p>Already have an account? <a href="<?= base_url('login') ?>">Login here</a></p>
     </div>
   </div>
 
@@ -457,7 +487,7 @@
       const notificationError = document.getElementById('notificationError');
       const notificationWarning = document.getElementById('notificationWarning');
       const passwordInput = document.getElementById('password');
-      const confirmPasswordInput = document.getElementById('pass_confirm');
+      const confirmPasswordInput = document.getElementById('password_confirm');
       const passwordStrengthMeter = document.getElementById('passwordStrengthMeter');
       const passwordStrengthText = document.getElementById('passwordStrengthText');
       
@@ -572,5 +602,4 @@
     });
   </script>
 </body>
-</html>
 </html>
