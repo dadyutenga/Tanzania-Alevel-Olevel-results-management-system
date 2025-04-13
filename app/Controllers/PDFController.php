@@ -214,4 +214,195 @@ class PDFController extends BaseController
 
         $pdf->Output('class_results.pdf', 'D');
     }
+
+    public function generateStudentReportCard($studentData, $subjectMarks, $examResult)
+    {
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetAuthor('School Management System');
+        $pdf->SetTitle('Student Report Card');
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        $pdf->SetMargins(15, 15, 15);
+        $pdf->AddPage();
+
+        // Header with School Logo Placeholder and Title
+        $pdf->SetFont('helvetica', 'B', 18);
+        $pdf->Cell(0, 10, 'EXAM RESULTS MANAGEMENT SYSTEM', 0, 1, 'C');
+        $pdf->SetFont('helvetica', 'B', 14);
+        $pdf->Cell(0, 8, 'STUDENT REPORT CARD', 0, 1, 'C');
+        $pdf->SetFont('helvetica', '', 10);
+        $pdf->Cell(0, 6, 'Academic Year: ' . date('Y'), 0, 1, 'C');
+        $pdf->Ln(5);
+
+        // Decorative Line
+        $pdf->SetLineStyle(array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(74, 229, 74)));
+        $pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
+        $pdf->Ln(10);
+
+        // Student Photo and Information Section
+        if (!empty($studentData['student_photo']) && file_exists(WRITEPATH . 'uploads/' . $studentData['student_photo'])) {
+            $pdf->Image(WRITEPATH . 'uploads/' . $studentData['student_photo'], 160, 40, 30, 30, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+        } else {
+            // Placeholder for photo with border
+            $pdf->SetXY(160, 40);
+            $pdf->SetFillColor(240, 240, 240);
+            $pdf->Cell(30, 30, 'Photo', 1, 1, 'C', true);
+            $pdf->SetFont('helvetica', 'I', 8);
+            $pdf->SetXY(160, 65);
+            $pdf->Cell(30, 5, 'Not Available', 0, 1, 'C');
+        }
+
+        // Student Information
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(50, 8, 'Student Name:', 0);
+        $pdf->SetFont('helvetica', '', 12);
+        $pdf->Cell(0, 8, $studentData['full_name'], 0, 1);
+
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(50, 8, 'Class & Section:', 0);
+        $pdf->SetFont('helvetica', '', 12);
+        $pdf->Cell(0, 8, $studentData['class_name'] . ' - Section ' . $studentData['section'], 0, 1);
+
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(50, 8, 'Student ID:', 0);
+        $pdf->SetFont('helvetica', '', 12);
+        $pdf->Cell(0, 8, 'STU' . str_pad($studentData['student_id'], 5, '0', STR_PAD_LEFT), 0, 1);
+        $pdf->Ln(10);
+
+        // Decorative Line
+        $pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
+        $pdf->Ln(10);
+
+        // Results Section Title
+        $pdf->SetFont('helvetica', 'B', 14);
+        $pdf->Cell(0, 10, 'ACADEMIC PERFORMANCE', 0, 1, 'C');
+        $pdf->Ln(5);
+
+        // Results Table with Styling
+        $pdf->SetFillColor(220, 220, 220); // Light gray for header
+        $pdf->SetFont('helvetica', 'B', 11);
+        $pdf->Cell(45, 8, 'Subject', 1, 0, 'C', true);
+        $pdf->Cell(30, 8, 'Max Marks', 1, 0, 'C', true);
+        $pdf->Cell(30, 8, 'Marks Obtained', 1, 0, 'C', true);
+        $pdf->Cell(25, 8, 'Percentage', 1, 0, 'C', true);
+        $pdf->Cell(25, 8, 'Grade', 1, 1, 'C', true);
+
+        $pdf->SetFont('helvetica', '', 10);
+        $totalMaxMarks = 0;
+        $totalObtainedMarks = 0;
+        foreach ($subjectMarks as $mark) {
+            $percentage = ($mark['max_marks'] > 0) ? ($mark['marks_obtained'] / $mark['max_marks']) * 100 : 0;
+            $totalMaxMarks += $mark['max_marks'];
+            $totalObtainedMarks += $mark['marks_obtained'];
+            
+            // Alternate row coloring
+            $pdf->SetFillColor(245, 245, 245);
+            $pdf->Cell(45, 7, $mark['subject_name'], 1, 0, 'L', ($pdf->GetY() % 2 == 0));
+            $pdf->Cell(30, 7, $mark['max_marks'], 1, 0, 'C', ($pdf->GetY() % 2 == 0));
+            $pdf->Cell(30, 7, $mark['marks_obtained'], 1, 0, 'C', ($pdf->GetY() % 2 == 0));
+            $pdf->Cell(25, 7, number_format($percentage, 1) . '%', 1, 0, 'C', ($pdf->GetY() % 2 == 0));
+            
+            // Colorful grade text
+            $gradeColor = $this->getGradeColor($mark['grade']);
+            $pdf->SetTextColor($gradeColor[0], $gradeColor[1], $gradeColor[2]);
+            $pdf->Cell(25, 7, $mark['grade'], 1, 1, 'C', ($pdf->GetY() % 2 == 0));
+            $pdf->SetTextColor(0, 0, 0); // Reset to black
+        }
+
+        // Total Row
+        $pdf->SetFillColor(230, 230, 230);
+        $pdf->SetFont('helvetica', 'B', 11);
+        $totalPercentage = ($totalMaxMarks > 0) ? ($totalObtainedMarks / $totalMaxMarks) * 100 : 0;
+        $pdf->Cell(45, 8, 'TOTAL', 1, 0, 'C', true);
+        $pdf->Cell(30, 8, $totalMaxMarks, 1, 0, 'C', true);
+        $pdf->Cell(30, 8, $totalObtainedMarks, 1, 0, 'C', true);
+        $pdf->Cell(25, 8, number_format($totalPercentage, 1) . '%', 1, 0, 'C', true);
+        $pdf->Cell(25, 8, '', 1, 1, 'C', true);
+
+        $pdf->Ln(10);
+
+        // Summary Section
+        $pdf->SetFont('helvetica', 'B', 14);
+        $pdf->Cell(0, 10, 'OVERALL RESULTS', 0, 1, 'C');
+        $pdf->Ln(5);
+
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(60, 8, 'Total Points:', 0);
+        $pdf->SetFont('helvetica', '', 12);
+        $pdf->Cell(0, 8, $examResult['total_points'] ?? 'N/A', 0, 1);
+
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(60, 8, 'Division:', 0);
+        $pdf->SetFont('helvetica', '', 12);
+        $division = $examResult['division'] ?? 'N/A';
+        $divisionColor = $this->getDivisionColor($division);
+        $pdf->SetTextColor($divisionColor[0], $divisionColor[1], $divisionColor[2]);
+        $pdf->Cell(0, 8, $division, 0, 1);
+        $pdf->SetTextColor(0, 0, 0); // Reset to black
+
+        // Grading Key
+        $pdf->Ln(10);
+        $pdf->SetFont('helvetica', 'B', 10);
+        $pdf->Cell(0, 8, 'Grading Key:', 0, 1);
+        $pdf->SetFont('helvetica', '', 9);
+        $pdf->Cell(0, 6, 'A (75-100%) - Excellent | B (65-74%) - Very Good | C (45-64%) - Good | D (30-44%) - Satisfactory | F (0-29%) - Needs Improvement', 0, 1);
+
+        // Division Key
+        $pdf->Ln(5);
+        $pdf->SetFont('helvetica', 'B', 10);
+        $pdf->Cell(0, 8, 'Division Key:', 0, 1);
+        $pdf->SetFont('helvetica', '', 9);
+        $pdf->Cell(0, 6, 'I - Excellent | II - Very Good | III - Good | IV - Satisfactory | F - Fail', 0, 1);
+
+        // Signature Section
+        $pdf->Ln(15);
+        $pdf->SetFont('helvetica', '', 10);
+        $pdf->Cell(60, 6, '_____________________', 0, 0, 'C');
+        $pdf->Cell(60, 6, '_____________________', 0, 0, 'C');
+        $pdf->Cell(60, 6, '_____________________', 0, 1, 'C');
+        
+        $pdf->Cell(60, 6, 'Class Teacher', 0, 0, 'C');
+        $pdf->Cell(60, 6, 'Head Teacher', 0, 0, 'C');
+        $pdf->Cell(60, 6, 'Date: ' . date('Y-m-d'), 0, 1, 'C');
+
+        // Output PDF directly to browser
+        $pdf->Output('report_card_' . $studentData['student_id'] . '.pdf', 'D');
+    }
+
+    private function getGradeColor($grade)
+    {
+        switch ($grade) {
+            case 'A':
+                return [40, 167, 69]; // Green
+            case 'B':
+                return [108, 117, 125]; // Gray
+            case 'C':
+                return [0, 123, 255]; // Blue
+            case 'D':
+                return [255, 193, 7]; // Yellow
+            case 'F':
+                return [220, 53, 69]; // Red
+            default:
+                return [0, 0, 0]; // Black
+        }
+    }
+
+    private function getDivisionColor($division)
+    {
+        switch ($division) {
+            case 'I':
+                return [40, 167, 69]; // Green
+            case 'II':
+                return [108, 117, 125]; // Gray
+            case 'III':
+                return [0, 123, 255]; // Blue
+            case 'IV':
+                return [255, 193, 7]; // Yellow
+            case 'F':
+                return [220, 53, 69]; // Red
+            default:
+                return [0, 0, 0]; // Black
+        }
+    }
 } 

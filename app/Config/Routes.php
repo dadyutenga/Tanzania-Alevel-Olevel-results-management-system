@@ -31,6 +31,7 @@ $routes->group('', [], function ($routes) {
         $routes->get('getExams', 'StudenResultController::getExams');
         $routes->post('getFilteredStudentResults', 'StudenResultController::getFilteredStudentResults');
         $routes->post('getStudentSubjectMarks', 'StudenResultController::getStudentSubjectMarks');
+        $routes->post('getReportCard', 'StudenResultController::getReportCard');
     });
 });
 

@@ -229,6 +229,79 @@ class StudenResultController extends ResourceController
         }
     }
 
+    public function getReportCard()
+    {
+        try {
+            $studentId = $this->request->getPost('student_id');
+            $examId = $this->request->getPost('exam_id');
+            
+            if (!$studentId || !$examId) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Student ID and Exam ID are required'
+                ]);
+            }
+
+            // Fetch student details including photo
+            $studentData = $this->studentModel
+                ->select('
+                    students.id AS student_id,
+                    CONCAT(students.firstname, " ", COALESCE(students.middlename, ""), " ", students.lastname) AS full_name,
+                    students.image AS student_photo,
+                    classes.class AS class_name,
+                    class_sections.section_id AS section
+                ')
+                ->join('student_session', 'students.id = student_session.student_id')
+                ->join('classes', 'student_session.class_id = classes.id')
+                ->join('class_sections', 'student_session.section_id = class_sections.section_id AND student_session.class_id = class_sections.class_id')
+                ->where('students.id', $studentId)
+                ->first();
+
+            if (!$studentData) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Student not found'
+                ]);
+            }
+
+            // Fetch subject marks
+            $subjectMarks = $this->examSubjectMarkModel
+                ->select('
+                    tz_exam_subjects.subject_name,
+                    tz_exam_subjects.max_marks,
+                    tz_exam_subjects.passing_marks,
+                    tz_exam_subject_marks.marks_obtained
+                ')
+                ->join('tz_exam_subjects', 'tz_exam_subjects.id = tz_exam_subject_marks.exam_subject_id')
+                ->where('tz_exam_subject_marks.student_id', $studentId)
+                ->where('tz_exam_subject_marks.exam_id', $examId)
+                ->findAll();
+
+            // Convert marks to grades
+            foreach ($subjectMarks as &$mark) {
+                $percentage = ($mark['marks_obtained'] / $mark['max_marks']) * 100;
+                $mark['grade'] = $this->calculateGrade($percentage);
+            }
+
+            // Fetch total points and division
+            $examResult = $this->examResultModel
+                ->where('student_id', $studentId)
+                ->where('exam_id', $examId)
+                ->first();
+
+            // Generate PDF directly
+            $pdfController = new PDFController();
+            return $pdfController->generateStudentReportCard($studentData, $subjectMarks, $examResult);
+
+        } catch (\Exception $e) {
+            log_message('error', '[StudenResultController.getReportCard] Error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Failed to generate report card'
+            ]);
+        }
+    }
+
     private function calculateGrade($percentage)
     {
         $gradeScale = [

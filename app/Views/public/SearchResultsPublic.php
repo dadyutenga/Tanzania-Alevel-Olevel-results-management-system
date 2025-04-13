@@ -520,8 +520,11 @@
                         <td>${result.total_points}</td>
                         <td><span class="badge ${badgeClass}">${result.division}</span></td>
                         <td>
-                            <button class="btn btn-primary" style="padding: 0.5rem 1rem;" onclick="viewDetails(${result.student_id})">
+                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;" onclick="viewDetails(${result.student_id})">
                                 <i class="fas fa-eye"></i> View Details
+                            </button>
+                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; background-color: #3b82f6;" onclick="viewReportCard(${result.student_id})">
+                                <i class="fas fa-file-alt"></i> Report Card
                             </button>
                         </td>
                     `;
@@ -609,6 +612,57 @@
                 showCloseButton: true,
                 showConfirmButton: false
             });
+        }
+
+        async function viewReportCard(studentId) {
+            const examId = document.getElementById('exam').value;
+            
+            try {
+                const response = await fetch('<?= base_url('public/results/getReportCard') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `student_id=${studentId}&exam_id=${examId}`
+                });
+
+                if (response.ok) {
+                    // Check if the response is JSON (error case) or PDF (success case)
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Failed to generate report card'
+                        });
+                    } else {
+                        // Handle PDF download
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `report_card_${studentId}.pdf`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to download report card'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while generating the report card'
+                });
+            }
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
