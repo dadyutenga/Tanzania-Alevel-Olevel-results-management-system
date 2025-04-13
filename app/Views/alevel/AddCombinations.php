@@ -106,7 +106,7 @@
 
         .logo span {
             font-size: 1.25rem;
-            font-weight: 600;
+            font-weight: 800;
             color: var(--text-primary);
         }
 
@@ -292,6 +292,7 @@
         .btn-primary {
             background-color: var(--primary);
             color: black;
+            font-weight: 700;
             box-shadow: 0 0 20px rgba(74, 229, 74, 0.3);
         }
 
@@ -335,7 +336,7 @@
         .results-table th {
             background-color: var(--primary);
             color: black;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .results-table tr:nth-child(even) {
