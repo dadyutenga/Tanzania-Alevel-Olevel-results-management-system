@@ -121,6 +121,7 @@
         .sidebar-menu li a {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0.75rem 1.5rem;
             color: var(--text-primary);
             text-decoration: none;
@@ -141,22 +142,20 @@
         }
 
         .submenu {
+            display: none;
             list-style: none;
             padding: 0;
             margin: 0;
             background-color: var(--secondary);
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
         }
 
-        .submenu.show {
-            max-height: 500px;
+        .toggle-icon {
+            margin-left: auto;
+            transition: transform 0.3s ease;
         }
 
-        .submenu li a {
-            padding: 0.5rem 1.5rem 0.5rem 2.5rem;
-            font-size: 0.85rem;
+        .sidebar-menu .submenu li a {
+            padding-left: 2.5rem;
         }
 
         .menu-toggle {
@@ -164,11 +163,6 @@
             align-items: center;
             justify-content: space-between;
             width: 100%;
-        }
-
-        .toggle-icon {
-            transition: transform 0.3s ease;
-            margin-left: auto;
         }
 
         .menu-toggle.active .toggle-icon {
@@ -565,7 +559,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Sidebar toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
@@ -577,36 +570,61 @@
                 });
             }
             
-            // Handle submenu toggling
-            const menuItems = document.querySelectorAll('.sidebar-menu li');
-            
-            menuItems.forEach(item => {
-                const link = item.querySelector('a');
-                const submenu = item.querySelector('.submenu');
-                
-                if (submenu) {
-                    // Add toggle icon if not present
-                    if (!link.querySelector('.toggle-icon')) {
-                        const icon = document.createElement('i');
-                        icon.className = 'fas fa-chevron-right toggle-icon';
-                        link.insertAdjacentElement('beforeend', icon);
+            // Add expandable sidebar functionality
+            const expandableLinks = document.querySelectorAll('.expandable');
+            expandableLinks.forEach(link => {
+                // Add toggle icon if not present
+                if (!link.querySelector('.toggle-icon')) {
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-chevron-down toggle-icon';
+                    link.appendChild(icon);
+                }
+
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const submenu = this.nextElementSibling;
+                    const toggleIcon = this.querySelector('.toggle-icon');
+                    
+                    if (submenu) {
+                        if (submenu.style.display === 'none' || submenu.style.display === '') {
+                            // Close all other submenus first
+                            document.querySelectorAll('.submenu').forEach(menu => {
+                                if (menu !== submenu) {
+                                    menu.style.display = 'none';
+                                    const icon = menu.previousElementSibling.querySelector('.toggle-icon');
+                                    if (icon) {
+                                        icon.classList.remove('fa-chevron-up');
+                                        icon.classList.add('fa-chevron-down');
+                                    }
+                                }
+                            });
+
+                            // Open this submenu
+                            submenu.style.display = 'block';
+                            toggleIcon.classList.remove('fa-chevron-down');
+                            toggleIcon.classList.add('fa-chevron-up');
+                        } else {
+                            // Close this submenu
+                            submenu.style.display = 'none';
+                            toggleIcon.classList.remove('fa-chevron-up');
+                            toggleIcon.classList.add('fa-chevron-down');
+                        }
                     }
-                    
-                    // Make the link expandable
-                    link.classList.add('menu-toggle');
-                    
-                    // Toggle submenu on click
-                    link.addEventListener('click', function(e) {
-                        if (window.innerWidth > 768) {
-                            e.preventDefault();
+                });
+            });
+
+            // Set initial state for active menu items
+            expandableLinks.forEach(link => {
+                if (link.classList.contains('active')) {
+                    const submenu = link.nextElementSibling;
+                    const toggleIcon = link.querySelector('.toggle-icon');
+                    if (submenu) {
+                        submenu.style.display = 'block';
+                        if (toggleIcon) {
+                            toggleIcon.classList.remove('fa-chevron-down');
+                            toggleIcon.classList.add('fa-chevron-up');
                         }
-                        
-                        this.classList.toggle('active');
-                        const submenu = this.parentElement.querySelector('.submenu');
-                        if (submenu) {
-                            submenu.classList.toggle('show');
-                        }
-                    });
+                    }
                 }
             });
             
