@@ -10,7 +10,7 @@ CREATE TABLE `tz_alevel_combinations` (
   UNIQUE KEY `combination_code` (`combination_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
--- tz_alevel_combination_subjects: Links combinations to subjects, specifying if they are major or additional
+-- tz_alevel_combination_subjects: Links combinations to subjects
 CREATE TABLE `tz_alevel_combination_subjects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `combination_id` int(11) NOT NULL COMMENT 'References tz_alevel_combinations',
@@ -43,6 +43,27 @@ CREATE TABLE `tz_student_alevel_combinations` (
   CONSTRAINT `tz_student_alevel_combinations_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `tz_student_alevel_combinations_ibfk_3` FOREIGN KEY (`section_id`) REFERENCES `sections` (`id`) ON DELETE SET NULL,
   CONSTRAINT `tz_student_alevel_combinations_ibfk_4` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- tz_alevel_exam_combinations: Links exams to combinations to prevent mix-ups
+CREATE TABLE `tz_alevel_exam_combinations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `exam_id` int(11) NOT NULL COMMENT 'References tz_exams table',
+  `combination_id` int(11) NOT NULL COMMENT 'References tz_alevel_combinations',
+  `class_id` int(11) NOT NULL COMMENT 'References classes table, e.g., Form 5 or 6',
+  `session_id` int(11) NOT NULL COMMENT 'References sessions table',
+  `is_active` enum('yes', 'no') DEFAULT 'yes',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `exam_id` (`exam_id`),
+  KEY `combination_id` (`combination_id`),
+  KEY `class_id` (`class_id`),
+  KEY `session_id` (`session_id`),
+  CONSTRAINT `tz_alevel_exam_combinations_ibfk_1` FOREIGN KEY (`exam_id`) REFERENCES `tz_exams` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tz_alevel_exam_combinations_ibfk_2` FOREIGN KEY (`combination_id`) REFERENCES `tz_alevel_combinations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tz_alevel_exam_combinations_ibfk_3` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tz_alevel_exam_combinations_ibfk_4` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- tz_alevel_exam_results: Stores A-level-specific results
