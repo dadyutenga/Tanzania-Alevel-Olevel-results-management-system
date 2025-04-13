@@ -4,23 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam Result Management - Search Student Results</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Modern Color Scheme */
+        /* Modern Dark Theme with White Elements */
         :root {
-            --primary: #f8f9fa;
+            --bg-gradient-from: #1a1a1a;
+            --bg-gradient-to: #2d2d2d;
+            --primary: #ffffff;
             --primary-dark: #f1f3f5;
-            --secondary: #e9ecef;
-            --accent: #1a1f36;
-            --accent-light: #2d3748;
-            --text-primary: #1a1f36;
-            --text-secondary: #4a5568;
-            --border: #e2e8f0;
+            --secondary: #333333;
+            --accent: #4AE54A;
+            --accent-hover: #3AD03A;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-dark: #1a1f36;
+            --border: #444444;
+            --card-bg: rgba(40, 40, 40, 0.8);
+            --form-bg: #ffffff;
+            --input-bg: #f8f9fa;
+            --input-border: #e2e8f0;
             --success: #31c48d;
             --warning: #f59e0b;
-            --danger: #e53e3e;
-            --shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-            --radius: 8px;
+            --danger: #ef4444;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            --radius: 12px;
+            --button-radius: 50px;
         }
 
         * {
@@ -32,9 +41,23 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 0.925rem;
-            background-color: var(--primary-dark);
+            background: linear-gradient(135deg, var(--bg-gradient-from), var(--bg-gradient-to));
             color: var(--text-primary);
             line-height: 1.5;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(74, 229, 74, 0.03) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
         }
 
         .container {
@@ -51,18 +74,52 @@
         }
 
         .header h1 {
-            font-size: 1.5rem;
+            font-size: 2rem;
             letter-spacing: -0.025em;
+            font-weight: 700;
+            background: linear-gradient(to right, #ffffff, #a0a0a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            color: var(--accent);
+            font-size: 1.75rem;
         }
 
         /* Form Container */
         .form-container {
-            background: var(--primary);
-            padding: 1.5rem;
+            background: var(--card-bg);
+            padding: 2rem;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
             margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
         }
 
         .row {
@@ -85,16 +142,18 @@
 
         .form-control {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border);
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--input-border);
             border-radius: var(--radius);
             font-size: 0.925rem;
             transition: all 0.3s ease;
+            background-color: var(--input-bg);
+            color: var(--text-dark);
         }
 
         .form-control:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(30, 40, 55, 0.1);
+            box-shadow: 0 0 0 3px rgba(74, 229, 74, 0.2);
             outline: none;
         }
 
@@ -108,13 +167,13 @@
             gap: 1rem;
             margin-top: 2rem;
             padding-top: 1.5rem;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--radius);
-            font-weight: 500;
+            padding: 0.85rem 1.5rem;
+            border-radius: var(--button-radius);
+            font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -128,12 +187,15 @@
 
         .btn-primary {
             background-color: var(--accent);
-            color: #fff;
+            color: black;
             border: none;
+            box-shadow: 0 0 20px rgba(74, 229, 74, 0.3);
         }
 
         .btn-primary:hover {
-            background-color: var(--accent-light);
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(74, 229, 74, 0.4);
         }
 
         /* Results Table */
@@ -141,24 +203,24 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 2rem;
-            background: var(--primary);
+            background: var(--form-bg);
             border-radius: var(--radius);
             overflow: hidden;
             box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            border: 1px solid var(--input-border);
         }
 
         .results-table th,
         .results-table td {
             padding: 1rem;
             text-align: left;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--input-border);
         }
 
         .results-table th {
             background-color: var(--accent);
-            color: white;
-            font-weight: 500;
+            color: black;
+            font-weight: 600;
         }
 
         .results-table tr:last-child td {
@@ -167,6 +229,29 @@
 
         .results-table tr:hover {
             background-color: var(--primary-dark);
+        }
+
+        .results-table td {
+            color: var(--text-dark);
+        }
+
+        .decorative-element {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(74, 229, 74, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
+        }
+
+        .decorative-element-1 {
+            top: -150px;
+            right: -150px;
+        }
+
+        .decorative-element-2 {
+            bottom: -150px;
+            left: -150px;
         }
 
         /* Responsive Styles */
@@ -193,10 +278,46 @@
                 overflow-x: auto;
             }
         }
+
+        /* SweetAlert2 Custom Styles */
+        .swal2-popup {
+            border-radius: var(--radius);
+            background-color: var(--form-bg);
+            color: var(--text-dark);
+        }
+
+        .swal2-title {
+            color: var(--text-dark);
+        }
+
+        .swal2-html-container {
+            color: var(--text-dark);
+        }
+
+        .swal2-confirm {
+            background-color: var(--accent) !important;
+            color: black !important;
+            border-radius: var(--button-radius) !important;
+            box-shadow: 0 0 20px rgba(74, 229, 74, 0.3) !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: var(--accent-hover) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(74, 229, 74, 0.4) !important;
+        }
     </style>
 </head>
 <body>
+    <div class="decorative-element decorative-element-1"></div>
+    <div class="decorative-element decorative-element-2"></div>
+    
     <div class="container">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>ExamResults</span>
+        </div>
+        
         <div class="header">
             <h1>Search Student Exam Results</h1>
         </div>
