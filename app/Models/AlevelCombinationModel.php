@@ -29,4 +29,5 @@ class AlevelCombinationModel extends Model
         'combination_name' => 'required|max_length[100]',
         'is_active'        => 'in_list[yes,no]'
     ];
+    
 }

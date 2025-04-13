@@ -32,7 +32,7 @@ class AddAlevelController extends BaseController
         try {
             $validation = \Config\Services::validation();
             $validation->setRules([
-                'combination_code' => 'required|max_length[10]|is_unique[tz_alevel_combinations.combination_code]',
+                'combination_code' => 'required|max_length[10]|is_unique[second_db.tz_alevel_combinations.combination_code]',
                 'combination_name' => 'required|max_length[100]',
                 'is_active'        => 'in_list[yes,no]'
             ]);
@@ -86,7 +86,7 @@ class AddAlevelController extends BaseController
 
             $validation = \Config\Services::validation();
             $validation->setRules([
-                'combination_code' => 'required|max_length[10]|is_unique[tz_alevel_combinations.combination_code,id,' . $id . ']',
+                'combination_code' => 'required|max_length[10]|is_unique[second_db.tz_alevel_combinations.combination_code,id,' . $id . ']',
                 'combination_name' => 'required|max_length[100]',
                 'is_active'        => 'in_list[yes,no]'
             ]);
