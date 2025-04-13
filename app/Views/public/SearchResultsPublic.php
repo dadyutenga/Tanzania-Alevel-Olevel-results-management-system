@@ -373,6 +373,9 @@
                 <button type="button" class="btn btn-primary" onclick="fetchStudentResults()">
                     <i class="fas fa-search"></i> Search Results
                 </button>
+                <a href="<?= base_url('/') ?>" class="btn" style="background-color: var(--secondary); color: var(--text-primary); border: 1px solid var(--border);">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
             </div>
         </div>
 
