@@ -55,7 +55,6 @@
             overflow-y: auto;
             z-index: 100;
             transition: all 0.3s ease;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
         }
 
         .main-content {
@@ -92,22 +91,19 @@
         }
 
         .logo {
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .logo i {
             color: var(--primary);
-            font-size: 1.5rem;
-        }
-
-        .logo span {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--text-primary);
+            font-size: 1.75rem;
         }
 
         /* Sidebar Styles */
@@ -118,7 +114,8 @@
         }
 
         .sidebar-menu li {
-            margin: 0.25rem 0;
+            position: relative;
+            margin-bottom: 0.25rem;
         }
 
         .sidebar-menu li a {
@@ -128,64 +125,54 @@
             color: var(--text-primary);
             text-decoration: none;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
 
-        /* Icon styling for menu items */
-        .sidebar-menu li a i:first-child {
-            width: 20px;
-            margin-right: 0.75rem;
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-        }
-
-        /* Active and hover states */
-        .sidebar-menu li a:hover,
+        .sidebar-menu li a:hover, 
         .sidebar-menu li a.active {
-            background-color: rgba(74, 229, 74, 0.1);
-            color: var(--text-primary);
+            background-color: var(--primary);
+            color: black;
         }
 
-        /* Toggle icon styling */
-        .toggle-icon {
-            margin-left: auto;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            transition: transform 0.2s ease;
+        .sidebar-menu li a i {
+            margin-right: 0.75rem;
+            width: 16px;
+            text-align: center;
         }
 
-        /* Submenu styling */
         .submenu {
-            display: none;
             list-style: none;
-            padding: 0.5rem 0;
-            background-color: transparent;
+            padding: 0;
+            margin: 0;
+            background-color: var(--secondary);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .submenu.show {
+            max-height: 500px;
         }
 
         .submenu li a {
-            padding: 0.5rem 1.5rem 0.5rem 3.25rem;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
+            padding: 0.5rem 1.5rem 0.5rem 2.5rem;
+            font-size: 0.85rem;
         }
 
-        .submenu li a:hover {
-            background-color: rgba(74, 229, 74, 0.05);
-            color: var(--text-primary);
+        .menu-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
         }
 
-        /* Active states */
-        .sidebar-menu li a.active {
-            background-color: rgba(74, 229, 74, 0.1);
-            color: var(--text-primary);
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            margin-left: auto;
         }
 
-        .sidebar-menu li a.active i:first-child {
-            color: var(--primary);
-        }
-
-        /* Expanded state */
-        .sidebar-menu li a.active .toggle-icon {
-            transform: rotate(180deg);
+        .menu-toggle.active .toggle-icon {
+            transform: rotate(90deg);
         }
 
         /* Form Container */
@@ -292,7 +279,6 @@
         .btn-primary {
             background-color: var(--primary);
             color: black;
-            font-weight: 700;
             box-shadow: 0 0 20px rgba(74, 229, 74, 0.3);
         }
 
@@ -336,7 +322,7 @@
         .results-table th {
             background-color: var(--primary);
             color: black;
-            font-weight: 700;
+            font-weight: 600;
         }
 
         .results-table tr:nth-child(even) {
@@ -477,101 +463,101 @@
         <div class="main-content">
             <div class="container">
                 <div class="header">
-            <h1>Manage A-Level Combinations</h1>
-            <p>Add, edit, or delete A-Level subject combinations for your institution</p>
-        </div>
-        
-        <div class="form-container">
-            <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add New Combination</h2>
-            <?php if (session()->has('message')): ?>
-                <div class="alert alert-success" style="background-color: rgba(74, 229, 74, 0.1); color: var(--primary-dark); padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
-                    <?= session('message') ?>
+                    <h1>Manage A-Level Combinations</h1>
+                    <p>Add, edit, or delete A-Level subject combinations for your institution</p>
                 </div>
-            <?php endif; ?>
-            <?php if (session()->has('error')): ?>
-                <div class="alert alert-danger" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
-                    <?= session('error') ?>
-                </div>
-            <?php endif; ?>
-            <?php if (session()->has('errors')): ?>
-                <div class="alert alert-danger" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
-                    <ul>
-                        <?php foreach (session('errors') as $error): ?>
-                            <li><?= $error ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-            <form action="<?= base_url('alevel/combinations/store') ?>" method="post">
-                <?= csrf_field() ?>
-                <div class="row">
-                    <div class="form-group">
-                        <label for="combination_code">Combination Code <span class="required">*</span></label>
-                        <input type="text" id="combination_code" name="combination_code" class="form-control" placeholder="e.g., PCM" required value="<?= old('combination_code') ?>">
-                    </div>
+                
+                <div class="form-container">
+                    <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add New Combination</h2>
+                    <?php if (session()->has('message')): ?>
+                        <div class="alert alert-success" style="background-color: rgba(74, 229, 74, 0.1); color: var(--primary-dark); padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
+                            <?= session('message') ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (session()->has('error')): ?>
+                        <div class="alert alert-danger" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
+                            <?= session('error') ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (session()->has('errors')): ?>
+                        <div class="alert alert-danger" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
+                            <ul>
+                                <?php foreach (session('errors') as $error): ?>
+                                    <li><?= $error ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+                    <form action="<?= base_url('alevel/combinations/store') ?>" method="post">
+                        <?= csrf_field() ?>
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="combination_code">Combination Code <span class="required">*</span></label>
+                                <input type="text" id="combination_code" name="combination_code" class="form-control" placeholder="e.g., PCM" required value="<?= old('combination_code') ?>">
+                            </div>
 
-                    <div class="form-group">
-                        <label for="combination_name">Combination Name <span class="required">*</span></label>
-                        <input type="text" id="combination_name" name="combination_name" class="form-control" placeholder="e.g., Physics, Chemistry, Maths" required value="<?= old('combination_name') ?>">
-                    </div>
+                            <div class="form-group">
+                                <label for="combination_name">Combination Name <span class="required">*</span></label>
+                                <input type="text" id="combination_name" name="combination_name" class="form-control" placeholder="e.g., Physics, Chemistry, Maths" required value="<?= old('combination_name') ?>">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="is_active">Status <span class="required">*</span></label>
+                                <select id="is_active" name="is_active" class="form-control" required>
+                                    <option value="yes" <?= old('is_active', 'yes') == 'yes' ? 'selected' : '' ?>>Active</option>
+                                    <option value="no" <?= old('is_active') == 'no' ? 'selected' : '' ?>>Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Combination
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
-                <div class="row">
-                    <div class="form-group">
-                        <label for="is_active">Status <span class="required">*</span></label>
-                        <select id="is_active" name="is_active" class="form-control" required>
-                            <option value="yes" <?= old('is_active', 'yes') == 'yes' ? 'selected' : '' ?>>Active</option>
-                            <option value="no" <?= old('is_active') == 'no' ? 'selected' : '' ?>>Inactive</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Save Combination
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div class="results-table-container">
-            <h2 class="form-title" style="padding: 1rem; margin-bottom: 0;"><i class="fas fa-list"></i> Existing Combinations</h2>
-            <?php if (empty($combinations)): ?>
-                <div class="empty-results">
-                    <i class="fas fa-database"></i>
-                    <p>No combinations found. Add a new combination to get started.</p>
-                </div>
-            <?php else: ?>
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th>Combination Code</th>
-                            <th>Combination Name</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($combinations as $combination): ?>
-                            <tr>
-                                <td><?= esc($combination['combination_code']) ?></td>
-                                <td><?= esc($combination['combination_name']) ?></td>
-                                <td>
-                                    <span class="badge badge-success"><?= esc($combination['is_active'] == 'yes' ? 'Active' : 'Inactive') ?></span>
-                                </td>
-                                <td>
-                                    <a href="<?= base_url('alevel/combinations/edit/' . $combination['id']) ?>" class="btn btn-primary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
-                                    <button class="btn btn-primary" style="padding: 0.5rem 1rem; background-color: #ef4444;" onclick="confirmDelete(<?= $combination['id'] ?>)">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
+                <div class="results-table-container">
+                    <h2 class="form-title" style="padding: 1rem; margin-bottom: 0;"><i class="fas fa-list"></i> Existing Combinations</h2>
+                    <?php if (empty($combinations)): ?>
+                        <div class="empty-results">
+                            <i class="fas fa-database"></i>
+                            <p>No combinations found. Add a new combination to get started.</p>
+                        </div>
+                    <?php else: ?>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Combination Code</th>
+                                    <th>Combination Name</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($combinations as $combination): ?>
+                                    <tr>
+                                        <td><?= esc($combination['combination_code']) ?></td>
+                                        <td><?= esc($combination['combination_name']) ?></td>
+                                        <td>
+                                            <span class="badge badge-success"><?= esc($combination['is_active'] == 'yes' ? 'Active' : 'Inactive') ?></span>
+                                        </td>
+                                        <td>
+                                            <a href="<?= base_url('alevel/combinations/edit/' . $combination['id']) ?>" class="btn btn-primary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; background-color: #ef4444;" onclick="confirmDelete(<?= $combination['id'] ?>)">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -579,6 +565,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Sidebar toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
@@ -590,61 +577,49 @@
                 });
             }
             
-            // Add expandable sidebar functionality
-            const expandableLinks = document.querySelectorAll('.expandable');
-            expandableLinks.forEach(link => {
-                // Add toggle icon if not present
-                if (!link.querySelector('.toggle-icon')) {
-                    const icon = document.createElement('i');
-                    icon.className = 'fas fa-chevron-down toggle-icon';
-                    link.appendChild(icon);
-                }
-
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const submenu = this.nextElementSibling;
-                    const toggleIcon = this.querySelector('.toggle-icon');
+            // Handle submenu toggling
+            const menuItems = document.querySelectorAll('.sidebar-menu > li');
+            
+            menuItems.forEach(item => {
+                const link = item.querySelector('a');
+                const submenu = item.querySelector('.submenu');
+                
+                if (submenu) {
+                    // Add toggle icon if not present
+                    if (!link.querySelector('.toggle-icon')) {
+                        const icon = document.createElement('i');
+                        icon.className = 'fas fa-chevron-up toggle-icon';
+                        link.appendChild(icon);
+                    }
                     
-                    if (submenu) {
-                        if (submenu.style.display === 'none' || submenu.style.display === '') {
-                            // Close all other submenus first
-                            document.querySelectorAll('.submenu').forEach(menu => {
-                                if (menu !== submenu) {
-                                    menu.style.display = 'none';
-                                    const icon = menu.previousElementSibling.querySelector('.toggle-icon');
-                                    if (icon) {
-                                        icon.classList.remove('fa-chevron-up');
-                                        icon.classList.add('fa-chevron-down');
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const submenu = this.nextElementSibling;
+                        const toggleIcon = this.querySelector('.toggle-icon');
+                        
+                        if (submenu) {
+                            if (submenu.style.display === 'none' || submenu.style.display === '') {
+                                // Close all other submenus first
+                                document.querySelectorAll('.submenu').forEach(menu => {
+                                    if (menu !== submenu) {
+                                        menu.style.display = 'none';
+                                        const otherIcon = menu.previousElementSibling.querySelector('.toggle-icon');
+                                        if (otherIcon) {
+                                            otherIcon.style.transform = 'rotate(0deg)';
+                                        }
                                     }
-                                }
-                            });
+                                });
 
-                            // Open this submenu
-                            submenu.style.display = 'block';
-                            toggleIcon.classList.remove('fa-chevron-down');
-                            toggleIcon.classList.add('fa-chevron-up');
-                        } else {
-                            // Close this submenu
-                            submenu.style.display = 'none';
-                            toggleIcon.classList.remove('fa-chevron-up');
-                            toggleIcon.classList.add('fa-chevron-down');
+                                // Open this submenu
+                                submenu.style.display = 'block';
+                                toggleIcon.style.transform = 'rotate(180deg)';
+                            } else {
+                                // Close this submenu
+                                submenu.style.display = 'none';
+                                toggleIcon.style.transform = 'rotate(0deg)';
+                            }
                         }
-                    }
-                });
-            });
-
-            // Set initial state for active menu items
-            expandableLinks.forEach(link => {
-                if (link.classList.contains('active')) {
-                    const submenu = link.nextElementSibling;
-                    const toggleIcon = link.querySelector('.toggle-icon');
-                    if (submenu) {
-                        submenu.style.display = 'block';
-                        if (toggleIcon) {
-                            toggleIcon.classList.remove('fa-chevron-down');
-                            toggleIcon.classList.add('fa-chevron-up');
-                        }
-                    }
+                    });
                 }
             });
             
