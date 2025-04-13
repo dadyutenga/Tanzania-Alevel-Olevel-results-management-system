@@ -126,4 +126,12 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->post('view/downloadPDF', 'PDFController::generateResultPDF');
         $routes->post('view/downloadStudentPDF', 'PDFController::generateResultPDF');
     });
+
+    $routes->group('alevel', ['namespace' => 'App\Controllers\Alevel'], function($routes) {
+        $routes->get('combinations', 'AddAlevelController::index');
+        $routes->post('combinations/store', 'AddAlevelController::store');
+        $routes->get('combinations/edit/(:num)', 'AddAlevelController::edit/$1');
+        $routes->post('combinations/update/(:num)', 'AddAlevelController::update/$1');
+        $routes->post('combinations/delete/(:num)', 'AddAlevelController::delete/$1');
+    });
 });

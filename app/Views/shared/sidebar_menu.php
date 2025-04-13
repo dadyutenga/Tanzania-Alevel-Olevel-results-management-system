@@ -30,6 +30,15 @@
             <li><a href="<?= base_url('results/view')?>"><i class="fas fa-eye"></i> View Results</a></li>
         </ul>
     </li>
+    <li>
+        <a href="#" class="expandable <?= strpos(current_url(), 'alevel') !== false ? 'active' : '' ?>">
+            <i class="fas fa-graduation-cap"></i> A-Level
+            <i class="fas fa-chevron-down toggle-icon" style="margin-left:auto;"></i>
+        </a>
+        <ul class="submenu" style="display: <?= strpos(current_url(), 'alevel') !== false ? 'block' : 'none' ?>; padding-left: 1rem;">
+            <li><a href="<?= base_url('alevel/combinations') ?>"><i class="fas fa-layer-group"></i> Manage Combinations</a></li>
+        </ul>
+    </li>
     <li><a href="#" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">
         <i class="fas fa-cog"></i> Settings
     </a></li>
