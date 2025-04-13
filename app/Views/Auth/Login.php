@@ -503,6 +503,12 @@
       <button type="submit" class="login-btn">
         <i class="fas fa-sign-in-alt"></i> Login
       </button>
+      
+      <div style="margin-top: 1.5rem; text-align: center;">
+        <a href="<?= base_url('/') ?>" class="login-btn" style="background-color: var(--secondary); color: var(--text-primary); box-shadow: none;">
+          <i class="fas fa-home"></i> Back to Home
+        </a>
+      </div>
     </form>
 
     <div class="login-footer">

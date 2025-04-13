@@ -551,6 +551,12 @@
       <button type="submit" class="register-btn">
         <i class="fas fa-user-plus"></i> Create Account
       </button>
+      
+      <div style="margin-top: 1.5rem; text-align: center;">
+        <a href="<?= base_url('/') ?>" class="register-btn" style="background-color: var(--secondary); color: var(--text-primary); box-shadow: none;">
+          <i class="fas fa-home"></i> Back to Home
+        </a>
+      </div>
     </form>
 
     <div class="register-footer">
