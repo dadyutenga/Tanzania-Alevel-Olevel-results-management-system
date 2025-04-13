@@ -209,35 +209,7 @@
     </style>
 </head>
 <body>
-    <!-- Skeleton Loading Overlay -->
-    <div id="skeleton-loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--primary-dark); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <div style="text-align: center; color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 2rem;">
-            We are putting things ready for you...
-        </div>
-        <div class="skeleton-dashboard" style="display: grid; grid-template-columns: 250px 1fr; width: 100%; height: 100%;">
-            <!-- Skeleton Sidebar -->
-            <div class="skeleton-sidebar" style="background-color: var(--accent); padding: 2rem 1rem; height: 100%;">
-                <div class="skeleton-header" style="height: 2.5rem; background-color: rgba(255, 255, 255, 0.1); margin-bottom: 2rem; border-radius: var(--radius); animation: shimmer 1.5s infinite;"></div>
-                <div class="skeleton-menu" style="margin-top: 2rem;">
-                    <div style="height: 2.5rem; background-color: rgba(255, 255, 255, 0.1); margin-bottom: 0.5rem; border-radius: var(--radius); animation: shimmer 1.5s infinite;"></div>
-                    <div style="height: 2.5rem; background-color: rgba(255, 255, 255, 0.1); margin-bottom: 0.5rem; border-radius: var(--radius); animation: shimmer 1.5s infinite;"></div>
-                    <div style="height: 2.5rem; background-color: rgba(255, 255, 255, 0.1); margin-bottom: 0.5rem; border-radius: var(--radius); animation: shimmer 1.5s infinite;"></div>
-                    <div style="height: 2.5rem; background-color: rgba(255, 255, 255, 0.1); margin-bottom: 0.5rem; border-radius: var(--radius); animation: shimmer 1.5s infinite;"></div>
-                </div>
-            </div>
-            <!-- Skeleton Main Content -->
-            <div class="skeleton-main-content" style="padding: 2rem; background-color: var(--primary-dark);">
-                <div class="skeleton-header" style="height: 2rem; background-color: var(--border); margin-bottom: 2rem; border-radius: var(--radius); animation: shimmer 1.5s infinite;"></div>
-                <div class="skeleton-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
-                    <div class="skeleton-stat-card" style="background-color: var(--primary); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); height: 120px; animation: shimmer 1.5s infinite;"></div>
-                    <div class="skeleton-stat-card" style="background-color: var(--primary); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); height: 120px; animation: shimmer 1.5s infinite;"></div>
-                    <div class="skeleton-stat-card" style="background-color: var(--primary); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); height: 120px; animation: shimmer 1.5s infinite;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="dashboard" id="dashboard-content" style="display: none;">
+    <div class="dashboard">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -302,28 +274,8 @@
             </div>
         </div>
     </div>
-    <style>
-        /* Shimmer Animation for Skeleton Loading */
-        @keyframes shimmer {
-            0% {
-                opacity: 0.5;
-            }
-            50% {
-                opacity: 0.8;
-            }
-            100% {
-                opacity: 0.5;
-            }
-        }
-    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Show skeleton loading for 5 seconds, then reveal dashboard content
-            setTimeout(function () {
-                document.getElementById('skeleton-loading').style.display = 'none';
-                document.getElementById('dashboard-content').style.display = 'grid';
-            }, 5000);
-
             const expandableLinks = document.querySelectorAll('.expandable');
             expandableLinks.forEach(link => {
                 link.addEventListener('click', function (e) {
