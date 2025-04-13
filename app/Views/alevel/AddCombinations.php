@@ -40,10 +40,35 @@
             min-height: 100vh;
         }
 
-        .container {
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border);
+            padding: 1rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            min-height: 100vh;
             padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        .container {
             max-width: 1200px;
             margin: 0 auto;
+            width: 100%;
         }
 
         .header {
@@ -79,6 +104,75 @@
         .logo i {
             color: var(--primary);
             font-size: 1.75rem;
+        }
+
+        /* Sidebar Styles */
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            position: relative;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu li a:hover, 
+        .sidebar-menu li a.active {
+            background-color: var(--primary);
+            color: black;
+        }
+
+        .sidebar-menu li a i {
+            margin-right: 0.75rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: var(--secondary);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .submenu.show {
+            max-height: 500px;
+        }
+
+        .submenu li a {
+            padding: 0.5rem 1.5rem 0.5rem 2.5rem;
+            font-size: 0.85rem;
+        }
+
+        .menu-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            margin-left: auto;
+        }
+
+        .menu-toggle.active .toggle-icon {
+            transform: rotate(90deg);
         }
 
         /* Form Container */
@@ -259,28 +353,18 @@
             color: var(--border);
         }
 
-        /* Responsive Styles */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
+        /* Badge Styles */
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
 
-            .row {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-actions {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-
-            .results-table {
-                display: block;
-                overflow-x: auto;
-            }
+        .badge-success {
+            background-color: rgba(74, 229, 74, 0.1);
+            color: var(--primary-dark);
         }
 
         /* SweetAlert2 Custom Styles */
@@ -304,133 +388,236 @@
             background-color: var(--primary-dark) !important;
         }
 
-        /* Badge Styles */
-        .badge {
-            display: inline-block;
-            padding: 0.35rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+
+            .results-table {
+                display: block;
+                overflow-x: auto;
+            }
         }
 
-        .badge-success {
-            background-color: rgba(74, 229, 74, 0.1);
-            color: var(--primary-dark);
+        /* Sidebar toggle button */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: var(--primary);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Assuming there's a layout file or wrapper for dashboard pages -->
-    <!-- If you have a specific layout file, it would be included here -->
-    <div class="container">
-        <div class="header">
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
             <div class="logo">
                 <i class="fas fa-graduation-cap"></i>
                 <span>ExamResults</span>
             </div>
-            <h1>Manage A-Level Combinations</h1>
-            <p>Add, edit, or delete A-Level subject combinations for your institution</p>
+            
+            <ul class="sidebar-menu">
+                <?php include(APPPATH . 'Views/shared/sidebar_menu.php'); ?>
+            </ul>
         </div>
         
-        <div class="form-container">
-            <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add New Combination</h2>
-            <?php if (session()->has('message')): ?>
-                <div class="alert alert-success" style="background-color: rgba(74, 229, 74, 0.1); color: var(--primary-dark); padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
-                    <?= session('message') ?>
+        <div class="main-content">
+            <div class="container">
+                <div class="header">
+                    <h1>Manage A-Level Combinations</h1>
+                    <p>Add, edit, or delete A-Level subject combinations for your institution</p>
                 </div>
-            <?php endif; ?>
-            <?php if (session()->has('error')): ?>
-                <div class="alert alert-danger" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
-                    <?= session('error') ?>
-                </div>
-            <?php endif; ?>
-            <?php if (session()->has('errors')): ?>
-                <div class="alert alert-danger" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
-                    <ul>
-                        <?php foreach (session('errors') as $error): ?>
-                            <li><?= $error ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-            <form action="<?= base_url('alevel/combinations/store') ?>" method="post">
-                <?= csrf_field() ?>
-                <div class="row">
-                    <div class="form-group">
-                        <label for="combination_code">Combination Code <span class="required">*</span></label>
-                        <input type="text" id="combination_code" name="combination_code" class="form-control" placeholder="e.g., PCM" required value="<?= old('combination_code') ?>">
-                    </div>
+                
+                <div class="form-container">
+                    <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add New Combination</h2>
+                    <?php if (session()->has('message')): ?>
+                        <div class="alert alert-success" style="background-color: rgba(74, 229, 74, 0.1); color: var(--primary-dark); padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
+                            <?= session('message') ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (session()->has('error')): ?>
+                        <div class="alert alert-danger" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
+                            <?= session('error') ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (session()->has('errors')): ?>
+                        <div class="alert alert-danger" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
+                            <ul>
+                                <?php foreach (session('errors') as $error): ?>
+                                    <li><?= $error ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+                    <form action="<?= base_url('alevel/combinations/store') ?>" method="post">
+                        <?= csrf_field() ?>
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="combination_code">Combination Code <span class="required">*</span></label>
+                                <input type="text" id="combination_code" name="combination_code" class="form-control" placeholder="e.g., PCM" required value="<?= old('combination_code') ?>">
+                            </div>
 
-                    <div class="form-group">
-                        <label for="combination_name">Combination Name <span class="required">*</span></label>
-                        <input type="text" id="combination_name" name="combination_name" class="form-control" placeholder="e.g., Physics, Chemistry, Maths" required value="<?= old('combination_name') ?>">
-                    </div>
+                            <div class="form-group">
+                                <label for="combination_name">Combination Name <span class="required">*</span></label>
+                                <input type="text" id="combination_name" name="combination_name" class="form-control" placeholder="e.g., Physics, Chemistry, Maths" required value="<?= old('combination_name') ?>">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="is_active">Status <span class="required">*</span></label>
+                                <select id="is_active" name="is_active" class="form-control" required>
+                                    <option value="yes" <?= old('is_active', 'yes') == 'yes' ? 'selected' : '' ?>>Active</option>
+                                    <option value="no" <?= old('is_active') == 'no' ? 'selected' : '' ?>>Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Combination
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
-                <div class="row">
-                    <div class="form-group">
-                        <label for="is_active">Status <span class="required">*</span></label>
-                        <select id="is_active" name="is_active" class="form-control" required>
-                            <option value="yes" <?= old('is_active', 'yes') == 'yes' ? 'selected' : '' ?>>Active</option>
-                            <option value="no" <?= old('is_active') == 'no' ? 'selected' : '' ?>>Inactive</option>
-                        </select>
-                    </div>
+                <div class="results-table-container">
+                    <h2 class="form-title" style="padding: 1rem; margin-bottom: 0;"><i class="fas fa-list"></i> Existing Combinations</h2>
+                    <?php if (empty($combinations)): ?>
+                        <div class="empty-results">
+                            <i class="fas fa-database"></i>
+                            <p>No combinations found. Add a new combination to get started.</p>
+                        </div>
+                    <?php else: ?>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Combination Code</th>
+                                    <th>Combination Name</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($combinations as $combination): ?>
+                                    <tr>
+                                        <td><?= esc($combination['combination_code']) ?></td>
+                                        <td><?= esc($combination['combination_name']) ?></td>
+                                        <td>
+                                            <span class="badge badge-success"><?= esc($combination['is_active'] == 'yes' ? 'Active' : 'Inactive') ?></span>
+                                        </td>
+                                        <td>
+                                            <a href="<?= base_url('alevel/combinations/edit/' . $combination['id']) ?>" class="btn btn-primary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; background-color: #ef4444;" onclick="confirmDelete(<?= $combination['id'] ?>)">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
                 </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Save Combination
-                    </button>
-                    <a href="<?= base_url('dashboard') ?>" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Dashboard
-                    </a>
-                </div>
-            </form>
-        </div>
-
-        <div class="results-table-container">
-            <h2 class="form-title" style="padding: 1rem; margin-bottom: 0;"><i class="fas fa-list"></i> Existing Combinations</h2>
-            <?php if (empty($combinations)): ?>
-                <div class="empty-results">
-                    <i class="fas fa-database"></i>
-                    <p>No combinations found. Add a new combination to get started.</p>
-                </div>
-            <?php else: ?>
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th>Combination Code</th>
-                            <th>Combination Name</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($combinations as $combination): ?>
-                            <tr>
-                                <td><?= esc($combination['combination_code']) ?></td>
-                                <td><?= esc($combination['combination_name']) ?></td>
-                                <td>
-                                    <span class="badge badge-success"><?= esc($combination['is_active'] == 'yes' ? 'Active' : 'Inactive') ?></span>
-                                </td>
-                                <td>
-                                    <a href="<?= base_url('alevel/combinations/edit/' . $combination['id']) ?>" class="btn btn-primary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
-                                    <button class="btn btn-primary" style="padding: 0.5rem 1rem; background-color: #ef4444;" onclick="confirmDelete(<?= $combination['id'] ?>)">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            // Toggle sidebar on button click (mobile)
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+            }
+            
+            // Handle submenu toggling
+            const menuItems = document.querySelectorAll('.sidebar-menu li');
+            
+            menuItems.forEach(item => {
+                const link = item.querySelector('a');
+                const submenu = item.querySelector('.submenu');
+                
+                if (submenu) {
+                    // Add toggle icon if not present
+                    if (!link.querySelector('.toggle-icon')) {
+                        const icon = document.createElement('i');
+                        icon.className = 'fas fa-chevron-right toggle-icon';
+                        link.insertAdjacentElement('beforeend', icon);
+                    }
+                    
+                    // Make the link expandable
+                    link.classList.add('menu-toggle');
+                    
+                    // Toggle submenu on click
+                    link.addEventListener('click', function(e) {
+                        if (window.innerWidth > 768) {
+                            e.preventDefault();
+                        }
+                        
+                        this.classList.toggle('active');
+                        const submenu = this.parentElement.querySelector('.submenu');
+                        if (submenu) {
+                            submenu.classList.toggle('show');
+                        }
+                    });
+                }
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && !sidebar.contains(e.target) && e.target !== sidebarToggle) {
+                    sidebar.classList.remove('show');
+                }
+            });
+        });
+
         function confirmDelete(id) {
             Swal.fire({
                 icon: 'warning',
