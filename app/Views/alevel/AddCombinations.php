@@ -468,7 +468,7 @@
                 </div>
                 
                 <div class="form-container">
-                    <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add New Combination</h2>
+                    <h2 class="form-title"><i class="fas fa-<?php echo isset($edit_combination) ? 'edit' : 'plus-circle'; ?>"></i> <?php echo isset($edit_combination) ? 'Edit Combination' : 'Add New Combination'; ?></h2>
                     <?php if (session()->has('message')): ?>
                         <div class="alert alert-success" style="background-color: rgba(74, 229, 74, 0.1); color: var(--primary-dark); padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
                             <?= session('message') ?>
@@ -488,17 +488,17 @@
                             </ul>
                         </div>
                     <?php endif; ?>
-                    <form action="<?= base_url('alevel/combinations/store') ?>" method="post">
+                    <form action="<?= isset($edit_combination) ? base_url('alevel/combinations/update/' . $edit_combination['id']) : base_url('alevel/combinations/store') ?>" method="post">
                         <?= csrf_field() ?>
                         <div class="row">
                             <div class="form-group">
                                 <label for="combination_code">Combination Code <span class="required">*</span></label>
-                                <input type="text" id="combination_code" name="combination_code" class="form-control" placeholder="e.g., PCM" required value="<?= old('combination_code') ?>">
+                                <input type="text" id="combination_code" name="combination_code" class="form-control" placeholder="e.g., PCM" required value="<?= isset($edit_combination) ? esc($edit_combination['combination_code']) : old('combination_code') ?>">
                             </div>
 
                             <div class="form-group">
                                 <label for="combination_name">Combination Name <span class="required">*</span></label>
-                                <input type="text" id="combination_name" name="combination_name" class="form-control" placeholder="e.g., Physics, Chemistry, Maths" required value="<?= old('combination_name') ?>">
+                                <input type="text" id="combination_name" name="combination_name" class="form-control" placeholder="e.g., Physics, Chemistry, Maths" required value="<?= isset($edit_combination) ? esc($edit_combination['combination_name']) : old('combination_name') ?>">
                             </div>
                         </div>
 
@@ -506,15 +506,15 @@
                             <div class="form-group">
                                 <label for="is_active">Status <span class="required">*</span></label>
                                 <select id="is_active" name="is_active" class="form-control" required>
-                                    <option value="yes" <?= old('is_active', 'yes') == 'yes' ? 'selected' : '' ?>>Active</option>
-                                    <option value="no" <?= old('is_active') == 'no' ? 'selected' : '' ?>>Inactive</option>
+                                    <option value="yes" <?= isset($edit_combination) ? ($edit_combination['is_active'] == 'yes' ? 'selected' : '') : (old('is_active', 'yes') == 'yes' ? 'selected' : '') ?>>Active</option>
+                                    <option value="no" <?= isset($edit_combination) ? ($edit_combination['is_active'] == 'no' ? 'selected' : '') : (old('is_active') == 'no' ? 'selected' : '') ?>>Inactive</option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Save Combination
+                                <i class="fas fa-<?php echo isset($edit_combination) ? 'save' : 'save'; ?>"></i> <?php echo isset($edit_combination) ? 'Update Combination' : 'Save Combination'; ?>
                             </button>
                         </div>
                     </form>

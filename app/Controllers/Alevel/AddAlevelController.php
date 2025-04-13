@@ -32,7 +32,6 @@ class AddAlevelController extends BaseController
         try {
             $validation = \Config\Services::validation();
             $validation->setRules([
-                'combination_code' => 'required|max_length[10]|is_unique[second_db.tz_alevel_combinations.combination_code]',
                 'combination_name' => 'required|max_length[100]',
                 'is_active'        => 'in_list[yes,no]'
             ]);
@@ -41,8 +40,15 @@ class AddAlevelController extends BaseController
                 return redirect()->back()->withInput()->with('errors', $validation->getErrors());
             }
 
+            $combinationCode = $this->request->getPost('combination_code');
+            // Manual uniqueness check using the model's database connection
+            $existingCombination = $this->alevelCombinationModel->where('combination_code', $combinationCode)->first();
+            if ($existingCombination) {
+                return redirect()->back()->withInput()->with('error', 'The combination code must be unique.');
+            }
+
             $data = [
-                'combination_code' => $this->request->getPost('combination_code'),
+                'combination_code' => $combinationCode,
                 'combination_name' => $this->request->getPost('combination_name'),
                 'is_active'        => $this->request->getPost('is_active') ?? 'yes'
             ];
@@ -54,7 +60,7 @@ class AddAlevelController extends BaseController
             }
         } catch (\Exception $e) {
             log_message('error', '[AddAlevelController.store] Error: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'An error occurred while adding the combination');
+            return redirect()->back()->withInput()->with('error', 'An error occurred while adding the combination: ' . $e->getMessage());
         }
     }
 
@@ -67,9 +73,10 @@ class AddAlevelController extends BaseController
             }
 
             $data = [
-                'combination' => $combination
+                'combinations' => $this->alevelCombinationModel->findAll(),
+                'edit_combination' => $combination
             ];
-            return view('alevel/edit_combination', $data);
+            return view('alevel/AddCombinations', $data);
         } catch (\Exception $e) {
             log_message('error', '[AddAlevelController.edit] Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load combination for editing');
@@ -86,9 +93,7 @@ class AddAlevelController extends BaseController
 
             $validation = \Config\Services::validation();
             $validation->setRules([
-                'combination_code' => 'required|max_length[10]|is_unique[second_db.tz_alevel_combinations.combination_code,id,' . $id . ']',
-                'combination_name' => 'required|max_length[100]',
-                'is_active'        => 'in_list[yes,no]'
+                'combination_name' => 'required|max_length[100]'
             ]);
 
             if (!$validation->withRequest($this->request)->run()) {
@@ -96,22 +101,23 @@ class AddAlevelController extends BaseController
             }
 
             $data = [
-                'combination_code' => $this->request->getPost('combination_code'),
-                'combination_name' => $this->request->getPost('combination_name'),
-                'is_active'        => $this->request->getPost('is_active') ?? 'yes'
+                'combination_name' => $this->request->getPost('combination_name')
             ];
 
             if ($this->alevelCombinationModel->update($id, $data)) {
-                return redirect()->to(base_url('alevel/combinations'))->with('message', 'Combination updated successfully');
+                return redirect()->to(base_url('alevel/combinations'))->with('message', 'Combination name updated successfully');
             } else {
-                return redirect()->back()->withInput()->with('error', 'Failed to update combination');
+                $errors = $this->alevelCombinationModel->errors();
+                if (!empty($errors)) {
+                    return redirect()->back()->withInput()->with('error', 'Failed to update combination name: ' . implode(', ', $errors));
+                }
+                return redirect()->back()->withInput()->with('error', 'Failed to update combination name due to an unknown error');
             }
         } catch (\Exception $e) {
             log_message('error', '[AddAlevelController.update] Error: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'An error occurred while updating the combination');
+            return redirect()->back()->withInput()->with('error', 'An error occurred while updating the combination name: ' . $e->getMessage());
         }
     }
-
     public function delete($id)
     {
         try {
