@@ -24,7 +24,7 @@ class AlevelSubjectsController extends BaseController
                 'subjects' => $this->alevelCombinationSubjectModel->findAll(),
                 'combinations' => $this->alevelCombinationModel->findAll()
             ];
-            return view('alevel/AddSubjects', $data);
+            return view('alevel/AddCombinationSubjects', $data);
         } catch (\Exception $e) {
             log_message('error', '[AlevelSubjectsController.index] Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load subjects page');
@@ -77,7 +77,7 @@ class AlevelSubjectsController extends BaseController
                 'combinations' => $this->alevelCombinationModel->findAll(),
                 'edit_subject' => $subject
             ];
-            return view('alevel/AddSubjects', $data);
+            return view('alevel/AddCombinationSubjects', $data);
         } catch (\Exception $e) {
             log_message('error', '[AlevelSubjectsController.edit] Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load subject for editing');

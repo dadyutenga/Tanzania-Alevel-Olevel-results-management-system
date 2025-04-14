@@ -37,6 +37,7 @@
         </a>
         <ul class="submenu" style="display: <?= strpos(current_url(), 'alevel') !== false ? 'block' : 'none' ?>; padding-left: 1rem;">
             <li><a href="<?= base_url('alevel/combinations') ?>"><i class="fas fa-layer-group"></i> Manage Combinations</a></li>
+            <li><a href="<?= base_url('alevel/subjects') ?>"><i class="fas fa-book"></i> Manage Subjects</a></li>
         </ul>
     </li>
     <li><a href="#" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">
