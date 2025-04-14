@@ -144,5 +144,19 @@ class AlevelSubjectsController extends BaseController
             return redirect()->back()->with('error', 'An error occurred while deleting the subject');
         }
     }
+
+    public function view()
+    {
+        try {
+            $data = [
+                'subjects' => $this->alevelCombinationSubjectModel->findAll(),
+                'combinations' => $this->alevelCombinationModel->findAll()
+            ];
+            return view('alevel/viewCombinationSubjects', $data);
+        } catch (\Exception $e) {
+            log_message('error', '[AlevelSubjectsController.view] Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to load subjects view page');
+        }
+    }
 }
 

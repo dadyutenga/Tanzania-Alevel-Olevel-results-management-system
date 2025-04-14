@@ -134,8 +134,9 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->post('combinations/update/(:num)', 'AddAlevelController::update/$1');
         $routes->post('combinations/delete/(:num)', 'AddAlevelController::delete/$1');
 
-        // New subject routes
+        // Subject routes
         $routes->get('subjects', 'AlevelSubjectsController::index');
+        $routes->get('subjects/view', 'AlevelSubjectsController::view');  // New view route
         $routes->post('subjects/store', 'AlevelSubjectsController::store');
         $routes->get('subjects/edit/(:num)', 'AlevelSubjectsController::edit/$1');
         $routes->post('subjects/update/(:num)', 'AlevelSubjectsController::update/$1');

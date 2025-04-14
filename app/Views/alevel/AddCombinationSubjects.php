@@ -3,10 +3,9 @@
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Result Management - Manage A-Level Subjects</title>
+    <title>Exam Result Management - Add A-Level Subjects</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Using the same CSS styles as AddCombinations.php -->
     <style>
         /* Light Theme with Green Accents */
         :root {
@@ -46,7 +45,6 @@
             min-height: 100vh;
         }
 
-        /* Reusing the same styles from AddCombinations.php */
         .sidebar {
             width: 250px;
             background-color: var(--card-bg);
@@ -87,6 +85,9 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .form-title {
@@ -144,52 +145,53 @@
         .btn-primary {
             background-color: var(--primary);
             color: black;
+            width: 100%;
+            justify-content: center;
         }
 
         .btn-primary:hover {
             background-color: var(--primary-dark);
         }
 
-        .results-table-container {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .results-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .results-table th,
-        .results-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .results-table th {
-            background-color: var(--primary);
-            color: black;
-            font-weight: 600;
-        }
-
-        .badge {
-            padding: 0.35rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-success {
-            background-color: rgba(74, 229, 74, 0.1);
-            color: var(--primary-dark);
-        }
-
         .required {
             color: #ef4444;
             margin-left: 0.25rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background-color: rgba(74, 229, 74, 0.1);
+            color: var(--primary-dark);
+            border: 1px solid var(--primary);
+        }
+
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .view-subjects-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .view-subjects-link a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-subjects-link a:hover {
+            color: var(--primary-dark);
         }
     </style>
     </head>
@@ -208,29 +210,31 @@
         <div class="main-content">
             <div class="container">
                 <div class="header">
-                    <h1>Manage A-Level Subjects</h1>
-                    <p>Add, edit, or delete subjects for A-Level combinations</p>
+                    <h1>Add A-Level Subject</h1>
+                    <p>Create a new subject for A-Level combinations</p>
                 </div>
 
                 <div class="form-container">
                     <h2 class="form-title">
-                        <i class="fas fa-<?php echo isset($edit_subject) ? 'edit' : 'plus-circle'; ?>"></i>
-                        <?php echo isset($edit_subject) ? 'Edit Subject' : 'Add New Subject'; ?>
+                        <i class="fas fa-plus-circle"></i>
+                        Add New Subject
                     </h2>
 
                     <?php if (session()->has('message')): ?>
                         <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
                             <?= session('message') ?>
                         </div>
                     <?php endif; ?>
 
                     <?php if (session()->has('error')): ?>
                         <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
                             <?= session('error') ?>
                         </div>
                     <?php endif; ?>
 
-                    <form action="<?= isset($edit_subject) ? base_url('alevel/subjects/update/' . $edit_subject['id']) : base_url('alevel/subjects/store') ?>" method="post">
+                    <form action="<?= base_url('alevel/subjects/store') ?>" method="post" id="addSubjectForm">
                         <?= csrf_field() ?>
 
                         <div class="row">
@@ -239,7 +243,7 @@
                                 <select id="combination_id" name="combination_id" class="form-control" required>
                                     <option value="">Select Combination</option>
                                     <?php foreach ($combinations as $combination): ?>
-                                        <option value="<?= $combination['id'] ?>" <?= (isset($edit_subject) && $edit_subject['combination_id'] == $combination['id']) ? 'selected' : '' ?>>
+                                        <option value="<?= $combination['id'] ?>">
                                             <?= esc($combination['combination_code']) ?> - <?= esc($combination['combination_name']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -249,7 +253,7 @@
                             <div class="form-group">
                                 <label for="subject_name">Subject Name <span class="required">*</span></label>
                                 <input type="text" id="subject_name" name="subject_name" class="form-control" 
-                                       value="<?= isset($edit_subject) ? esc($edit_subject['subject_name']) : old('subject_name') ?>" 
+                                       value="<?= old('subject_name') ?>" 
                                        placeholder="Enter subject name" required>
                             </div>
                         </div>
@@ -258,81 +262,34 @@
                             <div class="form-group">
                                 <label for="subject_type">Subject Type <span class="required">*</span></label>
                                 <select id="subject_type" name="subject_type" class="form-control" required>
-                                    <option value="major" <?= (isset($edit_subject) && $edit_subject['subject_type'] == 'major') ? 'selected' : '' ?>>Major</option>
-                                    <option value="additional" <?= (isset($edit_subject) && $edit_subject['subject_type'] == 'additional') ? 'selected' : '' ?>>Additional</option>
+                                    <option value="major">Major</option>
+                                    <option value="additional">Additional</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
                                 <label for="is_active">Status <span class="required">*</span></label>
                                 <select id="is_active" name="is_active" class="form-control" required>
-                                    <option value="yes" <?= (isset($edit_subject) && $edit_subject['is_active'] == 'yes') ? 'selected' : '' ?>>Active</option>
-                                    <option value="no" <?= (isset($edit_subject) && $edit_subject['is_active'] == 'no') ? 'selected' : '' ?>>Inactive</option>
+                                    <option value="yes">Active</option>
+                                    <option value="no">Inactive</option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-<?php echo isset($edit_subject) ? 'save' : 'plus'; ?>"></i>
-                                <?php echo isset($edit_subject) ? 'Update Subject' : 'Add Subject'; ?>
+                                <i class="fas fa-plus"></i>
+                                Add Subject
                             </button>
                         </div>
                     </form>
-                </div>
 
-                <div class="results-table-container">
-                    <h2 class="form-title" style="padding: 1rem; margin-bottom: 0;">
-                        <i class="fas fa-list"></i> Existing Subjects
-                    </h2>
-                    <?php if (empty($subjects)): ?>
-                        <div class="empty-results">
-                            <i class="fas fa-database"></i>
-                            <p>No subjects found. Add a new subject to get started.</p>
-                        </div>
-                    <?php else: ?>
-                        <table class="results-table">
-                            <thead>
-                                <tr>
-                                    <th>Combination</th>
-                                    <th>Subject Name</th>
-                                    <th>Type</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($subjects as $subject): ?>
-                                    <tr>
-                                        <td>
-                                            <?php 
-                                            $combination = array_filter($combinations, function($c) use ($subject) {
-                                                return $c['id'] == $subject['combination_id'];
-                                            });
-                                            $combination = reset($combination);
-                                            echo esc($combination['combination_code']);
-                                            ?>
-                                        </td>
-                                        <td><?= esc($subject['subject_name']) ?></td>
-                                        <td><?= ucfirst(esc($subject['subject_type'])) ?></td>
-                                        <td>
-                                            <span class="badge badge-<?= $subject['is_active'] == 'yes' ? 'success' : 'secondary' ?>">
-                                                <?= $subject['is_active'] == 'yes' ? 'Active' : 'Inactive' ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="<?= base_url('alevel/subjects/edit/' . $subject['id']) ?>" class="btn btn-primary" style="padding: 0.5rem 1rem;">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                            <button onclick="confirmDelete(<?= $subject['id'] ?>)" class="btn btn-primary" style="padding: 0.5rem 1rem; background-color: #ef4444;">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
+                    <div class="view-subjects-link">
+                        <a href="<?= base_url('alevel/subjects/view') ?>">
+                            <i class="fas fa-list"></i>
+                            View All Subjects
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -340,32 +297,40 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function confirmDelete(id) {
+        document.getElementById('addSubjectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Submit the form
+            this.submit();
+
+            // Show loading state
             Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#4AE54A',
-                cancelButtonColor: '#ef4444',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `<?= base_url('alevel/subjects/delete') ?>/${id}`;
-                    
-                    const csrfToken = document.createElement('input');
-                    csrfToken.type = 'hidden';
-                    csrfToken.name = '<?= csrf_token() ?>';
-                    csrfToken.value = '<?= csrf_hash() ?>';
-                    form.appendChild(csrfToken);
-                    
-                    document.body.appendChild(form);
-                    form.submit();
+                title: 'Adding Subject...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
             });
-        }
+        });
+
+        <?php if (session()->has('message')): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: '<?= session('message') ?>',
+            confirmButtonColor: '#4AE54A'
+        });
+        <?php endif; ?>
+
+        <?php if (session()->has('error')): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: '<?= session('error') ?>',
+            confirmButtonColor: '#ef4444'
+        });
+        <?php endif; ?>
     </script>
     </body>
 </html>
