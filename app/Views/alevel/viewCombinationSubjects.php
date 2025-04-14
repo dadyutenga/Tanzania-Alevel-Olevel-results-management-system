@@ -73,7 +73,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
         .header h1 {
@@ -166,13 +166,13 @@
 
         .filters-container {
             background: var(--card-bg);
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
             position: relative;
-            max-width: 800px;
+            max-width: 900px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -199,11 +199,14 @@
             gap: 0.5rem;
         }
 
+        .filters-title i {
+            color: var(--primary);
+        }
+
         .row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
         }
 
         .form-group {
@@ -214,11 +217,12 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
+            color: var(--text-primary);
         }
 
         .form-control {
             width: 100%;
-            padding: 0.85rem 1rem;
+            padding: 0.75rem 1rem;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             font-size: 0.925rem;
@@ -234,20 +238,20 @@
         }
 
         .select2-container .select2-selection--single {
-            height: 40px;
+            height: 38px;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             background-color: var(--secondary);
         }
 
         .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 40px;
+            line-height: 38px;
             padding-left: 15px;
             color: var(--text-primary);
         }
 
         .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 38px;
+            height: 36px;
         }
 
         .results-table-container {
@@ -255,36 +259,53 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            margin-bottom: 2.5rem;
-            overflow: hidden;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+            min-width: 700px;
         }
 
-        .table th,
-        .table td {
+        .table thead th {
+            background-color: var(--primary);
+            color: #000000; /* Improved contrast */
+            font-weight: 600;
             padding: 1rem;
             text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        .table th {
-            background-color: var(--primary);
-            color: black;
-            font-weight: 600;
+        .table tbody tr {
+            background-color: var(--card-bg);
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
-        .table tr:nth-child(even) {
-            background-color: var(--secondary);
-        }
-
-        .table tr:hover {
+        .table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             background-color: rgba(74, 229, 74, 0.05);
         }
 
         .table td {
+            padding: 1rem;
+            vertical-align: middle;
             border-bottom: 1px solid var(--border);
         }
 
@@ -292,8 +313,19 @@
             border-bottom: none;
         }
 
+        .table th:nth-child(1),
+        .table td:nth-child(1) { width: 30%; } /* Combination */
+        .table th:nth-child(2),
+        .table td:nth-child(2) { width: 25%; } /* Subject Name */
+        .table th:nth-child(3),
+        .table td:nth-child(3) { width: 15%; } /* Type */
+        .table th:nth-child(4),
+        .table td:nth-child(4) { width: 15%; } /* Status */
+        .table th:nth-child(5),
+        .table td:nth-child(5) { width: 15%; } /* Actions */
+
         .btn {
-            padding: 0.85rem 2rem;
+            padding: 0.75rem 1.5rem;
             border-radius: var(--button-radius);
             font-weight: 600;
             cursor: pointer;
@@ -327,20 +359,28 @@
         }
 
         .btn-sm {
-            padding: 0.4rem 0.8rem;
+            padding: 0.5rem;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
             font-size: 0.875rem;
         }
 
         .action-buttons {
             display: flex;
             gap: 0.5rem;
+            justify-content: flex-end;
         }
 
         .status-badge {
-            padding: 0.35rem 0.75rem;
+            padding: 0.25rem 0.6rem; /* Reduced padding for better fit */
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 600;
+            display: inline-block;
         }
 
         .status-active {
@@ -353,12 +393,117 @@
             color: #ef4444;
         }
 
-        .table-header {
-            display: flex;
-            justify-content: space-between;
+        /* DataTables Custom Styles */
+        .dataTables_wrapper .dataTables_length {
+            display: inline-flex;
             align-items: center;
-            padding: 1rem;
-            background: var(--card-bg);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .dataTables_wrapper .dataTables_length label {
+            margin: 0;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .dataTables_wrapper .dataTables_length select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 229, 74, 0.2);
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            width: 200px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 229, 74, 0.2);
+        }
+
+        .dataTables_wrapper .dataTables_paginate {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background-color: var(--primary);
+            color: black;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background-color: var(--primary);
+            color: black;
+            font-weight: 600;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        /* Fix Sorting Arrows */
+        .dataTables_wrapper .sorting::after,
+        .dataTables_wrapper .sorting_asc::after,
+        .dataTables_wrapper .sorting_desc::after {
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            margin-left: 0.5rem;
+        }
+
+        .dataTables_wrapper .sorting::after {
+            content: '\f0dc'; /* Font Awesome sort icon */
+            color: var(--text-secondary);
+        }
+
+        .dataTables_wrapper .sorting_asc::after {
+            content: '\f062'; /* Font Awesome up arrow */
+            color: var(--text-primary);
+        }
+
+        .dataTables_wrapper .sorting_desc::after {
+            content: '\f063'; /* Font Awesome down arrow */
+            color: var(--text-primary);
         }
 
         @media (max-width: 768px) {
@@ -381,29 +526,28 @@
 
             .row {
                 grid-template-columns: 1fr;
-                gap: 1rem;
+                gap: 0.75rem;
             }
-            
+
             .filters-container {
-                padding: 1.5rem;
-            }
-
-            .results-table-container {
-                overflow-x: auto;
-            }
-
-            .table {
-                min-width: 800px;
+                padding: 1rem;
             }
 
             .table-header {
                 flex-direction: column;
-                gap: 1rem;
                 align-items: flex-start;
             }
 
             .btn {
                 width: 100%;
+                justify-content: center;
+            }
+
+            .dataTables_wrapper .dataTables_filter input {
+                width: 100%;
+            }
+
+            .dataTables_wrapper .dataTables_paginate {
                 justify-content: center;
             }
         }
@@ -426,6 +570,36 @@
             .sidebar-toggle {
                 display: block;
             }
+        }
+
+        .swal2-popup {
+            border-radius: var(--radius);
+            padding: 2rem;
+        }
+
+        .swal2-title {
+            color: var(--text-primary);
+        }
+
+        .swal2-confirm {
+            background-color: var(--primary) !important;
+            color: black !important;
+            border-radius: var(--button-radius) !important;
+            box-shadow: 0 0 20px rgba(74, 229, 74, 0.3) !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: var(--primary-dark) !important;
+        }
+
+        .swal2-cancel {
+            background-color: #ef4444 !important;
+            color: white !important;
+            border-radius: var(--button-radius) !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #dc2626 !important;
         }
     </style>
 </head>
@@ -504,7 +678,6 @@
                                 <th>Subject Name</th>
                                 <th>Type</th>
                                 <th>Status</th>
-                                <th>Created At</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -527,7 +700,6 @@
                                             <?= $subject['is_active'] == 'yes' ? 'Active' : 'Inactive' ?>
                                         </span>
                                     </td>
-                                    <td><?= date('Y-m-d H:i', strtotime($subject['created_at'])) ?></td>
                                     <td>
                                         <div class="action-buttons">
                                             <a href="<?= base_url('alevel/subjects/edit/' . $subject['id']) ?>" 
@@ -583,7 +755,6 @@
                     
                     link.addEventListener('click', function(e) {
                         e.preventDefault();
-                        
                         const toggleIcon = this.querySelector('.toggle-icon');
                         
                         document.querySelectorAll('.submenu').forEach(menu => {
@@ -616,7 +787,7 @@
 
             const table = $('#subjects-table').DataTable({
                 pageLength: 10,
-                order: [[4, 'desc']],
+                order: [[0, 'asc']],
                 responsive: true,
                 columnDefs: [
                     {
@@ -625,6 +796,11 @@
                         render: function(data, type, row) {
                             return data;
                         }
+                    },
+                    {
+                        targets: 4, // Actions column
+                        orderable: false,
+                        searchable: false
                     }
                 ]
             });
@@ -641,6 +817,25 @@
             $('#status-filter').on('change', function() {
                 table.column(3).search(this.value === 'yes' ? 'Active' : this.value === 'no' ? 'Inactive' : '').draw();
             });
+
+            // Check for success messages from session
+            <?php if (session()->has('edit_success')): ?>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Subject edited successfully!',
+                    confirmButtonColor: '#4AE54A'
+                });
+            <?php endif; ?>
+
+            <?php if (session()->has('delete_success')): ?>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Subject deleted successfully!',
+                    confirmButtonColor: '#4AE54A'
+                });
+            <?php endif; ?>
         });
 
         function confirmDelete(id) {
