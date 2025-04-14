@@ -282,7 +282,7 @@
 
         .table thead th {
             background-color: var(--primary);
-            color: #000000; /* Improved contrast */
+            color: #000000;
             font-weight: 600;
             padding: 1rem;
             text-align: left;
@@ -376,7 +376,7 @@
         }
 
         .status-badge {
-            padding: 0.25rem 0.6rem; /* Reduced padding for better fit */
+            padding: 0.25rem 0.6rem;
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 600;
@@ -449,54 +449,48 @@
             box-shadow: 0 0 0 3px rgba(74, 229, 74, 0.2);
         }
 
+        /* Hide default DataTables pagination */
         .dataTables_wrapper .dataTables_paginate {
-            padding: 1rem 0;
+            display: none;
+        }
+
+        /* Custom Pagination Styles (Matching index.php) */
+        .pagination {
             display: flex;
-            justify-content: flex-end;
             align-items: center;
             gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: center;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
+        .page-btn {
             padding: 0.5rem 1rem;
             border-radius: var(--radius);
-            background-color: var(--secondary);
             color: var(--text-primary);
-            border: 1px solid var(--border);
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin: 0 2px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        .page-btn:hover:not(.disabled):not(.dots) {
             background-color: var(--primary);
             color: black;
-            border-color: var(--primary);
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: black;
             font-weight: 600;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
-            background-color: var(--primary-light);
-            color: black;
-            border-color: var(--primary);
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-            opacity: 0.5;
+        .page-btn.disabled,
+        .page-btn.dots {
+            color: var(--text-secondary);
             cursor: not-allowed;
-        }
-
-        /* Mobile responsive pagination */
-        @media (max-width: 768px) {
-            .dataTables_wrapper .dataTables_paginate {
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-            
-            .dataTables_wrapper .dataTables_paginate .paginate_button {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.875rem;
-            }
+            background-color: transparent;
+            border: none;
         }
 
         /* Fix Sorting Arrows */
@@ -509,17 +503,17 @@
         }
 
         .dataTables_wrapper .sorting::after {
-            content: '\f0dc'; /* Font Awesome sort icon */
+            content: '\f0dc';
             color: var(--text-secondary);
         }
 
         .dataTables_wrapper .sorting_asc::after {
-            content: '\f062'; /* Font Awesome up arrow */
+            content: '\f062';
             color: var(--text-primary);
         }
 
         .dataTables_wrapper .sorting_desc::after {
-            content: '\f063'; /* Font Awesome down arrow */
+            content: '\f063';
             color: var(--text-primary);
         }
 
@@ -562,6 +556,16 @@
 
             .dataTables_wrapper .dataTables_filter input {
                 width: 100%;
+            }
+
+            .pagination {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .page-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.875rem;
             }
         }
 
@@ -731,6 +735,9 @@
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+
+                    <!-- Custom Pagination Container -->
+                    <div class="pagination" id="custom-pagination"></div>
                 </div>
             </div>
         </div>
@@ -815,7 +822,57 @@
                         orderable: false,
                         searchable: false
                     }
-                ]
+                ],
+                drawCallback: function(settings) {
+                    // Custom pagination rendering
+                    const api = this.api();
+                    const pageInfo = api.page.info();
+                    const totalPages = pageInfo.pages;
+                    const currentPage = pageInfo.page + 1; // DataTables uses 0-based indexing
+
+                    let paginationHTML = '';
+
+                    // Previous button
+                    paginationHTML += `
+                        <button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" 
+                                onclick="${currentPage === 1 ? '' : `$('#subjects-table').DataTable().page(${currentPage - 2}).draw('page')`}" 
+                                ${currentPage === 1 ? 'disabled' : ''}>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    `;
+
+                    // Page numbers
+                    for (let i = 1; i <= totalPages; i++) {
+                        if (
+                            i === 1 || 
+                            i === totalPages || 
+                            (i >= currentPage - 2 && i <= currentPage + 2)
+                        ) {
+                            paginationHTML += `
+                                <button class="page-btn ${i === currentPage ? 'active' : ''}" 
+                                        onclick="$('#subjects-table').DataTable().page(${i - 1}).draw('page')">
+                                    ${i}
+                                </button>
+                            `;
+                        } else if (
+                            i === currentPage - 3 || 
+                            i === currentPage + 3
+                        ) {
+                            paginationHTML += `<span class="page-btn disabled dots">...</span>`;
+                        }
+                    }
+
+                    // Next button
+                    paginationHTML += `
+                        <button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}" 
+                                onclick="${currentPage === totalPages ? '' : `$('#subjects-table').DataTable().page(${currentPage}).draw('page')`}"
+                                ${currentPage === totalPages ? 'disabled' : ''}>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    `;
+
+                    $('#custom-pagination').html(paginationHTML);
+                }
             });
 
             $('#combination-filter').on('change', function() {
