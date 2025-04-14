@@ -159,20 +159,9 @@
             font-size: 0.85rem;
         }
 
-        .menu-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
         .toggle-icon {
             transition: transform 0.3s ease;
             margin-left: auto;
-        }
-
-        .menu-toggle.active .toggle-icon {
-            transform: rotate(90deg);
         }
 
         /* Form Container */
@@ -565,7 +554,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Sidebar toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
@@ -581,11 +569,11 @@
             const menuItems = document.querySelectorAll('.sidebar-menu > li');
             
             menuItems.forEach(item => {
-                const link = item.querySelector('a');
+                const link = item.querySelector('.expandable');
                 const submenu = item.querySelector('.submenu');
                 
-                if (submenu) {
-                    // Add toggle icon if not present
+                if (link && submenu) {
+                    // Ensure toggle icon exists
                     if (!link.querySelector('.toggle-icon')) {
                         const icon = document.createElement('i');
                         icon.className = 'fas fa-chevron-up toggle-icon';
@@ -594,31 +582,23 @@
                     
                     link.addEventListener('click', function(e) {
                         e.preventDefault();
-                        const submenu = this.nextElementSibling;
+                        
                         const toggleIcon = this.querySelector('.toggle-icon');
                         
-                        if (submenu) {
-                            if (submenu.style.display === 'none' || submenu.style.display === '') {
-                                // Close all other submenus first
-                                document.querySelectorAll('.submenu').forEach(menu => {
-                                    if (menu !== submenu) {
-                                        menu.style.display = 'none';
-                                        const otherIcon = menu.previousElementSibling.querySelector('.toggle-icon');
-                                        if (otherIcon) {
-                                            otherIcon.style.transform = 'rotate(0deg)';
-                                        }
-                                    }
-                                });
-
-                                // Open this submenu
-                                submenu.style.display = 'block';
-                                toggleIcon.style.transform = 'rotate(180deg)';
-                            } else {
-                                // Close this submenu
-                                submenu.style.display = 'none';
-                                toggleIcon.style.transform = 'rotate(0deg)';
+                        // Close all other submenus
+                        document.querySelectorAll('.submenu').forEach(menu => {
+                            if (menu !== submenu) {
+                                menu.classList.remove('show');
+                                const otherIcon = menu.previousElementSibling.querySelector('.toggle-icon');
+                                if (otherIcon) {
+                                    otherIcon.style.transform = 'rotate(0deg)';
+                                }
                             }
-                        }
+                        });
+                        
+                        // Toggle this submenu
+                        submenu.classList.toggle('show');
+                        toggleIcon.style.transform = submenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
                     });
                 }
             });
@@ -641,12 +621,10 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Create a form to submit the delete request
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = `<?= base_url('alevel/combinations/delete') ?>/${id}`;
                     
-                    // Add CSRF token
                     const csrfToken = document.createElement('input');
                     csrfToken.type = 'hidden';
                     csrfToken.name = '<?= csrf_token() ?>';
