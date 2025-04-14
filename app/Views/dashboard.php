@@ -33,7 +33,7 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 0.925rem;
-            background-color: var(--bg-color);
+            background: var(--bg-color);
             color: var(--text-primary);
             line-height: 1.5;
             min-height: 100vh;
@@ -132,51 +132,51 @@
         .main-content {
             flex: 1;
             margin-left: 250px;
-            padding: 2rem 1rem;
+            padding: 1.5rem 1rem;
             transition: margin-left 0.3s ease;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 0 1rem;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.5s ease forwards;
         }
 
         .header h1 {
             font-size: 2rem;
             font-weight: 700;
             color: var(--accent);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             letter-spacing: -0.025em;
         }
 
         .header p {
             color: var(--text-secondary);
             font-size: 1rem;
-            max-width: 600px;
-            margin: 0 auto;
         }
 
         .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .stat-card {
             background: var(--card-bg);
-            padding: 1.5rem;
+            padding: 1rem;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
             position: relative;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.5s ease forwards;
         }
 
         .stat-card::before {
@@ -191,55 +191,36 @@
             border-top-right-radius: var(--radius);
         }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
         .stat-card-header {
             display: flex;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .stat-card-icon {
-            width: 2.5rem;
-            height: 2.5rem;
+            width: 2rem;
+            height: 2rem;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            margin-right: 1rem;
-            font-size: 1.25rem;
+            margin-right: 0.75rem;
+            font-size: 1rem;
             background-color: rgba(74, 229, 74, 0.1);
             color: var(--primary-dark);
         }
 
         .stat-card-title {
-            font-size: 0.925rem;
+            font-size: 0.875rem;
             color: var(--text-secondary);
             margin: 0;
             font-weight: 500;
         }
 
         .stat-card-value {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin: 0.5rem 0;
-            letter-spacing: -0.025em;
-        }
-
-        .stat-card-trend {
-            font-size: 0.75rem;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .stat-card-trend i {
-            font-size: 0.875rem;
         }
 
         .sidebar-toggle {
@@ -254,6 +235,17 @@
             border-radius: 50%;
             cursor: pointer;
             box-shadow: var(--shadow);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 768px) {
@@ -274,11 +266,6 @@
                 padding: 0 0.5rem;
             }
 
-            .dashboard-stats {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
             .sidebar-toggle {
                 display: block;
             }
@@ -291,7 +278,6 @@
     </button>
 
     <div class="dashboard">
-        <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="logo">
                 <i class="fas fa-graduation-cap"></i>
@@ -300,17 +286,13 @@
             <?= view('shared/sidebar_menu') ?>
         </div>
         
-        <!-- Main Content -->
         <div class="main-content">
             <div class="container">
                 <div class="header">
-                    <h1>Dashboard Overview</h1>
-                    <p>Key statistics and insights for your exam management system</p>
+                    <h1>Dashboard   Just Overview Analytics</h1>
                 </div>
                 
-                <!-- Dashboard Stats -->
                 <div class="dashboard-stats">
-                    <!-- Total Students Card -->
                     <div class="stat-card">
                         <div class="stat-card-header">
                             <div class="stat-card-icon">
@@ -319,40 +301,6 @@
                             <h3 class="stat-card-title">Total Students</h3>
                         </div>
                         <div class="stat-card-value"><?= number_format($totalStudents) ?></div>
-                        <div class="stat-card-trend">
-                            <i class="fas fa-arrow-<?= $studentGrowth > 0 ? 'up' : 'down' ?>"></i>
-                            <span><?= $studentGrowth ?>% this month</span>
-                        </div>
-                    </div>
-
-                    <!-- Active Exams Card -->
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <div class="stat-card-icon">
-                                <i class="fas fa-file-alt"></i>
-                            </div>
-                            <h3 class="stat-card-title">Active Exams</h3>
-                        </div>
-                        <div class="stat-card-value"><?= $activeExams ?></div>
-                        <div class="stat-card-trend">
-                            <i class="fas fa-arrow-up"></i>
-                            <span><?= $newExamsThisWeek ?> new this week</span>
-                        </div>
-                    </div>
-
-                    <!-- Completed Exams Card -->
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <div class="stat-card-icon">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <h3 class="stat-card-title">Completed Exams</h3>
-                        </div>
-                        <div class="stat-card-value"><?= $completedExams ?></div>
-                        <div class="stat-card-trend">
-                            <i class="fas fa-arrow-up"></i>
-                            <span><?= $completedExams ?> this month</span>
-                        </div>
                     </div>
                 </div>
             </div>
