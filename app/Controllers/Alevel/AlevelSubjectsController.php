@@ -112,17 +112,21 @@ class AlevelSubjectsController extends BaseController
             ];
 
             if ($this->alevelCombinationSubjectModel->update($id, $data)) {
-                return redirect()->to(base_url('alevel/subjects'))->with('message', 'Subject updated successfully');
+                return redirect()->to(base_url('alevel/subjects/view'))
+                               ->with('message', 'Subject updated successfully');
             } else {
                 $errors = $this->alevelCombinationSubjectModel->errors();
                 if (!empty($errors)) {
-                    return redirect()->back()->withInput()->with('error', 'Failed to update subject: ' . implode(', ', $errors));
+                    return redirect()->back()->withInput()
+                                   ->with('error', 'Failed to update subject: ' . implode(', ', $errors));
                 }
-                return redirect()->back()->withInput()->with('error', 'Failed to update subject due to an unknown error');
+                return redirect()->back()->withInput()
+                               ->with('error', 'Failed to update subject due to an unknown error');
             }
         } catch (\Exception $e) {
             log_message('error', '[AlevelSubjectsController.update] Error: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'An error occurred while updating the subject: ' . $e->getMessage());
+            return redirect()->back()->withInput()
+                           ->with('error', 'An error occurred while updating the subject: ' . $e->getMessage());
         }
     }
 
@@ -131,17 +135,21 @@ class AlevelSubjectsController extends BaseController
         try {
             $subject = $this->alevelCombinationSubjectModel->find($id);
             if (!$subject) {
-                return redirect()->to(base_url('alevel/subjects'))->with('error', 'Subject not found');
+                return redirect()->to(base_url('alevel/subjects/view'))
+                               ->with('error', 'Subject not found');
             }
 
             if ($this->alevelCombinationSubjectModel->delete($id)) {
-                return redirect()->to(base_url('alevel/subjects'))->with('message', 'Subject deleted successfully');
+                return redirect()->to(base_url('alevel/subjects/view'))
+                               ->with('message', 'Subject deleted successfully');
             } else {
-                return redirect()->back()->with('error', 'Failed to delete subject');
+                return redirect()->to(base_url('alevel/subjects/view'))
+                               ->with('error', 'Failed to delete subject');
             }
         } catch (\Exception $e) {
             log_message('error', '[AlevelSubjectsController.delete] Error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while deleting the subject');
+            return redirect()->to(base_url('alevel/subjects/view'))
+                           ->with('error', 'An error occurred while deleting the subject');
         }
     }
 

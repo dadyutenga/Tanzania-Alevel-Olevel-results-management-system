@@ -450,36 +450,53 @@
         }
 
         .dataTables_wrapper .dataTables_paginate {
+            padding: 1rem 0;
             display: flex;
+            justify-content: flex-end;
             align-items: center;
             gap: 0.5rem;
-            margin-top: 1rem;
-            justify-content: flex-end;
         }
 
         .dataTables_wrapper .dataTables_paginate .paginate_button {
             padding: 0.5rem 1rem;
             border-radius: var(--radius);
+            background-color: var(--secondary);
             color: var(--text-primary);
-            font-weight: 500;
+            border: 1px solid var(--border);
             cursor: pointer;
             transition: all 0.3s ease;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-            background-color: var(--primary);
-            color: black;
+            margin: 0 2px;
         }
 
         .dataTables_wrapper .dataTables_paginate .paginate_button.current {
             background-color: var(--primary);
             color: black;
+            border-color: var(--primary);
             font-weight: 600;
         }
 
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
+            background-color: var(--primary-light);
+            color: black;
+            border-color: var(--primary);
+        }
+
         .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-            color: var(--text-secondary);
+            opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        /* Mobile responsive pagination */
+        @media (max-width: 768px) {
+            .dataTables_wrapper .dataTables_paginate {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.875rem;
+            }
         }
 
         /* Fix Sorting Arrows */
@@ -545,10 +562,6 @@
 
             .dataTables_wrapper .dataTables_filter input {
                 width: 100%;
-            }
-
-            .dataTables_wrapper .dataTables_paginate {
-                justify-content: center;
             }
         }
 
