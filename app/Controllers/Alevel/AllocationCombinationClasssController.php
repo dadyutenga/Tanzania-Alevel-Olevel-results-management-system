@@ -51,6 +51,9 @@ class AllocationCombinationClasssController extends BaseController
 
     public function store()
     {
+        // Log the incoming request for debugging
+        log_message('debug', '[AllocationCombinationClasssController.store] Request received with data: ' . json_encode($this->request->getPost()));
+
         // Validate request
         $rules = [
             'combination_id' => 'required|numeric',
@@ -61,9 +64,11 @@ class AllocationCombinationClasssController extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()
-                           ->withInput()
-                           ->with('errors', $this->validator->getErrors());
+            log_message('debug', '[AllocationCombinationClasssController.store] Validation failed: ' . json_encode($this->validator->getErrors()));
+            return $this->response->setJSON([
+                'status' => 'error',
+                'errors' => $this->validator->getErrors()
+            ]);
         }
 
         // Check for duplicate allocation
@@ -74,9 +79,11 @@ class AllocationCombinationClasssController extends BaseController
             ->first();
 
         if ($existingAllocation) {
-            return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'This combination is already allocated to this class for the selected session.');
+            log_message('debug', '[AllocationCombinationClasssController.store] Duplicate allocation found.');
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'This combination is already allocated to this class for the selected session.'
+            ]);
         }
 
         try {
@@ -88,14 +95,19 @@ class AllocationCombinationClasssController extends BaseController
                 'is_active' => $this->request->getPost('is_active')
             ];
 
+            log_message('debug', '[AllocationCombinationClasssController.store] Attempting to insert data: ' . json_encode($data));
             $this->studentAlevelCombinationModel->insert($data);
-            return redirect()->to(base_url('alevel/allocations/view'))
-                           ->with('message', 'Combination allocated successfully');
+            log_message('debug', '[AllocationCombinationClasssController.store] Data inserted successfully.');
+            return $this->response->setJSON([
+                'status' => 'success',
+                'message' => 'Combination allocated successfully'
+            ]);
         } catch (\Exception $e) {
             log_message('error', '[AllocationCombinationClasssController.store] Error: ' . $e->getMessage());
-            return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Failed to allocate combination. Please try again.');
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Failed to allocate combination. Please try again. Error: ' . $e->getMessage()
+            ]);
         }
     }
 
@@ -191,13 +203,87 @@ class AllocationCombinationClasssController extends BaseController
             // Log the request for debugging
             log_message('debug', '[AllocationCombinationClasssController.getClassesBySession] Session ID: ' . $sessionId);
 
-            // Fetch active classes
-            $classes = $this->classModel
-                ->where('is_active', 'yes')
-                ->findAll();
+            // Fetch classes and sections based on session ID using the provided custom query with the second_db connection
+            $db = \Config\Database::connect('second_db');
+            $query = $db->query("
+                SELECT DISTINCT
+                    c.id AS class_id,
+                    c.class AS class_name,
+                    s.id AS section_id,
+                    s.section AS section_name,
+                    cs.is_active AS class_section_status
+                FROM 
+                    classes c
+                JOIN 
+                    class_sections cs ON cs.class_id = c.id
+                JOIN 
+                    sections s ON cs.section_id = s.id
+                JOIN 
+                    student_session ss ON ss.class_id = c.id AND ss.section_id = s.id
+                WHERE 
+                    ss.session_id = ?
+                    AND c.is_active = 'no'
+                    AND s.is_active = 'no'
+                    AND cs.is_active = 'no'
+                    AND ss.is_active = 'no'
+                ORDER BY 
+                    c.class, s.section
+            ", [$sessionId]);
 
-            // Log the number of classes found
-            log_message('debug', '[AllocationCombinationClasssController.getClassesBySession] Classes found: ' . count($classes));
+            $results = $query->getResultArray();
+
+            // Log the number of results found
+            log_message('debug', '[AllocationCombinationClasssController.getClassesBySession] Results found with session filter: ' . count($results));
+
+            // Format the data to group sections under classes for easier frontend handling
+            $classes = [];
+            foreach ($results as $row) {
+                $classId = $row['class_id'];
+                if (!isset($classes[$classId])) {
+                    $classes[$classId] = [
+                        'id' => $row['class_id'],
+                        'class' => $row['class_name'],
+                        'sections' => []
+                    ];
+                }
+                $classes[$classId]['sections'][] = [
+                    'id' => $row['section_id'],
+                    'section_name' => $row['section_name']
+                ];
+            }
+            $classes = array_values($classes);
+
+            // Log the number of unique classes found
+            log_message('debug', '[AllocationCombinationClasssController.getClassesBySession] Unique classes found: ' . count($classes));
+
+            // If no results are found, try fetching all active classes as a fallback for debugging
+            if (empty($classes)) {
+                log_message('debug', '[AllocationCombinationClasssController.getClassesBySession] No results found with session filter, fetching all active classes');
+                $fallbackQuery = $db->query("
+                    SELECT 
+                        id,
+                        class
+                    FROM 
+                        classes
+                    WHERE 
+                        is_active = 'no'
+                    ORDER BY 
+                        class
+                ");
+                $fallbackClasses = $fallbackQuery->getResultArray();
+                log_message('debug', '[AllocationCombinationClasssController.getClassesBySession] Fallback active classes found: ' . count($fallbackClasses));
+
+                // Return fallback classes if available, otherwise return empty result
+                if (!empty($fallbackClasses)) {
+                    $classes = array_map(function($class) {
+                        return [
+                            'id' => $class['id'],
+                            'class' => $class['class'],
+                            'sections' => []
+                        ];
+                    }, $fallbackClasses);
+                }
+            }
 
             return $this->response->setJSON([
                 'status' => 'success',
@@ -210,34 +296,5 @@ class AllocationCombinationClasssController extends BaseController
                 'message' => 'Failed to fetch classes: ' . $e->getMessage()
             ]);
         }
-    }
-
-    protected function getAllocationsWithDetails()
-    {
-        $allocations = $this->studentAlevelCombinationModel->findAll();
-        $detailedAllocations = [];
-
-        foreach ($allocations as $allocation) {
-            $combination = $this->alevelCombinationModel->find($allocation['combination_id']);
-            $class = $this->classModel->find($allocation['class_id']);
-            $session = $this->sessionModel->find($allocation['session_id']);
-            
-            if ($allocation['section_id']) {
-                $section = $this->classSectionModel->getClassSectionDetails(
-                    $allocation['class_id'], 
-                    $allocation['section_id']
-                );
-            }
-
-            $detailedAllocations[] = array_merge($allocation, [
-                'combination_name' => $combination['combination_name'] ?? 'Unknown',
-                'combination_code' => $combination['combination_code'] ?? 'Unknown',
-                'class_name' => $class['class'] ?? 'Unknown',
-                'session_name' => $session['session'] ?? 'Unknown',
-                'section_name' => $section['section_name'] ?? null
-            ]);
-        }
-
-        return $detailedAllocations;
     }
 }

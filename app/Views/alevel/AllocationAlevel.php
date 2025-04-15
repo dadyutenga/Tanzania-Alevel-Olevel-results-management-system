@@ -522,6 +522,7 @@
             const classSelect = document.getElementById('class_id');
             const sectionSelect = document.getElementById('section_id');
             const sessionSelect = document.getElementById('session_id');
+            let currentClassesData = []; // Store the full data to access sections later
 
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
@@ -572,6 +573,7 @@
             function resetClassAndSection() {
                 classSelect.innerHTML = '<option value="">Select Class</option>';
                 sectionSelect.innerHTML = '<option value="">Select Section</option>';
+                currentClassesData = [];
             }
 
             // Add a loading indicator for better UX
@@ -601,6 +603,7 @@
                         .then(data => {
                             if (data.status === 'success' && data.data && data.data.length > 0) {
                                 classSelect.innerHTML = '<option value="">Select Class</option>';
+                                currentClassesData = data.data; // Store the data with sections
                                 data.data.forEach(classItem => {
                                     const option = document.createElement('option');
                                     option.value = classItem.id;
@@ -636,39 +639,19 @@
                 sectionSelect.innerHTML = '<option value="">Select Section</option>';
                 
                 if (classId) {
-                    setLoading(sectionSelect, true);
-                    fetch('<?= base_url('alevel/allocations/get-sections') ?>?class_id=' + classId)
-                        .then(response => {
-                            setLoading(sectionSelect, false);
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.sections && data.sections.length > 0) {
-                                sectionSelect.innerHTML = '<option value="">Select Section</option>';
-                                data.sections.forEach(section => {
-                                    const option = document.createElement('option');
-                                    option.value = section.id;
-                                    option.textContent = section.section_name;
-                                    sectionSelect.appendChild(option);
-                                });
-                            } else {
-                                sectionSelect.innerHTML = '<option value="">No sections found</option>';
-                            }
-                        })
-                        .catch(error => {
-                            setLoading(sectionSelect, false);
-                            sectionSelect.innerHTML = '<option value="">Error loading sections</option>';
-                            console.error('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Failed to load sections: ' + error.message,
-                                confirmButtonColor: '#4AE54A'
-                            });
+                    // Find the selected class in the stored data and populate sections
+                    const selectedClass = currentClassesData.find(classItem => classItem.id == classId);
+                    if (selectedClass && selectedClass.sections && selectedClass.sections.length > 0) {
+                        sectionSelect.innerHTML = '<option value="">Select Section</option>';
+                        selectedClass.sections.forEach(section => {
+                            const option = document.createElement('option');
+                            option.value = section.id;
+                            option.textContent = section.section_name;
+                            sectionSelect.appendChild(option);
                         });
+                    } else {
+                        sectionSelect.innerHTML = '<option value="">No sections found</option>';
+                    }
                 }
             });
 
