@@ -597,6 +597,7 @@
                         })
                         .then(response => response.json())
                         .then(data => {
+                            console.log(data); // Log the response for debugging
                             if (data.status === 'success') {
                                 updateAllocationsTable(data.data);
                             } else {
@@ -608,12 +609,15 @@
                             }
                         })
                         .catch(error => {
+                            console.error('Error fetching allocations:', error); // Log error for debugging
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
                                 text: 'Failed to fetch allocations'
                             });
                         });
+                    } else {
+                        updateAllocationsTable([]); // Clear table if no session is selected
                     }
                 });
             }
@@ -632,7 +636,10 @@
                 const tableBody = document.querySelector('.results-table tbody');
                 const emptyResults = document.querySelector('.empty-results');
                 
-                if (!tableBody) return;
+                if (!tableBody) {
+                    console.error('Table body not found');
+                    return;
+                }
                 
                 tableBody.innerHTML = '';
                 
@@ -647,16 +654,17 @@
                     }
                 }
                 
-                allocations.forEach(allocation => {
+                allocations.forEach((allocation, index) => {
+                    console.log(`Adding allocation ${index}:`, allocation); // Log each allocation for debugging
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${allocation.exam_name}</td>
-                        <td>${allocation.exam_date}</td>
-                        <td>${allocation.class}</td>
-                        <td>${allocation.combination_code} - ${allocation.combination_name}</td>
-                        <td>${allocation.session}</td>
+                        <td>${allocation.exam_name || 'N/A'}</td>
+                        <td>${allocation.exam_date || 'N/A'}</td>
+                        <td>${allocation.class || 'N/A'}</td>
+                        <td>${(allocation.combination_code || 'N/A') + ' - ' + (allocation.combination_name || 'N/A')}</td>
+                        <td>${allocation.session || 'N/A'}</td>
                         <td>
-                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; background-color: #ef4444;" onclick="confirmDeallocate(${allocation.exam_id}, ${allocation.combination_id})">
+                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; background-color: #ef4444;" onclick="confirmDeallocate(${allocation.exam_id || 0}, ${allocation.combination_id || 0})">
                                 <i class="fas fa-trash"></i> Deallocate
                             </button>
                         </td>
