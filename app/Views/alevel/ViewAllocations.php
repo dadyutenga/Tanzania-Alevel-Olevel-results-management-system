@@ -258,12 +258,41 @@
             min-width: 900px;
         }
 
+        .table thead {
+            position: relative;
+        }
+
         .table th {
             background: var(--primary);
             color: black;
             font-weight: 600;
             padding: 1rem;
             text-align: left;
+        }
+
+        /* Rounded corners for table headers */
+        .table thead th:first-child {
+            border-top-left-radius: var(--radius);
+        }
+
+        .table thead th:last-child {
+            border-top-right-radius: var(--radius);
+        }
+
+        /* Remove DataTables sorting arrows */
+        .table thead th.sorting,
+        .table thead th.sorting_asc,
+        .table thead th.sorting_desc {
+            position: relative;
+        }
+
+        .table thead th.sorting::after,
+        .table thead th.sorting_asc::after,
+        .table thead th.sorting_desc::after,
+        .table thead th.sorting::before,
+        .table thead th.sorting_asc::before,
+        .table thead th.sorting_desc::before {
+            content: none !important;
         }
 
         .table tbody tr {
@@ -418,25 +447,90 @@
             margin-left: 0.5rem;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .pagination .page-item {
+            display: inline-flex;
+        }
+
+        .pagination .page-link {
             padding: 0.5rem 1rem;
-            margin: 0 0.25rem;
-            border-radius: var(--radius);
             border: 1px solid var(--border);
+            border-radius: var(--radius);
             background-color: var(--card-bg);
             color: var(--text-primary);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        .pagination .page-link:hover {
+            background-color: var(--primary);
+            color: black;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .pagination .page-item.active .page-link {
             background-color: var(--primary);
             color: black;
             border-color: var(--primary);
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        .pagination .page-item.disabled .page-link {
+            color: var(--text-secondary);
+            background-color: var(--secondary);
+            border-color: var(--border);
+            cursor: not-allowed;
+        }
+
+        .dataTables_wrapper .dataTables_paginate {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            margin: 0 !important;
+            border: none !important;
+            background: none !important;
+            padding: 0 !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button a {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current a,
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover a {
             background-color: var(--primary);
             color: black;
             border-color: var(--primary);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover a {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled a {
+            color: var(--text-secondary);
+            background-color: var(--secondary);
+            border-color: var(--border);
+            cursor: not-allowed;
         }
 
         .swal2-popup {
@@ -522,6 +616,10 @@
             .sidebar-toggle {
                 display: block;
             }
+
+            .pagination {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
@@ -550,7 +648,7 @@
                     <div class="card-header">
                         <h3 class="card-title">A-Level Combination Allocations</h3>
                         <div class="card-tools">
-                            <a href="<?= base_url('alevel/allocations') ?>" class="btn btn-primary">
+                            <a href="<?= base_url('alevel/allocations/create') ?>" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> Add New Allocation
                             </a>
                         </div>
@@ -633,7 +731,7 @@
                                             <td><?= $index + 1 ?></td>
                                             <td>
                                                 <?= esc($allocation['combination_name']) ?>
-                                                <small class="d-block text-muted"><?= esc($allocation['combination_code']) ?></small>
+                                                <small class="d-block text-muted"><?= esc($combination['combination_code']) ?></small>
                                             </td>
                                             <td><?= esc($allocation['class_name']) ?></td>
                                             <td><?= esc($allocation['section_name'] ?? 'N/A') ?></td>
@@ -727,10 +825,21 @@
             var table = $('.table').DataTable({
                 pageLength: 10,
                 order: [[1, 'asc']],
-                dom: '<"top"l>rt<"bottom"ip>',
+                dom: '<"top"l>rt<"bottom"p><"clear">',
                 language: {
                     search: '',
                     searchPlaceholder: 'Search...'
+                },
+                drawCallback: function() {
+                    // Customize pagination after each draw
+                    var pagination = $(this).closest('.dataTables_wrapper').find('.dataTables_paginate');
+                    pagination.addClass('pagination');
+                    pagination.find('.paginate_button').addClass('page-item');
+                    pagination.find('.paginate_button').wrapInner('<a class="page-link"></a>');
+                    pagination.find('.paginate_button.previous').html('<a class="page-link"><i class="fas fa-chevron-left"></i> Previous</a>');
+                    pagination.find('.paginate_button.next').html('<a class="page-link">Next <i class="fas fa-chevron-right"></i></a>');
+                    pagination.find('.paginate_button.current').addClass('active');
+                    pagination.find('.paginate_button.disabled').addClass('disabled');
                 }
             });
 
