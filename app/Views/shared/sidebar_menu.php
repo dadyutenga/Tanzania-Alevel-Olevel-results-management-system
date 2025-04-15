@@ -41,6 +41,8 @@
             <li><a href="<?= base_url('alevel/subjects/view') ?>"><i class="fas fa-eye"></i> View Subjects</a></li>
             <li><a href="<?= base_url('alevel/allocations') ?>"><i class="fas fa-chalkboard"></i> Allocate Classes</a></li>
             <li><a href="<?= base_url('alevel/allocations/view') ?>"><i class="fas fa-eye"></i> View Allocations</a></li>
+            <li><a href="<?= base_url('alevel/allocate-exams') ?>"><i class="fas fa-chalkboard"></i> Allocate Exams</a></li>
+            <li><a href="<?= base_url('alevel/view-exams') ?>"><i class="fas fa-eye"></i> View Exams</a></li>
         </ul>
     </li>
     <li><a href="#" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">
