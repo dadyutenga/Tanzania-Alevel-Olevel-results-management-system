@@ -157,7 +157,8 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->get('allocate-exams/get-exams/(:num)', 'AlllocateAlevelExam::getExamsBySession/$1');
         $routes->get('allocate-exams/get-classes/(:num)', 'AlllocateAlevelExam::getClassesBySession/$1');
         $routes->post('allocate-exams/store', 'AlllocateAlevelExam::store');
-        $routes->get('view-exams', 'AlllocateAlevelExam::index');
-        $routes->delete('view-exams/deallocate/(:num)/(:num)', 'AlllocateAlevelExam::deallocate/$1/$2');
+        $routes->get('view-exams', 'ViewAlevelExams::index');
+        $routes->get('view-exams/get-allocations/(:num)', 'ViewAlevelExams::getAllocations/$1');
+        $routes->delete('view-exams/deallocate/(:num)/(:num)', 'ViewAlevelExams::deallocate/$1/$2');
     });
 });

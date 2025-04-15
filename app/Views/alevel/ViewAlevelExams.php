@@ -586,7 +586,8 @@
             const filterForm = document.getElementById('filterAllocationsForm');
 
             if (sessionSelect) {
-                sessionSelect.addEventListener('change', function() {
+                sessionSelect.addEventListener('change', function(e) {
+                    e.preventDefault(); // Prevent any default form submission
                     if (this.value) {
                         fetch(`<?= base_url('alevel/view-exams/get-allocations/') ?>/${this.value}`, {
                             method: 'GET',
@@ -613,6 +614,16 @@
                                 text: 'Failed to fetch allocations'
                             });
                         });
+                    }
+                });
+            }
+
+            // Prevent form submission from redirecting
+            if (filterForm) {
+                filterForm.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Stop the form from submitting and redirecting
+                    if (sessionSelect && sessionSelect.value) {
+                        sessionSelect.dispatchEvent(new Event('change')); // Trigger the change event to update the table
                     }
                 });
             }
