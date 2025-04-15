@@ -126,3 +126,6 @@ nb-configuration.xml
 /phpunit*.xml
 
 .config
+.sql
+bugs.txt
+Queries.txt
