@@ -11,3 +11,7 @@
 
 
     bugs  in  results 
+
+
+    bugs  in  view  allocatiosns   in  alevel  
+    
