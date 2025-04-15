@@ -297,4 +297,53 @@ class AllocationCombinationClasssController extends BaseController
             ]);
         }
     }
+
+    /**
+     * Fetch all allocations with related details from combinations, classes, sections, and sessions.
+     * 
+     * @return array
+     */
+    public function getAllocationsWithDetails()
+    {
+        try {
+            // Fetch all allocations
+        $allocations = $this->studentAlevelCombinationModel->findAll();
+        $detailedAllocations = [];
+
+            // Loop through each allocation to fetch related details
+        foreach ($allocations as $allocation) {
+                // Fetch combination details
+            $combination = $this->alevelCombinationModel->find($allocation['combination_id']);
+                // Fetch class details
+            $class = $this->classModel->find($allocation['class_id']);
+                // Fetch session details
+            $session = $this->sessionModel->find($allocation['session_id']);
+                // Fetch section details if section_id is set
+                $section = null;
+            if ($allocation['section_id']) {
+                    $section = $this->classSectionModel->find($allocation['section_id']);
+                }
+
+                // Combine the data
+                $detailedAllocations[] = [
+                    'id' => $allocation['id'],
+                    'combination_id' => $allocation['combination_id'],
+                    'combination_name' => $combination ? $combination['combination_name'] : 'N/A',
+                    'combination_code' => $combination ? $combination['combination_code'] : 'N/A',
+                    'class_id' => $allocation['class_id'],
+                    'class_name' => $class ? $class['class'] : 'N/A',
+                    'section_id' => $allocation['section_id'],
+                    'section_name' => $section && isset($section['section']) ? $section['section'] : ($section && isset($section['section_name']) ? $section['section_name'] : null),
+                    'session_id' => $allocation['session_id'],
+                    'session_name' => $session ? $session['session'] : 'N/A',
+                    'is_active' => $allocation['is_active']
+                ];
+        }
+
+        return $detailedAllocations;
+        } catch (\Exception $e) {
+            log_message('error', '[AllocationCombinationClasssController.getAllocationsWithDetails] Error: ' . $e->getMessage());
+            return [];
+        }
+    }
 }
