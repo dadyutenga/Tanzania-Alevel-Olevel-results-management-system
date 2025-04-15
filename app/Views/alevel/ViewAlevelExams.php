@@ -475,7 +475,7 @@
 
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Filter
+                                <i class="fas fa-search"></i> Fetch
                             </button>
                         </div>
                     </form>
@@ -483,24 +483,24 @@
 
                 <div class="results-table-container">
                     <h2 class="form-title" style="padding: 1rem; margin-bottom: 0;"><i class="fas fa-list"></i> Exam Allocations</h2>
-                    <?php if (empty($allocations)): ?>
-                        <div class="empty-results">
-                            <i class="fas fa-database"></i>
-                            <p>No exam allocations found. Select a session to view allocations or add a new allocation.</p>
-                        </div>
-                    <?php else: ?>
-                        <table class="results-table">
-                            <thead>
-                                <tr>
-                                    <th>Exam Name</th>
-                                    <th>Exam Date</th>
-                                    <th>Class</th>
-                                    <th>Combination</th>
-                                    <th>Session</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                    <div id="empty-results" class="empty-results" style="display: none;">
+                        <i class="fas fa-database"></i>
+                        <p>No exam allocations found. Select a session and click Fetch to view allocations.</p>
+                    </div>
+                    <table id="allocations-table" class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Exam Name</th>
+                                <th>Exam Date</th>
+                                <th>Class</th>
+                                <th>Combination</th>
+                                <th>Session</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allocations-table-body">
+                            <!-- Allocations will be dynamically inserted here -->
+                            <?php if (!empty($allocations)): ?>
                                 <?php foreach ($allocations as $allocation): ?>
                                     <tr>
                                         <td><?= esc($allocation['exam_name']) ?></td>
@@ -515,9 +515,9 @@
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -581,63 +581,62 @@
                 }
             });
 
-            // Handle session change to update allocations
+            // Handle session change and fetch button
             const sessionSelect = document.getElementById('session_id');
             const filterForm = document.getElementById('filterAllocationsForm');
-
-            if (sessionSelect) {
-                sessionSelect.addEventListener('change', function(e) {
-                    e.preventDefault(); // Prevent any default form submission
-                    if (this.value) {
-                        fetch(`<?= base_url('alevel/view-exams/get-allocations/') ?>/${this.value}`, {
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(data); // Log the response for debugging
-                            if (data.status === 'success') {
-                                updateAllocationsTable(data.data);
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: data.message || 'Failed to fetch allocations'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching allocations:', error); // Log error for debugging
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Failed to fetch allocations'
-                            });
-                        });
-                    } else {
-                        updateAllocationsTable([]); // Clear table if no session is selected
-                    }
-                });
-            }
 
             // Prevent form submission from redirecting
             if (filterForm) {
                 filterForm.addEventListener('submit', function(e) {
                     e.preventDefault(); // Stop the form from submitting and redirecting
                     if (sessionSelect && sessionSelect.value) {
-                        sessionSelect.dispatchEvent(new Event('change')); // Trigger the change event to update the table
+                        fetchAllocations(sessionSelect.value);
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Session Selected',
+                            text: 'Please select a session to fetch allocations.'
+                        });
                     }
                 });
             }
 
+            function fetchAllocations(sessionId) {
+                fetch(`<?= base_url('alevel/view-exams/get-allocations/') ?>/${sessionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // Log the response for debugging
+                    if (data.status === 'success') {
+                        updateAllocationsTable(data.data);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Failed to fetch allocations'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching allocations:', error); // Log error for debugging
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to fetch allocations'
+                    });
+                });
+            }
+
             function updateAllocationsTable(allocations) {
-                const tableBody = document.querySelector('.results-table tbody');
-                const emptyResults = document.querySelector('.empty-results');
+                const tableBody = document.getElementById('allocations-table-body');
+                const emptyResults = document.getElementById('empty-results');
                 
                 if (!tableBody) {
-                    console.error('Table body not found');
+                    console.error('Table body not found with ID allocations-table-body');
                     return;
                 }
                 
@@ -702,7 +701,7 @@
                             }).then(() => {
                                 const sessionSelect = document.getElementById('session_id');
                                 if (sessionSelect && sessionSelect.value) {
-                                    sessionSelect.dispatchEvent(new Event('change')); // Refresh allocations
+                                    fetchAllocations(sessionSelect.value); // Refresh allocations
                                 } else {
                                     location.reload();
                                 }
