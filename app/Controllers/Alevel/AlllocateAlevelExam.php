@@ -43,32 +43,24 @@ class AlllocateAlevelExam extends ResourceController
             $currentSession = $this->sessionModel->getCurrentSession();
             if ($currentSession) {
                 $data['current_session'] = $currentSession;
-                
-                // Get exams for current session
                 $data['exams'] = $this->examModel
                     ->where('session_id', $currentSession['id'])
                     ->where('is_active', 'yes')
                     ->findAll();
-
-                // Get active classes
                 $data['classes'] = $this->classModel
                     ->where('is_active', 'no')
                     ->findAll();
-
-                // Get active combinations
                 $data['combinations'] = $this->combinationModel
                     ->where('is_active', 'yes')
                     ->findAll();
-
-                // Get existing allocations for A-Level
-                $data['allocations'] = $this->getAllocationsWithDetails(['sessions.id' => $currentSession['id']]);
+                $data['allocations'] = $this->getAllocationsWithDetails(['tz_alevel_exam_combinations.session_id' => $currentSession['id']]);
             }
 
             return view('alevel/AllocateAlevelExam', $data);
         } catch (\Exception $e) {
             log_message('error', '[AlllocateAlevelExam.index] Exception: ' . $e->getMessage());
             return redirect()->to(base_url('dashboard'))
-                ->with('error', 'Failed to load A-Level allocation data: ' . $e->getMessage());
+                ->with('error', 'Failed to load A-Level allocation data.');
         }
     }
 
@@ -85,6 +77,7 @@ class AlllocateAlevelExam extends ResourceController
                 'data' => $exams
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AlllocateAlevelExam.getExamsBySession] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to fetch exams'
@@ -95,15 +88,36 @@ class AlllocateAlevelExam extends ResourceController
     public function getClassesBySession($sessionId)
     {
         try {
-            $classes = $this->classModel
-                ->where('is_active', 'no')
-                ->findAll();
+            $db = \Config\Database::connect('second_db');
+            $query = $db->query("
+                SELECT DISTINCT
+                    c.id AS class_id,
+                    c.class AS class_name
+                FROM 
+                    classes c
+                JOIN 
+                    student_session ss ON ss.class_id = c.id
+                WHERE 
+                    ss.session_id = ?
+                    AND c.is_active = 'no'
+                ORDER BY 
+                    c.class
+            ", [$sessionId]);
+
+            $classes = $query->getResultArray();
+
+            if (empty($classes)) {
+                $classes = $this->classModel
+                    ->where('is_active', 'no')
+                    ->findAll();
+            }
 
             return $this->respond([
                 'status' => 'success',
                 'data' => $classes
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AlllocateAlevelExam.getClassesBySession] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to fetch classes'
@@ -114,32 +128,7 @@ class AlllocateAlevelExam extends ResourceController
     public function getAllocations($sessionId)
     {
         try {
-            $db = \Config\Database::connect('second_db');
-            $builder = $db->table('tz_alevel_exam_combinations');
-            
-            $allocations = $builder
-                ->select('
-                    tz_alevel_exam_combinations.id,
-                    tz_alevel_exam_combinations.exam_id,
-                    tz_alevel_exam_combinations.combination_id,
-                    tz_alevel_exam_combinations.class_id,
-                    tz_alevel_exam_combinations.session_id,
-                    tz_exams.exam_name,
-                    tz_exams.exam_date,
-                    classes.class,
-                    tz_alevel_combinations.combination_name,
-                    tz_alevel_combinations.combination_code
-                ')
-                ->join('tz_exams', 'tz_exams.id = tz_alevel_exam_combinations.exam_id')
-                ->join('classes', 'classes.id = tz_alevel_exam_combinations.class_id')
-                ->join('tz_alevel_combinations', 'tz_alevel_combinations.id = tz_alevel_exam_combinations.combination_id')
-                ->join('sessions', 'sessions.id = tz_alevel_exam_combinations.session_id')
-                ->where('tz_alevel_exam_combinations.session_id', $sessionId)
-                ->get()
-                ->getResultArray();
-
-            log_message('debug', 'A-Level Allocations Query: ' . $db->getLastQuery());
-
+            $allocations = $this->getAllocationsWithDetails(['tz_alevel_exam_combinations.session_id' => $sessionId]);
             return $this->respond([
                 'status' => 'success',
                 'data' => $allocations
@@ -148,7 +137,7 @@ class AlllocateAlevelExam extends ResourceController
             log_message('error', '[AlllocateAlevelExam.getAllocations] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
-                'message' => 'Failed to fetch A-Level allocations: ' . $e->getMessage()
+                'message' => 'Failed to fetch A-Level allocations'
             ], 500);
         }
     }
@@ -175,33 +164,6 @@ class AlllocateAlevelExam extends ResourceController
             $classId = $this->request->getPost('class_id');
             $sessionId = $this->request->getPost('session_id');
             $combinationId = $this->request->getPost('combination_id');
-
-            // Validate exam exists
-            $exam = $this->examModel->find($examId);
-            if (!$exam) {
-                return $this->respond([
-                    'status' => 'error',
-                    'message' => 'Invalid exam selected'
-                ], 400);
-            }
-
-            // Validate session exists
-            $session = $this->sessionModel->find($sessionId);
-            if (!$session) {
-                return $this->respond([
-                    'status' => 'error',
-                    'message' => 'Invalid session selected'
-                ], 400);
-            }
-
-            // Validate combination exists
-            $combination = $this->combinationModel->find($combinationId);
-            if (!$combination) {
-                return $this->respond([
-                    'status' => 'error',
-                    'message' => 'Invalid combination selected'
-                ], 400);
-            }
 
             // Check for duplicate allocation
             $existingAllocation = $this->examCombinationModel
@@ -232,15 +194,19 @@ class AlllocateAlevelExam extends ResourceController
             if ($result) {
                 return $this->respond([
                     'status' => 'success',
-                    'message' => 'Exam allocated to class and combination successfully'
+                    'message' => 'Exam allocated successfully'
                 ]);
             } else {
-                throw new \RuntimeException('Failed to allocate exam to class and combination');
+                return $this->respond([
+                    'status' => 'error',
+                    'message' => 'Failed to allocate exam'
+                ], 500);
             }
         } catch (\Exception $e) {
+            log_message('error', '[AlllocateAlevelExam.store] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
-                'message' => 'Failed to allocate exam: ' . $e->getMessage()
+                'message' => 'Failed to allocate exam'
             ], 500);
         }
     }
@@ -259,12 +225,16 @@ class AlllocateAlevelExam extends ResourceController
                     'message' => 'Exam deallocation successful'
                 ]);
             } else {
-                throw new \RuntimeException('Failed to deallocate exam');
+                return $this->respond([
+                    'status' => 'error',
+                    'message' => 'Failed to deallocate exam'
+                ], 500);
             }
         } catch (\Exception $e) {
+            log_message('error', '[AlllocateAlevelExam.deallocate] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
-                'message' => 'Failed to deallocate exam: ' . $e->getMessage()
+                'message' => 'Failed to deallocate exam'
             ], 500);
         }
     }
@@ -281,6 +251,7 @@ class AlllocateAlevelExam extends ResourceController
                 'data' => $allocations
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AlllocateAlevelExam.getExamAllocationDetails] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to fetch exam allocation details'
@@ -322,10 +293,7 @@ class AlllocateAlevelExam extends ResourceController
                 $builder->where($conditions);
             }
 
-            $allocations = $builder->get()->getResultArray();
-            log_message('debug', 'A-Level Allocations Details Query: ' . $db->getLastQuery());
-
-            return $allocations;
+            return $builder->get()->getResultArray();
         } catch (\Exception $e) {
             log_message('error', '[AlllocateAlevelExam.getAllocationsWithDetails] Error: ' . $e->getMessage());
             return [];

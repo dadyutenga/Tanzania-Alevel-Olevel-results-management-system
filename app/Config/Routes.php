@@ -152,4 +152,14 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->get('allocations/get-sections', 'AllocationCombinationClasssController::getSections');
         $routes->get('allocations/get-classes-by-session/(:num)', 'AllocationCombinationClasssController::getClassesBySession/$1');
     });
+    $routes->group('alevel', ['namespace' => 'App\Controllers\Alevel'], function($routes) {
+        $routes->get('allocate-exams', 'AllocateExamsAlevel::index');
+        $routes->get('allocate-exams/get-exams/(:num)', 'AllocateExamsAlevel::getExamsBySession/$1');
+        $routes->get('allocate-exams/get-classes/(:num)', 'AllocateExamsAlevel::getClassesBySession/$1');
+        $routes->post('allocate-exams/store', 'AllocateExamsAlevel::store');
+        $routes->get('view-exams', 'ViewAlevelExams::index');
+        $routes->get('view-exams/get-allocations/(:num)', 'ViewAlevelExams::getAllocations/$1');
+        $routes->delete('view-exams/deallocate/(:num)/(:num)', 'ViewAlevelExams::deallocate/$1/$2');
+        $routes->get('view-exams/details/(:num)', 'ViewAlevelExams::getExamAllocationDetails/$1');
+    });
 });
