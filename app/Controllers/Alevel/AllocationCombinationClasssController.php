@@ -35,7 +35,7 @@ class AllocationCombinationClasssController extends BaseController
             'allocations' => $this->getAllocationsWithDetails()
         ];
 
-        return view('alevel/allocation/view_allocations', $data);
+        return view('alevel/Viewallocations', $data);
     }
 
     public function create()
@@ -46,7 +46,7 @@ class AllocationCombinationClasssController extends BaseController
             'combinations' => $this->alevelCombinationModel->where('is_active', 'yes')->findAll()
         ];
 
-        return view('alevel/allocation/add_allocation', $data);
+        return view('alevel/AllocationAlevel', $data);
     }
 
     public function store()
