@@ -35,7 +35,7 @@ class AllocationCombinationClasssController extends BaseController
             'allocations' => $this->getAllocationsWithDetails()
         ];
 
-        return view('alevel/Viewallocations', $data);
+        return view('alevel/ViewAllocations', $data);
     }
 
     public function create()
@@ -89,7 +89,7 @@ class AllocationCombinationClasssController extends BaseController
             ];
 
             $this->studentAlevelCombinationModel->insert($data);
-            return redirect()->to(base_url('alevel/allocations'))
+            return redirect()->to(base_url('alevel/allocations/view'))
                            ->with('message', 'Combination allocated successfully');
         } catch (\Exception $e) {
             log_message('error', '[AllocationCombinationClasssController.store] Error: ' . $e->getMessage());
@@ -103,7 +103,7 @@ class AllocationCombinationClasssController extends BaseController
     {
         $allocation = $this->studentAlevelCombinationModel->find($id);
         if (!$allocation) {
-            return redirect()->to(base_url('alevel/allocations'))
+            return redirect()->to(base_url('alevel/allocations/view'))
                            ->with('error', 'Allocation not found');
         }
 
@@ -145,7 +145,7 @@ class AllocationCombinationClasssController extends BaseController
             ];
 
             $this->studentAlevelCombinationModel->update($id, $data);
-            return redirect()->to(base_url('alevel/allocations'))
+            return redirect()->to(base_url('alevel/allocations/view'))
                            ->with('message', 'Allocation updated successfully');
         } catch (\Exception $e) {
             log_message('error', '[AllocationCombinationClasssController.update] Error: ' . $e->getMessage());
@@ -160,16 +160,16 @@ class AllocationCombinationClasssController extends BaseController
         try {
             $allocation = $this->studentAlevelCombinationModel->find($id);
             if (!$allocation) {
-                return redirect()->to(base_url('alevel/allocations'))
+                return redirect()->to(base_url('alevel/allocations/view'))
                                ->with('error', 'Allocation not found');
             }
 
             $this->studentAlevelCombinationModel->delete($id);
-            return redirect()->to(base_url('alevel/allocations'))
+            return redirect()->to(base_url('alevel/allocations/view'))
                            ->with('message', 'Allocation deleted successfully');
         } catch (\Exception $e) {
             log_message('error', '[AllocationCombinationClasssController.delete] Error: ' . $e->getMessage());
-            return redirect()->to(base_url('alevel/allocations'))
+            return redirect()->to(base_url('alevel/allocations/view'))
                            ->with('error', 'Failed to delete allocation. Please try again.');
         }
     }

@@ -143,8 +143,8 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->post('subjects/delete/(:num)', 'AlevelSubjectsController::delete/$1');
 
         // A-Level Allocation routes
-        $routes->get('allocations', 'AllocationCombinationClasssController::index');
-        $routes->get('allocations/create', 'AllocationCombinationClasssController::create');
+        $routes->get('allocations', 'AllocationCombinationClasssController::create');
+        $routes->get('allocations/view', 'AllocationCombinationClasssController::index');
         $routes->post('allocations/store', 'AllocationCombinationClasssController::store');
         $routes->get('allocations/edit/(:num)', 'AllocationCombinationClasssController::edit/$1');
         $routes->post('allocations/update/(:num)', 'AllocationCombinationClasssController::update/$1');
