@@ -521,6 +521,7 @@
             const form = document.getElementById('allocationForm');
             const classSelect = document.getElementById('class_id');
             const sectionSelect = document.getElementById('section_id');
+            const sessionSelect = document.getElementById('session_id');
 
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
@@ -567,29 +568,104 @@
                 }
             });
 
+            // Function to reset class and section dropdowns
+            function resetClassAndSection() {
+                classSelect.innerHTML = '<option value="">Select Class</option>';
+                sectionSelect.innerHTML = '<option value="">Select Section</option>';
+            }
+
+            // Add a loading indicator for better UX
+            function setLoading(selectElement, isLoading) {
+                if (isLoading) {
+                    selectElement.disabled = true;
+                    selectElement.innerHTML = '<option value="">Loading...</option>';
+                } else {
+                    selectElement.disabled = false;
+                }
+            }
+
+            sessionSelect.addEventListener('change', function() {
+                const sessionId = this.value;
+                resetClassAndSection();
+                
+                if (sessionId) {
+                    setLoading(classSelect, true);
+                    fetch('<?= base_url('alevel/allocations/get-classes-by-session') ?>/' + sessionId)
+                        .then(response => {
+                            setLoading(classSelect, false);
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.status === 'success' && data.data && data.data.length > 0) {
+                                classSelect.innerHTML = '<option value="">Select Class</option>';
+                                data.data.forEach(classItem => {
+                                    const option = document.createElement('option');
+                                    option.value = classItem.id;
+                                    option.textContent = classItem.class;
+                                    classSelect.appendChild(option);
+                                });
+                            } else {
+                                classSelect.innerHTML = '<option value="">No classes found</option>';
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'No Classes',
+                                    text: 'No classes found for this session',
+                                    confirmButtonColor: '#4AE54A'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            setLoading(classSelect, false);
+                            classSelect.innerHTML = '<option value="">Error loading classes</option>';
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to load classes: ' + error.message,
+                                confirmButtonColor: '#4AE54A'
+                            });
+                        });
+                }
+            });
+
             classSelect.addEventListener('change', function() {
                 const classId = this.value;
                 sectionSelect.innerHTML = '<option value="">Select Section</option>';
                 
                 if (classId) {
+                    setLoading(sectionSelect, true);
                     fetch('<?= base_url('alevel/allocations/get-sections') ?>?class_id=' + classId)
-                        .then(response => response.json())
+                        .then(response => {
+                            setLoading(sectionSelect, false);
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
                         .then(data => {
-                            if (data.sections) {
+                            if (data.sections && data.sections.length > 0) {
+                                sectionSelect.innerHTML = '<option value="">Select Section</option>';
                                 data.sections.forEach(section => {
                                     const option = document.createElement('option');
                                     option.value = section.id;
                                     option.textContent = section.section_name;
                                     sectionSelect.appendChild(option);
                                 });
+                            } else {
+                                sectionSelect.innerHTML = '<option value="">No sections found</option>';
                             }
                         })
                         .catch(error => {
+                            setLoading(sectionSelect, false);
+                            sectionSelect.innerHTML = '<option value="">Error loading sections</option>';
                             console.error('Error:', error);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
-                                text: 'Failed to load sections',
+                                text: 'Failed to load sections: ' + error.message,
                                 confirmButtonColor: '#4AE54A'
                             });
                         });
@@ -656,6 +732,11 @@
                     }
                 });
             });
+
+            // Trigger change event on session select if a value is pre-selected
+            if (sessionSelect.value) {
+                sessionSelect.dispatchEvent(new Event('change'));
+            }
         });
     </script>
 </body>

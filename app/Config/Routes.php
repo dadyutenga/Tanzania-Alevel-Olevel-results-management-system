@@ -150,5 +150,6 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->post('allocations/update/(:num)', 'AllocationCombinationClasssController::update/$1');
         $routes->get('allocations/delete/(:num)', 'AllocationCombinationClasssController::delete/$1');
         $routes->get('allocations/get-sections', 'AllocationCombinationClasssController::getSections');
+        $routes->get('allocations/get-classes-by-session/(:num)', 'AllocationCombinationClasssController::getClassesBySession/$1');
     });
 });

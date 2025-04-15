@@ -185,6 +185,33 @@ class AllocationCombinationClasssController extends BaseController
         return $this->response->setJSON(['sections' => $sections]);
     }
 
+    public function getClassesBySession($sessionId)
+    {
+        try {
+            // Log the request for debugging
+            log_message('debug', '[AllocationCombinationClasssController.getClassesBySession] Session ID: ' . $sessionId);
+
+            // Fetch active classes
+            $classes = $this->classModel
+                ->where('is_active', 'yes')
+                ->findAll();
+
+            // Log the number of classes found
+            log_message('debug', '[AllocationCombinationClasssController.getClassesBySession] Classes found: ' . count($classes));
+
+            return $this->response->setJSON([
+                'status' => 'success',
+                'data' => $classes
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', '[AllocationCombinationClasssController.getClassesBySession] Error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Failed to fetch classes: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     protected function getAllocationsWithDetails()
     {
         $allocations = $this->studentAlevelCombinationModel->findAll();
