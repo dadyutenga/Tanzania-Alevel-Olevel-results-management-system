@@ -141,5 +141,14 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->get('subjects/edit/(:num)', 'AlevelSubjectsController::edit/$1');
         $routes->post('subjects/update/(:num)', 'AlevelSubjectsController::update/$1');
         $routes->post('subjects/delete/(:num)', 'AlevelSubjectsController::delete/$1');
+
+        // A-Level Allocation routes
+        $routes->get('allocations', 'AllocationCombinationClasssController::index');
+        $routes->get('allocations/create', 'AllocationCombinationClasssController::create');
+        $routes->post('allocations/store', 'AllocationCombinationClasssController::store');
+        $routes->get('allocations/edit/(:num)', 'AllocationCombinationClasssController::edit/$1');
+        $routes->post('allocations/update/(:num)', 'AllocationCombinationClasssController::update/$1');
+        $routes->get('allocations/delete/(:num)', 'AllocationCombinationClasssController::delete/$1');
+        $routes->get('allocations/get-sections', 'AllocationCombinationClasssController::getSections');
     });
 });
