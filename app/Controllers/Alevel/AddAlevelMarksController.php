@@ -78,7 +78,7 @@ class AddAlevelMarksController extends BaseController
                     ->getResultArray();
             }
 
-            return view('alevel/AddMarks', $data);
+            return view('alevel/AlevelAddMarks', $data);
         } catch (\Exception $e) {
             log_message('error', '[AddAlevelMarksController.index] Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load marks page');

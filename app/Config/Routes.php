@@ -151,6 +151,16 @@ $routes->group('', ['filter' => 'session'], function($routes) {
         $routes->get('allocations/delete/(:num)', 'AllocationCombinationClasssController::delete/$1');
         $routes->get('allocations/get-sections', 'AllocationCombinationClasssController::getSections');
         $routes->get('allocations/get-classes-by-session/(:num)', 'AllocationCombinationClasssController::getClassesBySession/$1');
+
+        // A-Level Marks routes
+        $routes->get('marks', 'AddAlevelMarksController::index');
+        $routes->get('marks/getExams/(:num)', 'AddAlevelMarksController::getExams/$1');
+        $routes->get('marks/getClasses/(:num)', 'AddAlevelMarksController::getClasses/$1');
+        $routes->get('marks/getCombinations/(:num)/(:num)', 'AddAlevelMarksController::getCombinations/$1/$2');
+        $routes->get('marks/getStudents', 'AddAlevelMarksController::getStudents');
+        $routes->get('marks/getSubjects', 'AddAlevelMarksController::getSubjects');
+        $routes->get('marks/getExistingMarks/(:num)/(:num)', 'AddAlevelMarksController::getExistingMarks/$1/$2');
+        $routes->post('marks/save', 'AddAlevelMarksController::saveMarks');
     });
     $routes->group('alevel', ['namespace' => 'App\Controllers\Alevel'], function($routes) {
         $routes->get('allocate-exams', 'AlllocateAlevelExam::index');
