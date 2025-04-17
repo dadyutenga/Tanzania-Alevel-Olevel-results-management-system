@@ -3,7 +3,6 @@
 namespace App\Controllers\Alevel;
 
 use App\Controllers\BaseController;
-use App\Models\AlevelMarksModel;
 use App\Models\AlevelCombinationModel;
 use App\Models\AlevelSubjectModel;
 use App\Models\AlevelStudentModel; 
@@ -31,8 +30,7 @@ class AddAlevelMarksController extends BaseController
 
     public function __construct()
     {
-        $this->alevelMarksModel = new AlevelMarksModel();
-        $this->alevelCombinationModel = new AlevelCombinationModel();
+        $this->alevelMarksModel = new AlevelSubjectMarksModel();        $this->alevelCombinationModel = new AlevelCombinationModel();
         $this->alevelSubjectModel = new AlevelSubjectModel();
         $this->alevelStudentModel = new AlevelStudentModel(); 
         $this->alevelStudentMarksModel = new AlevelStudentMarksModel();
