@@ -140,3 +140,61 @@ ORDER BY
 
 
 ama  using  session filtering  
+
+
+the  query  
+
+SELECT 
+    s.id AS student_id,
+    CONCAT(s.firstname, ' ', COALESCE(s.middlename, ''), ' ', s.lastname) AS student_name,
+    c.class AS class_name,
+    sec.section AS section_name,
+    sess.session AS session_name,
+    ac.combination_code,
+    ac.combination_name,
+    acs.subject_name AS combination_subject,
+    acs.subject_type AS subject_type,
+    e.exam_name,
+    e.exam_date,
+    es.subject_name AS exam_subject,
+    esm.marks_obtained,
+    es.max_marks,
+    es.passing_marks
+FROM 
+    students s
+    INNER JOIN student_session ss ON s.id = ss.student_id
+    INNER JOIN classes c ON ss.class_id = c.id
+    LEFT JOIN sections sec ON ss.section_id = sec.id
+    INNER JOIN sessions sess ON ss.session_id = sess.id
+    INNER JOIN tz_student_alevel_combinations sac ON 
+        sac.class_id = ss.class_id 
+        AND (sac.section_id = ss.section_id OR sac.section_id IS NULL)
+        AND sac.session_id = ss.session_id
+    INNER JOIN tz_alevel_combinations ac ON sac.combination_id = ac.id
+    INNER JOIN tz_alevel_combination_subjects acs ON ac.id = acs.combination_id
+    LEFT JOIN tz_alevel_exam_combinations aec ON 
+        aec.combination_id = ac.id 
+        AND aec.class_id = c.id 
+        AND aec.session_id = sess.id
+    LEFT JOIN tz_exams e ON aec.exam_id = e.id
+    LEFT JOIN tz_exam_subjects es ON e.id = es.exam_id
+    LEFT JOIN tz_exam_subject_marks esm ON 
+        esm.exam_id = e.id 
+        AND esm.student_id = s.id 
+        AND esm.class_id = c.id 
+        AND esm.session_id = sess.id 
+        AND esm.exam_subject_id = es.id
+WHERE 
+    s.is_active = 'yes'
+    AND ss.is_active = 'no'
+    AND c.is_active = 'no'
+    AND sess.is_active = 'no'
+    AND ac.is_active = 'yes'
+    AND acs.is_active = 'yes'
+    AND (aec.is_active = 'yes' OR aec.is_active IS NULL)
+    AND (e.is_active = 'yes' OR e.is_active IS NULL)
+ORDER BY 
+    s.id, 
+    ac.combination_code, 
+    acs.subject_name, 
+    e.exam_name;
