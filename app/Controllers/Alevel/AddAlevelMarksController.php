@@ -4,39 +4,31 @@ namespace App\Controllers\Alevel;
 
 use App\Controllers\BaseController;
 use App\Models\AlevelCombinationModel;
-use App\Models\AlevelSubjectModel;
-use App\Models\AlevelStudentModel; 
-use App\Models\AlevelStudentMarksModel;
-use App\Models\AlevelStudentCombinationModel;
-use App\Models\AlevelStudentSubjectModel;
-use App\Models\AlevelStudentSubjectMarksModel;
+use App\Models\AlevelCombinationSubjectModel;
+use App\Models\StudentModel; // Changed from AlevelStudentModel
+use App\Models\AlevelSubjectMarksModel;
+use App\Models\StudentAlevelCombinationModel; // Changed from AlevelStudentCombinationModel
 use App\Models\ExamModel;
 use App\Models\SessionModel;
-use CodeIgniter\RESTful\ResourceController;
 
 class AddAlevelMarksController extends BaseController
 {
     protected $alevelMarksModel;
     protected $alevelCombinationModel;
-    protected $alevelSubjectModel;
-    protected $alevelStudentModel; 
-    protected $alevelStudentMarksModel;
-    protected $alevelStudentCombinationModel;
-    protected $alevelStudentSubjectModel;
-    protected $alevelStudentSubjectMarksModel;
+    protected $alevelCombinationSubjectModel; // Changed from alevelSubjectModel
+    protected $studentModel; // Changed from alevelStudentModel
+    protected $studentAlevelCombinationModel; // Changed from alevelStudentCombinationModel
     protected $examModel;
     protected $sessionModel;
     protected $format = 'json';
 
     public function __construct()
     {
-        $this->alevelMarksModel = new AlevelSubjectMarksModel();        $this->alevelCombinationModel = new AlevelCombinationModel();
-        $this->alevelSubjectModel = new AlevelSubjectModel();
-        $this->alevelStudentModel = new AlevelStudentModel(); 
-        $this->alevelStudentMarksModel = new AlevelStudentMarksModel();
-        $this->alevelStudentCombinationModel = new AlevelStudentCombinationModel();
-        $this->alevelStudentSubjectModel = new AlevelStudentSubjectModel();
-        $this->alevelStudentSubjectMarksModel = new AlevelStudentSubjectMarksModel();
+        $this->alevelMarksModel = new AlevelSubjectMarksModel();
+        $this->alevelCombinationModel = new AlevelCombinationModel();
+        $this->alevelCombinationSubjectModel = new AlevelCombinationSubjectModel(); // Fixed
+        $this->studentModel = new StudentModel(); // Fixed
+        $this->studentAlevelCombinationModel = new StudentAlevelCombinationModel(); // Fixed
         $this->examModel = new ExamModel();
         $this->sessionModel = new SessionModel();
     }
@@ -46,8 +38,8 @@ class AddAlevelMarksController extends BaseController
         try {
             $data = [
                 'combinations' => $this->alevelCombinationModel->findAll(),
-                'subjects' => $this->alevelSubjectModel->findAll(),
-                'students' => $this->alevelStudentModel->findAll(),
+                'subjects' => $this->alevelCombinationSubjectModel->findAll(), // Fixed
+                'students' => $this->studentModel->findAll(), // Fixed
                 'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
                 'exams' => [],
                 'classes' => [],
