@@ -697,8 +697,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterMarksBtn = document.getElementById('filterMarksBtn');
     const deleteAllBtn = document.getElementById('deleteAllBtn');
 
-    // CSRF token
-    const csrfToken = document.querySelector('input[name="<?= csrf_token() ?>"]').value;
+    // CSRF token (if needed, ensure it's correctly fetched)
+    const csrfToken = document.querySelector('input[name="<?= csrf_token() ?>"]') ? document.querySelector('input[name="<?= csrf_token() ?>"]').value : '';
     const csrfHeader = '<?= csrf_header() ?>';
     
     function debugLog(message, data = null) {
@@ -827,7 +827,8 @@ document.addEventListener('DOMContentLoaded', function() {
         debugLog('Class selected:', { classId, sessionId });
 
         if (classId && sessionId) {
-            const combinationsUrl = `<?= base_url('alevel/marks/getCombinations') ?>/${sessionId}/${classId}`;
+            const baseUrl = '<?= base_url() ?>';
+            const combinationsUrl = `${baseUrl}/alevel/marks/getCombinations/${sessionId}/${classId}`;
             debugLog('Fetching combinations from:', combinationsUrl);
 
             fetch(combinationsUrl, {
