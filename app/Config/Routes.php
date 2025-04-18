@@ -183,6 +183,11 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('marks/getSubjects', 'AddAlevelMarksController::getSubjects');
         $routes->get('marks/getExistingMarks/(:num)/(:num)', 'AddAlevelMarksController::getExistingMarks/$1/$2');
         $routes->post('marks/save', 'AddAlevelMarksController::saveMarks');
+
+        // Bulk Marks Upload
+        $routes->get('marks/bulk', 'BulkMarksUploadController::index');
+        $routes->get('marks/bulk/downloadTemplate', 'BulkMarksUploadController::downloadTemplate');
+        $routes->post('marks/bulk/upload', 'BulkMarksUploadController::uploadMarks');
     });
 
     // -----------------------------------------------------------------------------

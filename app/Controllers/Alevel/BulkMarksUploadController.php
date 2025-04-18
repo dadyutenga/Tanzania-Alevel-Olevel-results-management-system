@@ -188,6 +188,7 @@ class BulkMarksUploadController extends BaseController
 
     public function uploadMarks()
     {
+        log_message('debug', '[BulkMarksUploadController.uploadMarks] Request received');
         try {
             $examId = $this->request->getPost('exam_id');
             $classId = $this->request->getPost('class_id');
@@ -261,12 +262,19 @@ class BulkMarksUploadController extends BaseController
             // Process data rows
             $marksData = [];
             $errors = [];
+            $consecutiveEmptyRows = 0;
+            $maxConsecutiveEmptyRows = 2; // Stop after just 2 consecutive empty rows to be more strict
             for ($row = 1; $row < count($data); $row++) {
-                $studentId = $data[$row][0];
+                $studentId = trim($data[$row][0]); // Trim to remove any spaces
                 if (empty($studentId) || !is_numeric($studentId)) {
-                    $errors[] = "Row $row: Invalid or missing Student ID";
-                    continue;
+                    $consecutiveEmptyRows++;
+                    if ($consecutiveEmptyRows >= $maxConsecutiveEmptyRows) {
+                        log_message('debug', "[BulkMarksUploadController.uploadMarks] Stopping processing at Row $row due to consecutive empty rows.");
+                        break; // Stop processing immediately after 2 empty rows
+                    }
+                    continue; // Skip empty rows without logging as error
                 }
+                $consecutiveEmptyRows = 0; // Reset counter if a valid row is found
 
                 $marks = [];
                 foreach ($subjectColumns as $colIndex => $subjectId) {

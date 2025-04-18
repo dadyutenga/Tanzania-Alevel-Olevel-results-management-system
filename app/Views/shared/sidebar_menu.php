@@ -43,7 +43,8 @@
             <li><a href="<?= base_url('alevel/allocations/view') ?>"><i class="fas fa-eye"></i> View Allocations</a></li>
             <li><a href="<?= base_url('alevel/allocate-exams') ?>"><i class="fas fa-chalkboard"></i> Allocate Exams</a></li>
             <li><a href="<?= base_url('alevel/view-exams') ?>"><i class="fas fa-eye"></i> View Exams</a></li>
-            <li><a href="<?= base_url('alevel/marks') ?>"><i class="fas fa-eye"></i>Add  Exam Marks </a></li>        
+            <li><a href="<?= base_url('alevel/marks') ?>"><i class="fas fa-plus-circle"></i> Add Exam Marks</a></li>
+            <li><a href="<?= base_url('alevel/marks/bulk') ?>"><i class="fas fa-upload"></i> Bulk Marks Upload</a></li>
         </ul>
     </li>
     <li><a href="#" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">
