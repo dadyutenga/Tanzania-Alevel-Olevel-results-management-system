@@ -119,157 +119,155 @@ class AddAlevelMarksController extends BaseController
         ], 500);
     }
 }
-    public function getSubjects()
-    {
-        try {
-            $combinationId = $this->request->getGet('combination_id');
+public function getSubjects()
+{
+    try {
+        $combinationId = $this->request->getGet('combination_id');
 
-            if (!$combinationId) {
-                throw new \Exception('Combination ID is required');
-            }
+        if (!$combinationId) {
+            throw new \Exception('Combination ID is required');
+        }
 
-            $db = \Config\Database::connect('second_db');
-            $subjects = $db->table('tz_alevel_combination_subjects')
-                ->select('id, subject_name, max_marks')
-                ->where([
-                    'combination_id' => $combinationId,
-                    'is_active' => 'yes'
-                ])
-                ->get()
-                ->getResultArray();
+        $db = \Config\Database::connect('second_db');
+        $subjects = $db->table('tz_alevel_combination_subjects')
+            ->select('id, subject_name, subject_type') // Removed max_marks
+            ->where([
+                'combination_id' => $combinationId,
+                'is_active' => 'yes'
+            ])
+            ->get()
+            ->getResultArray();
 
-            return $this->respond([
-                'status' => 'success',
-                'data' => $subjects
-            ]);
-        } catch (\Exception $e) {
-            log_message('error', '[AddAlevelMarksController.getSubjects] Error: ' . $e->getMessage());
+        return $this->respond([
+            'status' => 'success',
+            'data' => $subjects
+        ]);
+    } catch (\Exception $e) {
+        log_message('error', '[AddAlevelMarksController.getSubjects] Error: ' . $e->getMessage());
+        return $this->respond([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function saveMarks()
+{
+    try {
+        $rules = [
+            'exam_id' => 'required|numeric',
+            'student_id' => 'required|numeric',
+            'class_id' => 'required|numeric',
+            'session_id' => 'required|numeric',
+            'combination_id' => 'required|numeric'
+        ];
+
+        if (!$this->validate($rules)) {
             return $this->respond([
                 'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+                'message' => 'Validation failed',
+                'errors' => $this->validator->getErrors()
+            ], 400);
         }
-    }
 
-    public function saveMarks()
-    {
-        try {
-            $rules = [
-                'exam_id' => 'required|numeric',
-                'student_id' => 'required|numeric',
-                'class_id' => 'required|numeric',
-                'session_id' => 'required|numeric',
-                'combination_id' => 'required|numeric'
-            ];
+        $examId = $this->request->getPost('exam_id');
+        $studentId = $this->request->getPost('student_id');
+        $classId = $this->request->getPost('class_id');
+        $sessionId = $this->request->getPost('session_id');
+        $combinationId = $this->request->getPost('combination_id');
+        $marks = json_decode($this->request->getPost('marks'), true);
 
-            if (!$this->validate($rules)) {
-                return $this->respond([
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $this->validator->getErrors()
-                ], 400);
+        if (!is_array($marks)) {
+            throw new \Exception('Invalid marks data format');
+        }
+
+        // Validate exam allocation
+        $db = \Config\Database::connect('second_db');
+        $examAllocation = $db->table('tz_alevel_exam_combinations')
+            ->where([
+                'exam_id' => $examId,
+                'class_id' => $classId,
+                'combination_id' => $combinationId,
+                'session_id' => $sessionId,
+                'is_active' => 'yes'
+            ])
+            ->countAllResults();
+
+        if ($examAllocation === 0) {
+            throw new \Exception('Exam is not allocated to this class and combination');
+        }
+
+        // Validate subjects
+        $validSubjects = $db->table('tz_alevel_combination_subjects')
+            ->select('id')
+            ->where([
+                'combination_id' => $combinationId,
+                'is_active' => 'yes'
+            ])
+            ->get()
+            ->getResultArray();
+
+        $validSubjectIds = array_column($validSubjects, 'id');
+
+        foreach ($marks as $subjectId => $mark) {
+            if (!in_array($subjectId, $validSubjectIds)) {
+                throw new \Exception("Invalid subject ID: $subjectId");
             }
-
-            $examId = $this->request->getPost('exam_id');
-            $studentId = $this->request->getPost('student_id');
-            $classId = $this->request->getPost('class_id');
-            $sessionId = $this->request->getPost('session_id');
-            $combinationId = $this->request->getPost('combination_id');
-            $marks = json_decode($this->request->getPost('marks'), true);
-
-            if (!is_array($marks)) {
-                throw new \Exception('Invalid marks data format');
+            if ($mark !== null && ($mark < 0 || $mark > 100)) { // Default max_marks = 100
+                throw new \Exception("Marks for subject ID $subjectId must be between 0 and 100");
             }
+        }
 
-            // Validate exam allocation
-            $db = \Config\Database::connect('second_db');
-            $examAllocation = $db->table('tz_alevel_exam_combinations')
-                ->where([
-                    'exam_id' => $examId,
-                    'class_id' => $classId,
-                    'combination_id' => $combinationId,
-                    'session_id' => $sessionId,
-                    'is_active' => 'yes'
-                ])
-                ->countAllResults();
+        // Start transaction
+        $this->alevelMarksModel->db->transStart();
 
-            if ($examAllocation === 0) {
-                throw new \Exception('Exam is not allocated to this class and combination');
+        // Delete existing marks
+        $this->alevelMarksModel->where([
+            'exam_id' => $examId,
+            'student_id' => $studentId,
+            `class_id` => $classId,
+            `session_id` => $sessionId,
+            `combination_id` => $combinationId
+        ])->delete();
+
+        // Insert new marks
+        foreach ($marks as $subjectId => $mark) {
+            if ($mark === null) {
+                continue; // Skip null marks
             }
-
-            // Validate subjects and max marks
-            $validSubjects = $db->table('tz_alevel_combination_subjects')
-                ->select('id, max_marks')
-                ->where([
-                    'combination_id' => $combinationId,
-                    'is_active' => 'yes'
-                ])
-                ->get()
-                ->getResultArray();
-
-            $validSubjectIds = array_column($validSubjects, 'id');
-            $maxMarksMap = array_column($validSubjects, 'max_marks', 'id');
-
-            foreach ($marks as $subjectId => $mark) {
-                if (!in_array($subjectId, $validSubjectIds)) {
-                    throw new \Exception("Invalid subject ID: $subjectId");
-                }
-                if ($mark !== null && ($mark < 0 || $mark > ($maxMarksMap[$subjectId] ?? 100))) {
-                    throw new \Exception("Marks for subject ID $subjectId must be between 0 and " . ($maxMarksMap[$subjectId] ?? 100));
-                }
-            }
-
-            // Start transaction
-            $this->alevelMarksModel->db->transStart();
-
-            // Delete existing marks
-            $this->alevelMarksModel->where([
+            $markData = [
                 'exam_id' => $examId,
                 'student_id' => $studentId,
                 'class_id' => $classId,
                 'session_id' => $sessionId,
-                'combination_id' => $combinationId
-            ])->delete();
+                'combination_id' => $combinationId,
+                'subject_id' => $subjectId,
+                'marks_obtained' => $mark
+            ];
 
-            // Insert new marks
-            foreach ($marks as $subjectId => $mark) {
-                if ($mark === null) {
-                    continue; // Skip null marks
-                }
-                $markData = [
-                    'exam_id' => $examId,
-                    'student_id' => $studentId,
-                    'class_id' => $classId,
-                    'session_id' => $sessionId,
-                    'combination_id' => $combinationId,
-                    'subject_id' => $subjectId,
-                    'marks_obtained' => $mark
-                ];
-
-                if (!$this->alevelMarksModel->insert($markData)) {
-                    throw new \Exception('Failed to save marks: ' . implode(', ', $this->alevelMarksModel->errors()));
-                }
+            if (!$this->alevelMarksModel->insert($markData)) {
+                throw new \Exception('Failed to save marks: ' . implode(', ', $this->alevelMarksModel->errors()));
             }
-
-            $this->alevelMarksModel->db->transComplete();
-
-            if ($this->alevelMarksModel->db->transStatus() === false) {
-                throw new \RuntimeException('Failed to save marks');
-            }
-
-            return $this->respond([
-                'status' => 'success',
-                'message' => 'Marks saved successfully'
-            ]);
-        } catch (\Exception $e) {
-            log_message('error', '[AddAlevelMarksController.saveMarks] Error: ' . $e->getMessage());
-            return $this->respond([
-                'status' => 'error',
-                'message' => 'Failed to save marks: ' . $e->getMessage()
-            ], 500);
         }
-    }
 
+        $this->alevelMarksModel->db->transComplete();
+
+        if ($this->alevelMarksModel->db->transStatus() === false) {
+            throw new \RuntimeException('Failed to save marks');
+        }
+
+        return $this->respond([
+            'status' => 'success',
+            'message' => 'Marks saved successfully'
+        ]);
+    } catch (\Exception $e) {
+        log_message('error', '[AddAlevelMarksController.saveMarks] Error: ' . $e->getMessage());
+        return $this->respond([
+            'status' => 'error',
+            'message' => 'Failed to save marks: ' . $e->getMessage()
+        ], 500);
+    }
+}
     public function getExistingMarks($examId, $studentId)
     {
         try {
