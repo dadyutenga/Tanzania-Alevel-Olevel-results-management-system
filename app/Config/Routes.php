@@ -193,6 +193,9 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('marks/view', 'ViewAlevelMarksController::index');
         $routes->post('marks/update', 'ViewAlevelMarksController::update');
         $routes->post('marks/delete', 'ViewAlevelMarksController::delete');
+        $routes->get('marks/getExams/(:num)', 'ViewAlevelMarksController::getExams/$1');
+        $routes->get('marks/getClasses/(:num)', 'ViewAlevelMarksController::getClasses/$1');
+        $routes->get('marks/getCombinations/(:num)/(:num)', 'ViewAlevelMarksController::getCombinations/$1/$2');
     });
 
     // -----------------------------------------------------------------------------
