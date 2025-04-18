@@ -336,10 +336,9 @@ class BulkMarksUploadController extends BaseController
                 throw new \RuntimeException('Failed to save marks in bulk');
             }
 
-            return $this->respond([
-                'status' => 'success',
-                'message' => 'Marks uploaded successfully for ' . count($marksData) . ' students'
-            ]);
+            // Redirect to the bulk upload page with a success message
+            session()->setFlashdata('message', 'Marks uploaded successfully for ' . count($marksData) . ' students');
+            return redirect()->to(base_url('alevel/marks/bulk'));
         } catch (\Exception $e) {
             log_message('error', '[BulkMarksUploadController.uploadMarks] Error: ' . $e->getMessage());
             return $this->respond([
