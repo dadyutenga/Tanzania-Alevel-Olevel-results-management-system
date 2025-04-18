@@ -5,19 +5,22 @@ namespace App\Controllers\Alevel;
 use App\Controllers\BaseController;
 use App\Models\AlevelCombinationModel;
 use App\Models\AlevelCombinationSubjectModel;
-use App\Models\StudentModel; // Changed from AlevelStudentModel
+use App\Models\StudentModel;
 use App\Models\AlevelSubjectMarksModel;
-use App\Models\StudentAlevelCombinationModel; // Changed from AlevelStudentCombinationModel
+use App\Models\StudentAlevelCombinationModel;
 use App\Models\ExamModel;
 use App\Models\SessionModel;
+use CodeIgniter\API\ResponseTrait;
 
 class AddAlevelMarksController extends BaseController
 {
+    use ResponseTrait;
+
     protected $alevelMarksModel;
     protected $alevelCombinationModel;
-    protected $alevelCombinationSubjectModel; // Changed from alevelSubjectModel
-    protected $studentModel; // Changed from alevelStudentModel
-    protected $studentAlevelCombinationModel; // Changed from alevelStudentCombinationModel
+    protected $alevelCombinationSubjectModel;
+    protected $studentModel;
+    protected $studentAlevelCombinationModel;
     protected $examModel;
     protected $sessionModel;
     protected $format = 'json';
@@ -26,9 +29,9 @@ class AddAlevelMarksController extends BaseController
     {
         $this->alevelMarksModel = new AlevelSubjectMarksModel();
         $this->alevelCombinationModel = new AlevelCombinationModel();
-        $this->alevelCombinationSubjectModel = new AlevelCombinationSubjectModel(); // Fixed
-        $this->studentModel = new StudentModel(); // Fixed
-        $this->studentAlevelCombinationModel = new StudentAlevelCombinationModel(); // Fixed
+        $this->alevelCombinationSubjectModel = new AlevelCombinationSubjectModel();
+        $this->studentModel = new StudentModel();
+        $this->studentAlevelCombinationModel = new StudentAlevelCombinationModel();
         $this->examModel = new ExamModel();
         $this->sessionModel = new SessionModel();
     }
@@ -37,9 +40,9 @@ class AddAlevelMarksController extends BaseController
     {
         try {
             $data = [
-                'combinations' => $this->alevelCombinationModel->findAll(),
-                'subjects' => $this->alevelCombinationSubjectModel->findAll(), // Fixed
-                'students' => $this->studentModel->findAll(), // Fixed
+                'combinations' => $this->alevelCombinationModel->where('is_active', 'yes')->findAll(),
+                'subjects' => $this->alevelCombinationSubjectModel->where('is_active', 'yes')->findAll(),
+                'students' => $this->studentModel->where('is_active', 'no')->findAll(),
                 'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
                 'exams' => [],
                 'classes' => [],
@@ -53,7 +56,7 @@ class AddAlevelMarksController extends BaseController
                     ->where('is_active', 'yes')
                     ->findAll();
                 
-                // Fetch classes linked to A-level combinations for the current session
+                // Updated is_active to 'no' for classes
                 $db = \Config\Database::connect('second_db');
                 $data['classes'] = $db->table('classes c')
                     ->select('c.id, c.class')
@@ -61,7 +64,7 @@ class AddAlevelMarksController extends BaseController
                     ->where([
                         'sac.session_id' => $currentSession['id'],
                         'sac.is_active' => 'yes',
-                        'c.is_active' => 'no'
+                        'c.is_active' => 'no'  // Changed from 'yes' to 'no'
                     ])
                     ->groupBy('c.id')
                     ->get()
@@ -71,50 +74,51 @@ class AddAlevelMarksController extends BaseController
             return view('alevel/AlevelAddMarks', $data);
         } catch (\Exception $e) {
             log_message('error', '[AddAlevelMarksController.index] Error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to load marks page');
+            return redirect()->back()->with('error', 'Failed to load marks page: ' . $e->getMessage());
         }
     }
 
     public function getStudents()
-    {
-        try {
-            $examId = $this->request->getGet('exam_id');
-            $classId = $this->request->getGet('class_id');
-            $sessionId = $this->request->getGet('session_id');
-            $combinationId = $this->request->getGet('combination_id');
+{
+    try {
+        $examId = $this->request->getGet('exam_id');
+        $classId = $this->request->getGet('class_id');
+        $sessionId = $this->request->getGet('session_id');
+        $combinationId = $this->request->getGet('combination_id');
 
-            if (!$examId || !$classId || !$sessionId || !$combinationId) {
-                throw new \Exception('Missing required parameters');
-            }
-
-            $students = $this->alevelStudentModel
-                ->select('students.id, students.firstname, students.lastname, students.roll_no, student_session.*, classes.class')
-                ->join('student_session', 'student_session.student_id = students.id')
-                ->join('classes', 'classes.id = student_session.class_id')
-                ->join('tz_student_alevel_combinations', 'tz_student_alevel_combinations.class_id = student_session.class_id AND tz_student_alevel_combinations.session_id = student_session.session_id')
-                ->where([
-                    'student_session.session_id' => $sessionId,
-                    'student_session.class_id' => $classId,
-                    'student_session.is_active' => 'no',
-                    'students.is_active' => 'yes',
-                    'tz_student_alevel_combinations.combination_id' => $combinationId,
-                    'tz_student_alevel_combinations.is_active' => 'yes'
-                ])
-                ->findAll();
-
-            return $this->respond([
-                'status' => 'success',
-                'data' => $students
-            ]);
-        } catch (\Exception $e) {
-            log_message('error', '[AddAlevelMarksController.getStudents] Error: ' . $e->getMessage());
-            return $this->respond([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+        if (!$examId || !$classId || !$sessionId || !$combinationId) {
+            throw new \Exception('Missing required parameters');
         }
-    }
 
+        $students = $this->studentModel
+            ->select('students.id, students.firstname, students.lastname, students.roll_no, student_session.*, classes.class')
+            ->join('student_session', 'student_session.student_id = students.id')
+            ->join('classes', 'classes.id = student_session.class_id')
+            ->join('tz_student_alevel_combinations sac', 'sac.class_id = student_session.class_id AND sac.session_id = student_session.session_id AND (sac.section_id = student_session.section_id OR sac.section_id IS NULL)')
+            ->join('tz_alevel_exam_combinations aec', 'aec.combination_id = sac.combination_id AND aec.class_id = student_session.class_id AND aec.session_id = student_session.session_id AND aec.exam_id = ' . $examId)
+            ->where([
+                'student_session.session_id' => $sessionId,
+                'student_session.class_id' => $classId,
+                'student_session.is_active' => 'no',
+                'students.is_active' => 'yes',
+                'sac.combination_id' => $combinationId,
+                'sac.is_active' => 'yes',
+                'aec.is_active' => 'yes'
+            ])
+            ->findAll();
+
+        return $this->respond([
+            'status' => 'success',
+            'data' => $students
+        ]);
+    } catch (\Exception $e) {
+        log_message('error', '[AddAlevelMarksController.getStudents] Error: ' . $e->getMessage());
+        return $this->respond([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
     public function getSubjects()
     {
         try {
@@ -126,10 +130,10 @@ class AddAlevelMarksController extends BaseController
 
             $db = \Config\Database::connect('second_db');
             $subjects = $db->table('tz_alevel_combination_subjects')
-                ->select('tz_alevel_combination_subjects.*')
+                ->select('id, subject_name, max_marks')
                 ->where([
-                    'tz_alevel_combination_subjects.combination_id' => $combinationId,
-                    'tz_alevel_combination_subjects.is_active' => 'yes'
+                    'combination_id' => $combinationId,
+                    'is_active' => 'yes'
                 ])
                 ->get()
                 ->getResultArray();
@@ -139,6 +143,7 @@ class AddAlevelMarksController extends BaseController
                 'data' => $subjects
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AddAlevelMarksController.getSubjects] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => $e->getMessage()
@@ -176,17 +181,61 @@ class AddAlevelMarksController extends BaseController
                 throw new \Exception('Invalid marks data format');
             }
 
+            // Validate exam allocation
+            $db = \Config\Database::connect('second_db');
+            $examAllocation = $db->table('tz_alevel_exam_combinations')
+                ->where([
+                    'exam_id' => $examId,
+                    'class_id' => $classId,
+                    'combination_id' => $combinationId,
+                    'session_id' => $sessionId,
+                    'is_active' => 'yes'
+                ])
+                ->countAllResults();
+
+            if ($examAllocation === 0) {
+                throw new \Exception('Exam is not allocated to this class and combination');
+            }
+
+            // Validate subjects and max marks
+            $validSubjects = $db->table('tz_alevel_combination_subjects')
+                ->select('id, max_marks')
+                ->where([
+                    'combination_id' => $combinationId,
+                    'is_active' => 'yes'
+                ])
+                ->get()
+                ->getResultArray();
+
+            $validSubjectIds = array_column($validSubjects, 'id');
+            $maxMarksMap = array_column($validSubjects, 'max_marks', 'id');
+
+            foreach ($marks as $subjectId => $mark) {
+                if (!in_array($subjectId, $validSubjectIds)) {
+                    throw new \Exception("Invalid subject ID: $subjectId");
+                }
+                if ($mark !== null && ($mark < 0 || $mark > ($maxMarksMap[$subjectId] ?? 100))) {
+                    throw new \Exception("Marks for subject ID $subjectId must be between 0 and " . ($maxMarksMap[$subjectId] ?? 100));
+                }
+            }
+
             // Start transaction
-            $this->alevelStudentSubjectMarksModel->db->transStart();
+            $this->alevelMarksModel->db->transStart();
 
             // Delete existing marks
-            $this->alevelStudentSubjectMarksModel->where([
+            $this->alevelMarksModel->where([
                 'exam_id' => $examId,
-                'student_id' => $studentId
+                'student_id' => $studentId,
+                'class_id' => $classId,
+                'session_id' => $sessionId,
+                'combination_id' => $combinationId
             ])->delete();
 
             // Insert new marks
             foreach ($marks as $subjectId => $mark) {
+                if ($mark === null) {
+                    continue; // Skip null marks
+                }
                 $markData = [
                     'exam_id' => $examId,
                     'student_id' => $studentId,
@@ -197,14 +246,14 @@ class AddAlevelMarksController extends BaseController
                     'marks_obtained' => $mark
                 ];
 
-                if (!$this->alevelStudentSubjectMarksModel->insert($markData)) {
-                    throw new \Exception('Failed to save marks: ' . implode(', ', $this->alevelStudentSubjectMarksModel->errors()));
+                if (!$this->alevelMarksModel->insert($markData)) {
+                    throw new \Exception('Failed to save marks: ' . implode(', ', $this->alevelMarksModel->errors()));
                 }
             }
 
-            $this->alevelStudentSubjectMarksModel->db->transComplete();
+            $this->alevelMarksModel->db->transComplete();
 
-            if ($this->alevelStudentSubjectMarksModel->db->transStatus() === false) {
+            if ($this->alevelMarksModel->db->transStatus() === false) {
                 throw new \RuntimeException('Failed to save marks');
             }
 
@@ -213,6 +262,7 @@ class AddAlevelMarksController extends BaseController
                 'message' => 'Marks saved successfully'
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AddAlevelMarksController.saveMarks] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to save marks: ' . $e->getMessage()
@@ -225,7 +275,7 @@ class AddAlevelMarksController extends BaseController
         try {
             $db = \Config\Database::connect('second_db');
             $marks = $db->table('tz_alevel_subject_marks')
-                ->select('tz_alevel_subject_marks.*, tz_alevel_combination_subjects.subject_name')
+                ->select('tz_alevel_subject_marks.*, tz_alevel_combination_subjects.subject_name, tz_alevel_combination_subjects.max_marks')
                 ->join('tz_alevel_combination_subjects', 'tz_alevel_combination_subjects.id = tz_alevel_subject_marks.subject_id')
                 ->where([
                     'tz_alevel_subject_marks.exam_id' => $examId,
@@ -239,6 +289,7 @@ class AddAlevelMarksController extends BaseController
                 'data' => $marks
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AddAlevelMarksController.getExistingMarks] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to fetch existing marks: ' . $e->getMessage()
@@ -265,6 +316,7 @@ class AddAlevelMarksController extends BaseController
                 'data' => $exams
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AddAlevelMarksController.getExams] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => $e->getMessage()
@@ -286,7 +338,7 @@ class AddAlevelMarksController extends BaseController
                 ->where([
                     'sac.session_id' => $sessionId,
                     'sac.is_active' => 'yes',
-                    'c.is_active' => 'no'
+                    'c.is_active' => 'no'  // Changed from 'yes' to 'no'
                 ])
                 ->groupBy('c.id')
                 ->get()
@@ -297,6 +349,7 @@ class AddAlevelMarksController extends BaseController
                 'data' => $classes
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AddAlevelMarksController.getClasses] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => $e->getMessage()
@@ -330,6 +383,7 @@ class AddAlevelMarksController extends BaseController
                 'data' => $combinations
             ]);
         } catch (\Exception $e) {
+            log_message('error', '[AddAlevelMarksController.getCombinations] Error: ' . $e->getMessage());
             return $this->respond([
                 'status' => 'error',
                 'message' => $e->getMessage()
@@ -337,3 +391,4 @@ class AddAlevelMarksController extends BaseController
         }
     }
 }
+?>

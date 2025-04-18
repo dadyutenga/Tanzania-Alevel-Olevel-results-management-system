@@ -520,14 +520,6 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="form-group">
-                                <label for="student_id">Student <span class="required">*</span></label>
-                                <select id="student_id" name="student_id" class="form-control" required>
-                                    <option value="">Select Student</option>
-                                </select>
-                            </div>
-                        </div>
 
                         <div id="marksContainer" style="display: none;">
                             <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-primary);">Enter Marks</h3>
@@ -537,7 +529,10 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary" id="saveMarksBtn" disabled>
+                            <button type="button" class="btn btn-primary" id="getStudentsBtn">
+                                <i class="fas fa-search"></i> Get Students
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="saveMarksBtn" disabled style="display: none;">
                                 <i class="fas fa-save"></i> Save Marks
                             </button>
                         </div>
@@ -545,11 +540,11 @@
                 </div>
 
                 <div class="results-table-container">
-                    <h2 class="form-title" style="padding: 1rem; margin-bottom: 0;"><i class="fas fa-list"></i> Existing Marks</h2>
-                    <div id="existingMarks">
+                    <h2 class="form-title" style="padding: 1rem; margin-bottom: 0;"><i class="fas fa-list"></i> Students Marks Entry</h2>
+                    <div id="studentsMarksTable">
                         <div class="empty-results">
                             <i class="fas fa-database"></i>
-                            <p>Select a student to view existing marks.</p>
+                            <p>Select session, exam, class, and combination, then click "Get Students" to load student data.</p>
                         </div>
                     </div>
                 </div>
@@ -620,74 +615,170 @@
             const examSelect = document.getElementById('exam_id');
             const classSelect = document.getElementById('class_id');
             const combinationSelect = document.getElementById('combination_id');
-            const studentSelect = document.getElementById('student_id');
             const marksContainer = document.getElementById('marksContainer');
             const subjectsMarks = document.getElementById('subjectsMarks');
             const saveMarksBtn = document.getElementById('saveMarksBtn');
-            const existingMarks = document.getElementById('existingMarks');
+            const getStudentsBtn = document.getElementById('getStudentsBtn');
+            const studentsMarksTable = document.getElementById('studentsMarksTable');
 
-            // Load exams when session changes
+            // Add CSRF token to all fetch requests
+            const csrfToken = document.querySelector('input[name="<?= csrf_token() ?>"]').value;
+            const csrfHeader = '<?= csrf_header() ?>';
+            
+            // Debug function to check if events are being triggered
+            function debugLog(message, data = null) {
+                console.log(`Debug: ${message}`, data);
+            }
+
+            // Modify the session change event listener
             sessionSelect.addEventListener('change', function() {
+                debugLog('Session change event triggered');
                 const sessionId = this.value;
+                debugLog('Selected session ID:', sessionId);
+
                 if (sessionId) {
-                    fetch(`<?= base_url('alevel/marks/getExams') ?>/${sessionId}`, {
+                    // First, verify the URL construction
+                    const baseUrl = '<?= base_url() ?>';
+                    debugLog('Base URL:', baseUrl);
+
+                    const examsUrl = `${baseUrl}/alevel/marks/getExams/${sessionId}`;
+                    debugLog('Exams URL:', examsUrl);
+
+                    // Add loading state to the exam dropdown
+                    examSelect.disabled = true;
+                    examSelect.innerHTML = '<option value="">Loading...</option>';
+
+                    fetch(examsUrl, {
+                        method: 'GET',
                         headers: {
-                            'Accept': 'application/json'
-                        }
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            [csrfHeader]: csrfToken
+                        },
+                        credentials: 'same-origin'
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        debugLog('Exams response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
+                        debugLog('Exams data received:', data);
                         examSelect.innerHTML = '<option value="">Select Exam</option>';
-                        if (data.status === 'success') {
+                        examSelect.disabled = false;
+
+                        if (data.status === 'success' && Array.isArray(data.data)) {
                             data.data.forEach(exam => {
                                 const option = document.createElement('option');
                                 option.value = exam.id;
                                 option.textContent = exam.exam_name;
                                 examSelect.appendChild(option);
                             });
+                        } else {
+                            throw new Error('Invalid data format received');
                         }
                     })
-                    .catch(error => console.error('Error fetching exams:', error));
+                    .catch(error => {
+                        debugLog('Error in exams fetch:', error);
+                        examSelect.disabled = false;
+                        examSelect.innerHTML = '<option value="">Error loading exams</option>';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Failed to load exams: ' + error.message
+                        });
+                    });
 
-                    // Also load classes for this session
-                    fetch(`<?= base_url('alevel/marks/getClasses') ?>/${sessionId}`, {
+                    // Similar modifications for the classes fetch
+                    const classesUrl = `${baseUrl}/alevel/marks/getClasses/${sessionId}`;
+                    debugLog('Classes URL:', classesUrl);
+
+                    classSelect.disabled = true;
+                    classSelect.innerHTML = '<option value="">Loading...</option>';
+
+                    fetch(classesUrl, {
+                        method: 'GET',
                         headers: {
-                            'Accept': 'application/json'
-                        }
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            [csrfHeader]: csrfToken
+                        },
+                        credentials: 'same-origin'
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        debugLog('Classes response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
+                        debugLog('Classes data received:', data);
                         classSelect.innerHTML = '<option value="">Select Class</option>';
-                        if (data.status === 'success') {
+                        classSelect.disabled = false;
+
+                        if (data.status === 'success' && Array.isArray(data.data)) {
                             data.data.forEach(cls => {
                                 const option = document.createElement('option');
                                 option.value = cls.id;
                                 option.textContent = cls.class;
                                 classSelect.appendChild(option);
                             });
+                        } else {
+                            throw new Error('Invalid data format received');
                         }
                     })
-                    .catch(error => console.error('Error fetching classes:', error));
+                    .catch(error => {
+                        debugLog('Error in classes fetch:', error);
+                        classSelect.disabled = false;
+                        classSelect.innerHTML = '<option value="">Error loading classes</option>';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Failed to load classes: ' + error.message
+                        });
+                    });
                 }
+
                 // Reset dependent fields
                 combinationSelect.innerHTML = '<option value="">Select Combination</option>';
-                studentSelect.innerHTML = '<option value="">Select Student</option>';
                 marksContainer.style.display = 'none';
                 saveMarksBtn.disabled = true;
+                saveMarksBtn.style.display = 'none';
+                getStudentsBtn.style.display = 'inline-flex';
             });
+
+            // Add immediate debug check for pre-selected session
+            debugLog('Initial session value:', sessionSelect.value);
+            if (sessionSelect.value) {
+                debugLog('Triggering initial session change');
+                sessionSelect.dispatchEvent(new Event('change'));
+            }
 
             // Load combinations when class changes
             classSelect.addEventListener('change', function() {
                 const classId = this.value;
                 const sessionId = sessionSelect.value;
+                console.log('Class selected:', classId, 'Session:', sessionId); // Debug log
                 if (classId && sessionId) {
-                    fetch(`<?= base_url('alevel/marks/getCombinations') ?>/${sessionId}/${classId}`, {
+                    const combinationsUrl = `<?= base_url('alevel/marks/getCombinations') ?>/${sessionId}/${classId}`;
+                    console.log('Fetching combinations from:', combinationsUrl);
+                    fetch(combinationsUrl, {
                         headers: {
                             'Accept': 'application/json'
                         }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        console.log('Combinations response status:', response.status, 'URL:', combinationsUrl); // Debug log
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
+                        console.log('Combinations data:', data); // Debug log
                         combinationSelect.innerHTML = '<option value="">Select Combination</option>';
                         if (data.status === 'success') {
                             data.data.forEach(combination => {
@@ -696,50 +787,99 @@
                                 option.textContent = `${combination.combination_code} - ${combination.combination_name}`;
                                 combinationSelect.appendChild(option);
                             });
-                        }
-                    })
-                    .catch(error => console.error('Error fetching combinations:', error));
-                }
-                // Reset dependent fields
-                studentSelect.innerHTML = '<option value="">Select Student</option>';
-                marksContainer.style.display = 'none';
-                saveMarksBtn.disabled = true;
-            });
-
-            // Load students when combination changes
-            combinationSelect.addEventListener('change', function() {
-                const combinationId = this.value;
-                const classId = classSelect.value;
-                const sessionId = sessionSelect.value;
-                const examId = examSelect.value;
-                if (combinationId && classId && sessionId && examId) {
-                    fetch(`<?= base_url('alevel/marks/getStudents') ?>?exam_id=${examId}&class_id=${classId}&session_id=${sessionId}&combination_id=${combinationId}`, {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        studentSelect.innerHTML = '<option value="">Select Student</option>';
-                        if (data.status === 'success') {
-                            data.data.forEach(student => {
-                                const option = document.createElement('option');
-                                option.value = student.id;
-                                option.textContent = `${student.firstname} ${student.lastname} (Roll: ${student.roll_no})`;
-                                studentSelect.appendChild(option);
+                        } else {
+                            console.error('Failed to load combinations:', data.message);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Failed to load combinations: ' + (data.message || 'Unknown error'),
+                                showConfirmButton: true
                             });
                         }
                     })
-                    .catch(error => console.error('Error fetching students:', error));
+                    .catch(error => {
+                        console.error('Error fetching combinations:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Error fetching combinations: ' + error.message,
+                            showConfirmButton: true
+                        });
+                    });
+                }
+                // Reset dependent fields
+                marksContainer.style.display = 'none';
+                saveMarksBtn.disabled = true;
+                saveMarksBtn.style.display = 'none';
+                getStudentsBtn.style.display = 'inline-flex';
+            });
 
-                    // Also load subjects for this combination
-                    fetch(`<?= base_url('alevel/marks/getSubjects') ?>?combination_id=${combinationId}`, {
+            // Load students and subjects when "Get Students" is clicked
+            getStudentsBtn.addEventListener('click', function() {
+                const combinationId = combinationSelect.value;
+                const classId = classSelect.value;
+                const sessionId = sessionSelect.value;
+                const examId = examSelect.value;
+                console.log('Get Students clicked with:', { combinationId, classId, sessionId, examId }); // Debug log
+                if (combinationId && classId && sessionId && examId) {
+                    // Load students
+                    const studentsUrl = `<?= base_url('alevel/marks/getStudents') ?>?exam_id=${examId}&class_id=${classId}&session_id=${sessionId}&combination_id=${combinationId}`;
+                    console.log('Fetching students from:', studentsUrl);
+                    fetch(studentsUrl, {
                         headers: {
                             'Accept': 'application/json'
                         }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        console.log('Students response status:', response.status, 'URL:', studentsUrl); // Debug log
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
+                        console.log('Students data:', data); // Debug log
+                        if (data.status === 'success' && data.data.length > 0) {
+                            updateMarksTable(data.data);
+                            saveMarksBtn.style.display = 'inline-flex';
+                            saveMarksBtn.disabled = false;
+                            getStudentsBtn.style.display = 'none';
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'No Students Found',
+                                text: 'No students found for this combination and class.',
+                                showConfirmButton: true
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching students:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Error fetching students: ' + error.message,
+                            showConfirmButton: true
+                        });
+                    });
+
+                    // Also load subjects for this combination
+                    const subjectsUrl = `<?= base_url('alevel/marks/getSubjects') ?>?combination_id=${combinationId}`;
+                    console.log('Fetching subjects from:', subjectsUrl);
+                    fetch(subjectsUrl, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        console.log('Subjects response status:', response.status, 'URL:', subjectsUrl); // Debug log
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Subjects data:', data); // Debug log
                         subjectsMarks.innerHTML = '';
                         if (data.status === 'success' && data.data.length > 0) {
                             data.data.forEach(subject => {
@@ -747,7 +887,7 @@
                                 div.className = 'form-group';
                                 div.innerHTML = `
                                     <label for="marks_${subject.id}">${subject.subject_name} Marks</label>
-                                    <input type="number" id="marks_${subject.id}" name="marks[${subject.id}]" class="form-control" placeholder="Enter marks for ${subject.subject_name}" min="0" step="1">
+                                    <input type="number" id="marks_${subject.id}" name="marks[${subject.id}]" class="form-control" placeholder="Enter marks for ${subject.subject_name}" min="0" step="1" style="display: none;">
                                 `;
                                 subjectsMarks.appendChild(div);
                             });
@@ -756,40 +896,51 @@
                             marksContainer.style.display = 'none';
                         }
                     })
-                    .catch(error => console.error('Error fetching subjects:', error));
+                    .catch(error => {
+                        console.error('Error fetching subjects:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Error fetching subjects: ' + error.message,
+                            showConfirmButton: true
+                        });
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing Selection',
+                        text: 'Please select session, exam, class, and combination before proceeding.',
+                        showConfirmButton: true
+                    });
                 }
-                saveMarksBtn.disabled = true;
             });
 
-            // Load existing marks when student changes
-            studentSelect.addEventListener('change', function() {
-                const studentId = this.value;
-                const examId = examSelect.value;
-                if (studentId && examId) {
-                    fetch(`<?= base_url('alevel/marks/getExistingMarks') ?>/${examId}/${studentId}`, {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        existingMarks.innerHTML = '';
-                        if (data.status === 'success' && data.data.length > 0) {
+            function updateMarksTable(students) {
+                studentsMarksTable.innerHTML = '';
                             let table = `
                                 <table class="results-table">
                                     <thead>
                                         <tr>
-                                            <th>Subject</th>
-                                            <th>Marks Obtained</th>
+                                <th>Student Name</th>
+                                <th>Roll Number</th>
+                                <th>Subjects</th>
+                                <th>Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                        <tbody id="marksTableBody">
                             `;
-                            data.data.forEach(mark => {
+                students.forEach(student => {
+                    const fullName = `${student.firstname} ${student.lastname}`.trim();
                                 table += `
                                     <tr>
-                                        <td>${mark.subject_name}</td>
-                                        <td>${mark.marks_obtained !== null ? mark.marks_obtained : 'N/A'}</td>
+                            <td>${fullName}</td>
+                            <td>${student.roll_no || 'N/A'}</td>
+                            <td><div class="subjects-container" id="subjects_${student.id}"></div></td>
+                            <td>
+                                <button class="btn btn-success" onclick="saveMarks(${student.id})">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </td>
                                     </tr>
                                 `;
                             });
@@ -797,55 +948,142 @@
                                     </tbody>
                                 </table>
                             `;
-                            existingMarks.innerHTML = table;
+                studentsMarksTable.innerHTML = table;
 
-                            // Pre-fill marks input fields
-                            data.data.forEach(mark => {
-                                const input = document.getElementById(`marks_${mark.subject_id}`);
-                                if (input) {
-                                    input.value = mark.marks_obtained !== null ? mark.marks_obtained : '';
-                                }
-                            });
-                        } else {
-                            existingMarks.innerHTML = `
-                                <div class="empty-results">
-                                    <i class="fas fa-database"></i>
-                                    <p>No marks recorded for this student yet.</p>
-                                </div>
-                            `;
-                            // Clear marks input fields
-                            document.querySelectorAll('#subjectsMarks input').forEach(input => {
-                                input.value = '';
-                            });
-                        }
-                    })
-                    .catch(error => console.error('Error fetching existing marks:', error));
-                    saveMarksBtn.disabled = false;
-                } else {
-                    existingMarks.innerHTML = `
-                        <div class="empty-results">
-                            <i class="fas fa-database"></i>
-                            <p>Select a student to view existing marks.</p>
-                        </div>
-                    `;
-                    saveMarksBtn.disabled = true;
-                }
-            });
-
-            // Form submission
-            document.getElementById('marksForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
+                // Load subjects for each student
+                const combinationId = combinationSelect.value;
+                const subjectsUrl = `<?= base_url('alevel/marks/getSubjects') ?>?combination_id=${combinationId}`;
+                console.log('Fetching subjects for table from:', subjectsUrl);
+                fetch(subjectsUrl, {
                     headers: {
                         'Accept': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Subjects for table response status:', response.status, 'URL:', subjectsUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Subjects for table:', data); // Debug log
+                    if (data.status === 'success' && data.data.length > 0) {
+                        students.forEach(student => {
+                            const container = document.getElementById(`subjects_${student.id}`);
+                            let subjectsHtml = '';
+                            data.data.forEach(subject => {
+                                subjectsHtml += `
+                                    <div class="subject-group">
+                                        <span class="subject-label">${subject.subject_name}</span>
+                                        <input type="number" 
+                                            class="marks-input" 
+                                            data-subject="${subject.id}"
+                                            data-student="${student.id}"
+                                            min="0" 
+                                            placeholder="Marks">
+                                        <span class="marks-max">/ ${subject.max_marks || 100}</span>
+                                    </div>
+                                `;
+                            });
+                            container.innerHTML = subjectsHtml;
+                            loadExistingMarks(student.id);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching subjects for table:', error));
+            }
+
+            function loadExistingMarks(studentId) {
+                const examId = examSelect.value;
+                console.log('Loading existing marks for student:', studentId, 'exam:', examId); // Debug log
+                const existingMarksUrl = `<?= base_url('alevel/marks/getExistingMarks') ?>/${examId}/${studentId}`;
+                console.log('Fetching existing marks from:', existingMarksUrl);
+                fetch(existingMarksUrl, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    console.log('Existing marks response status:', response.status, 'URL:', existingMarksUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Existing marks data:', data); // Debug log
+                    if (data.status === 'success' && data.data.length > 0) {
+                            data.data.forEach(mark => {
+                            const input = document.querySelector(`input[data-subject="${mark.subject_id}"][data-student="${studentId}"]`);
+                                if (input) {
+                                    input.value = mark.marks_obtained !== null ? mark.marks_obtained : '';
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Error fetching existing marks:', error));
+            }
+
+            window.saveMarks = function(studentId) {
+                const examId = examSelect.value;
+                const classId = classSelect.value;
+                const sessionId = sessionSelect.value;
+                const combinationId = combinationSelect.value;
+                const inputs = document.querySelectorAll(`input[data-student="${studentId}"]`);
+                const marks = {};
+
+                // Validate marks before saving
+                let isValid = true;
+                inputs.forEach(input => {
+                    const maxMarks = 100; // Assuming max marks is 100 for A-Level subjects as default
+                    const enteredMarks = input.value ? parseInt(input.value) : null;
+                    
+                    if (enteredMarks !== null && (enteredMarks < 0 || enteredMarks > maxMarks)) {
+                        input.style.borderColor = 'var(--danger)';
+                        isValid = false;
+                } else {
+                        input.style.borderColor = 'var(--border)';
+                        marks[input.dataset.subject] = enteredMarks;
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Marks',
+                        text: 'Please enter valid marks (between 0 and 100).',
+                        showConfirmButton: true
+                    });
+                    return;
+                }
+
+                console.log('Saving marks for student:', studentId, 'with data:', { examId, classId, sessionId, combinationId, marks }); // Debug log
+                const saveUrl = '<?= base_url('alevel/marks/save') ?>';
+                console.log('Saving marks to:', saveUrl);
+                fetch(saveUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        exam_id: examId,
+                        student_id: studentId,
+                        class_id: classId,
+                        session_id: sessionId,
+                        combination_id: combinationId,
+                        marks: JSON.stringify(marks)
+                    })
+                })
+                .then(response => {
+                    console.log('Save marks response status:', response.status, 'URL:', saveUrl); // Debug log
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Save marks response data:', data); // Debug log
                     if (data.status === 'success') {
                         Swal.fire({
                             icon: 'success',
@@ -854,8 +1092,8 @@
                             showConfirmButton: false,
                             timer: 2000
                         });
-                        // Reload existing marks
-                        studentSelect.dispatchEvent(new Event('change'));
+                        // Reload existing marks for this student
+                        loadExistingMarks(studentId);
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -866,20 +1104,21 @@
                     }
                 })
                 .catch(error => {
+                    console.error('Error saving marks:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
                         text: 'An unexpected error occurred. Please try again.',
                         showConfirmButton: true
                     });
-                    console.error('Error saving marks:', error);
                 });
-            });
+            };
 
-            // Trigger session change on page load if a session is pre-selected
-            if (sessionSelect.value) {
-                sessionSelect.dispatchEvent(new Event('change'));
-            }
+            // Form submission (if needed for other purposes)
+            document.getElementById('marksForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                // No action needed here as individual save buttons handle the saving
+            });
         });
     </script>
 </body>
