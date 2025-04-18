@@ -221,13 +221,13 @@ public function saveMarks()
         // Start transaction
         $this->alevelMarksModel->db->transStart();
 
-        // Delete existing marks
+        // Fix: Use array for where conditions instead of direct string with backticks
         $this->alevelMarksModel->where([
             'exam_id' => $examId,
             'student_id' => $studentId,
-            `class_id` => $classId,
-            `session_id` => $sessionId,
-            `combination_id` => $combinationId
+            'class_id' => $classId,
+            'session_id' => $sessionId,
+            'combination_id' => $combinationId
         ])->delete();
 
         // Insert new marks
@@ -273,7 +273,7 @@ public function saveMarks()
         try {
             $db = \Config\Database::connect('second_db');
             $marks = $db->table('tz_alevel_subject_marks')
-                ->select('tz_alevel_subject_marks.*, tz_alevel_combination_subjects.subject_name, tz_alevel_combination_subjects.max_marks')
+                ->select('tz_alevel_subject_marks.*, tz_alevel_combination_subjects.subject_name')  // Removed max_marks
                 ->join('tz_alevel_combination_subjects', 'tz_alevel_combination_subjects.id = tz_alevel_subject_marks.subject_id')
                 ->where([
                     'tz_alevel_subject_marks.exam_id' => $examId,
