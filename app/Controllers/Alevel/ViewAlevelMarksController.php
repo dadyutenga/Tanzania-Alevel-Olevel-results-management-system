@@ -113,7 +113,7 @@ class ViewAlevelMarksController extends BaseController
                 }
             }
 
-            return view('alevel/ViewAlevelMarks', $data);
+            return view('alevel/ViewAlevelExamMarks', $data);
         } catch (\Exception $e) {
             log_message('error', '[ViewAlevelMarksController.index] Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load marks view page: ' . $e->getMessage());

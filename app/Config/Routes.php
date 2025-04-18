@@ -188,6 +188,11 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('marks/bulk', 'BulkMarksUploadController::index');
         $routes->get('marks/bulk/downloadTemplate', 'BulkMarksUploadController::downloadTemplate');
         $routes->post('marks/bulk/upload', 'BulkMarksUploadController::uploadMarks');
+
+        // View, Update, and Delete Marks
+        $routes->get('marks/view', 'ViewAlevelMarksController::index');
+        $routes->post('marks/update', 'ViewAlevelMarksController::update');
+        $routes->post('marks/delete', 'ViewAlevelMarksController::delete');
     });
 
     // -----------------------------------------------------------------------------

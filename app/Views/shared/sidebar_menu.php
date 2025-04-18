@@ -45,6 +45,7 @@
             <li><a href="<?= base_url('alevel/view-exams') ?>"><i class="fas fa-eye"></i> View Exams</a></li>
             <li><a href="<?= base_url('alevel/marks') ?>"><i class="fas fa-plus-circle"></i> Add Exam Marks</a></li>
             <li><a href="<?= base_url('alevel/marks/bulk') ?>"><i class="fas fa-upload"></i> Bulk Marks Upload</a></li>
+            <li><a href="<?= base_url('alevel/marks/view') ?>"><i class="fas fa-eye"></i> View Exam Marks</a></li>
         </ul>
     </li>
     <li><a href="#" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">
