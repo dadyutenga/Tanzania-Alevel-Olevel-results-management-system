@@ -854,7 +854,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
 
-            // Load subjects
+            // Load subjects - but don't create input fields above table
             const subjectsUrl = `<?= base_url('alevel/marks/getSubjects') ?>?combination_id=${combinationId}`;
             debugLog('Fetching subjects from:', subjectsUrl);
 
@@ -874,21 +874,8 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 debugLog('Subjects data:', data);
-                subjectsMarks.innerHTML = '';
-                if (data.status === 'success' && data.data.length > 0) {
-                    data.data.forEach(subject => {
-                        const div = document.createElement('div');
-                        div.className = 'form-group';
-                        div.innerHTML = `
-                            <label for="marks_${subject.id}">${subject.subject_name} Marks</label>
-                            <input type="number" id="marks_${subject.id}" name="marks[${subject.id}]" class="form-control" placeholder="Enter marks for ${subject.subject_name}" min="0" step="1" style="display: none;">
-                        `;
-                        subjectsMarks.appendChild(div);
-                    });
-                    marksContainer.style.display = 'block';
-                } else {
-                    marksContainer.style.display = 'none';
-                }
+                // Do not create input fields here, they will be handled in the table
+                marksContainer.style.display = 'none'; // Hide the "Enter Marks" section
             })
             .catch(error => {
                 debugLog('Error fetching subjects:', error);
@@ -927,10 +914,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <tr>
                     <td>${fullName}</td>
                     <td>${student.roll_no || 'N/A'}</td>
-                    <td><div class="subjects-container" id="subjects_${student.id}"></div></td>
+                    <td><div class="subjects-container" id="subjects_${student.id}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem; padding: 0.3rem;"></div></td>
                     <td>
-                        <button class="btn btn-success" onclick="saveMarks(${student.id})">
-                            <i class="fas fa-save"></i> Save
+                        <button class="btn btn-success" onclick="saveMarks(${student.id})" style="background-color: var(--primary); color: black; padding: 0.4rem 1.2rem; border-radius: var(--button-radius); font-weight: 600; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 8px rgba(74, 229, 74, 0.3); font-size: 0.85rem;">
+                            <i class="fas fa-save" style="font-size: 0.85rem;"></i> Save
                         </button>
                     </td>
                 </tr>
@@ -969,15 +956,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     let subjectsHtml = '';
                     data.data.forEach(subject => {
                         subjectsHtml += `
-                            <div class="subject-group">
-                                <span class="subject-label">${subject.subject_name}</span>
-                                <input type="number" 
-                                    class="marks-input" 
-                                    data-subject="${subject.id}"
-                                    data-student="${student.id}"
-                                    min="0" 
-                                    placeholder="Marks">
-                                <span class="marks-max">/ 100</span>
+                            <div class="subject-group" style="display: flex; flex-direction: column; background-color: var(--secondary); padding: 0.5rem; border-radius: var(--radius); border: 1px solid var(--border); transition: all 0.3s ease;">
+                                <span class="subject-label" style="font-weight: 500; color: var(--text-primary); margin-bottom: 0.2rem; font-size: 0.85rem;">${subject.subject_name}</span>
+                                <div style="display: flex; align-items: center; gap: 0.3rem;">
+                                    <input type="number" 
+                                        class="marks-input" 
+                                        data-subject="${subject.id}"
+                                        data-student="${student.id}"
+                                        min="0" 
+                                        placeholder="Marks"
+                                        style="width: 100%; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.85rem; background-color: var(--card-bg); color: var(--text-primary); transition: all 0.3s ease;">
+                                    <span class="marks-max" style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">/ 100</span>
+                                </div>
                             </div>
                         `;
                     });
