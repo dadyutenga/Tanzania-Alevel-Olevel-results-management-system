@@ -194,102 +194,170 @@ class BulkExamMarksController extends ResourceController
 
     public function uploadMarks()
     {
+        log_message('debug', '[BulkExamMarksController.uploadMarks] Request received');
         try {
             $examId = $this->request->getPost('exam_id');
             $classId = $this->request->getPost('class_id');
             $sessionId = $this->request->getPost('session_id');
 
             if (!$examId || !$classId || !$sessionId) {
-                throw new \Exception('Missing required parameters');
+                throw new \Exception('Missing required parameters for upload');
             }
 
-            $file = $this->request->getFile('excel_file');
-            if (!$file->isValid()) {
-                throw new \Exception('Invalid file uploaded');
+            $file = $this->request->getFile('csv_file');
+
+            if (!$file) {
+                throw new \Exception('No file uploaded. Please select a file.');
             }
 
-            if ($file->getExtension() !== 'xlsx') {
-                throw new \Exception('Only Excel (.xlsx) files are allowed');
+            if (!$file->isValid() || $file->getExtension() !== 'xlsx') {
+                throw new \Exception('Invalid file format. Please upload an XLSX file.');
             }
 
-            // Load Excel file
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getTempName());
-            $sheet = $spreadsheet->getActiveSheet();
+            // Validate exam allocation
+            $examAllocation = $this->db->table('tz_exam_classes')
+                ->where([
+                    'exam_id' => $examId,
+                    'class_id' => $classId,
+                    'session_id' => $sessionId
+                ])
+                ->countAllResults();
 
-            // Get subject mappings
-            $subjects = $this->db->table('tz_exam_subjects')
-                ->where('exam_id', $examId)
+            if ($examAllocation === 0) {
+                throw new \Exception('Exam is not allocated to this class');
+            }
+
+            // Validate subjects
+            $validSubjects = $this->db->table('tz_exam_subjects')
+                ->select('id, subject_name, max_marks')
+                ->where([
+                    'exam_id' => $examId
+                ])
                 ->get()
                 ->getResultArray();
 
-            $subjectMap = [];
-            $colMap = [];
-            $col = 'D';
-            foreach ($subjects as $subject) {
-                if ($sheet->getCell($col . '5')->getValue() === $subject['subject_name']) {
-                    $subjectMap[$col] = $subject['id'];
-                }
-                $col++;
+            $validSubjectIds = array_column($validSubjects, 'id');
+            $subjectNameMap = array_column($validSubjects, 'subject_name', 'id');
+            $subjectMaxMarksMap = array_column($validSubjects, 'max_marks', 'id');
+
+            if (empty($validSubjects)) {
+                throw new \Exception('No subjects found for the selected exam');
             }
 
-            // Start transaction
-            $this->db->transStart();
+            // Read the uploaded Excel file
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+            $spreadsheet = $reader->load($file->getTempName());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray();
 
-            $successCount = 0;
-            $errorCount = 0;
-            $errors = [];
+            if (empty($data) || count($data) < 7) {
+                throw new \Exception('Excel file is empty or contains no data rows');
+            }
 
-            // Process each row starting from row 7
-            $row = 7;
-            while ($sheet->getCell('A' . $row)->getValue() !== null) {
-                try {
-                    $studentId = $sheet->getCell('A' . $row)->getValue();
-
-                    // Delete existing marks
-                    $this->examSubjectMarkModel->where([
-                        'exam_id' => $examId,
-                        'student_id' => $studentId
-                    ])->delete();
-
-                    // Insert new marks
-                    foreach ($subjectMap as $col => $subjectId) {
-                        $mark = trim($sheet->getCell($col . $row)->getValue());
-                        if ($mark !== '') {
-                            $this->examSubjectMarkModel->insert([
-                                'exam_id' => $examId,
-                                'student_id' => $studentId,
-                                'class_id' => $classId,
-                                'session_id' => $sessionId,
-                                'exam_subject_id' => $subjectId,
-                                'marks_obtained' => $mark
-                            ]);
+            // Process headers to map subject columns
+            $headers = $data[4];
+            $subjectColumns = [];
+            for ($i = 3; $i < count($headers); $i++) {
+                if (!empty($headers[$i])) {
+                    foreach ($validSubjects as $subject) {
+                        if ($headers[$i] === $subject['subject_name']) {
+                            $subjectColumns[$i] = $subject['id'];
+                            break;
                         }
                     }
-                    $successCount++;
-                } catch (\Exception $e) {
-                    $errorCount++;
-                    $errors[] = "Row $row (Student ID: {$studentId}): " . $e->getMessage();
                 }
-                $row++;
+            }
+
+            if (empty($subjectColumns)) {
+                throw new \Exception('No valid subject columns found in the Excel file');
+            }
+
+            // Process data rows starting from row 7
+            $marksData = [];
+            $errors = [];
+            $consecutiveEmptyRows = 0;
+            $maxConsecutiveEmptyRows = 2;
+            for ($row = 6; $row < count($data); $row++) {
+                $studentId = trim($data[$row][0]);
+                if (empty($studentId) || !is_numeric($studentId)) {
+                    $consecutiveEmptyRows++;
+                    if ($consecutiveEmptyRows >= $maxConsecutiveEmptyRows) {
+                        log_message('debug', "[BulkExamMarksController.uploadMarks] Stopping processing at Row $row due to consecutive empty rows.");
+                        break;
+                    }
+                    continue;
+                }
+                $consecutiveEmptyRows = 0;
+
+                $marks = [];
+                foreach ($subjectColumns as $colIndex => $subjectId) {
+                    $mark = $data[$row][$colIndex];
+                    if (!empty($mark) && (!is_numeric($mark) || $mark < 0 || $mark > $subjectMaxMarksMap[$subjectId])) {
+                        $errors[] = "Row $row, Student ID $studentId: Invalid mark for subject " . ($subjectNameMap[$subjectId] ?? $subjectId) . " (Value: $mark, Max: " . $subjectMaxMarksMap[$subjectId] . ")";
+                        continue 2;
+                    }
+                    $marks[$subjectId] = empty($mark) ? null : (int)$mark;
+                }
+                $marksData[$studentId] = $marks;
+            }
+
+            if (!empty($errors)) {
+                throw new \Exception("Errors found in Excel file:\n" . implode("\n", array_slice($errors, 0, 10)) . (count($errors) > 10 ? "\n...and " . (count($errors) - 10) . " more errors" : ""));
+            }
+
+            if (empty($marksData)) {
+                throw new \Exception('No valid data to process from the Excel file');
+            }
+
+            // Start transaction for bulk insert
+            $this->db->transStart();
+
+            foreach ($marksData as $studentId => $marks) {
+                // Delete existing marks for this student
+                $this->examSubjectMarkModel->where([
+                    'exam_id' => $examId,
+                    'student_id' => $studentId,
+                    'class_id' => $classId,
+                    'session_id' => $sessionId
+                ])->delete();
+
+                // Insert new marks
+                foreach ($marks as $subjectId => $mark) {
+                    if ($mark === null) {
+                        continue;
+                    }
+                    $markData = [
+                        'exam_id' => $examId,
+                        'student_id' => $studentId,
+                        'class_id' => $classId,
+                        'session_id' => $sessionId,
+                        'exam_subject_id' => $subjectId,
+                        'marks_obtained' => $mark
+                    ];
+
+                    if (!$this->examSubjectMarkModel->insert($markData)) {
+                        throw new \Exception('Failed to save marks for student ID ' . $studentId . ': ' . implode(', ', $this->examSubjectMarkModel->errors()));
+                    }
+                }
             }
 
             $this->db->transComplete();
 
             if ($this->db->transStatus() === false) {
-                throw new \Exception('Failed to save marks');
+                throw new \RuntimeException('Failed to save marks in bulk');
             }
 
+            // Return JSON response instead of redirect
             return $this->respond([
                 'status' => 'success',
-                'message' => "Processed successfully. Success: $successCount, Errors: $errorCount",
-                'errors' => $errors
+                'message' => 'Marks uploaded successfully for ' . count($marksData) . ' students'
             ]);
-
         } catch (\Exception $e) {
-            if (isset($this->db) && $this->db->transStatus() !== false) {
-                $this->db->transRollback();
-            }
-            return $this->fail('Failed to process Excel file: ' . $e->getMessage(), 500);
+            log_message('error', '[BulkExamMarksController.uploadMarks] Error: ' . $e->getMessage());
+            return $this->respond([
+                'status' => 'error',
+                'message' => 'Failed to upload marks: ' . $e->getMessage()
+            ], 500);
         }
     }
 

@@ -348,7 +348,7 @@
             <div class="container">
                 <div class="header">
                     <h1>Bulk Upload Exam Marks</h1>
-                    <p>Upload exam marks in bulk using a CSV template</p>
+                    <p>Upload exam marks in bulk using an Excel template</p>
                 </div>
 
                 <div class="form-container">
@@ -358,9 +358,9 @@
                             <strong>Follow these steps:</strong>
                             <ol style="margin-top: 0.5rem; padding-left: 1.25rem;">
                                 <li>Select the exam details below</li>
-                                <li>Download the CSV template</li>
+                                <li>Download the Excel template</li>
                                 <li>Fill in the marks in the downloaded template</li>
-                                <li>Upload the completed CSV file</li>
+                                <li>Upload the completed Excel file</li>
                             </ol>
                         </div>
                     </div>
@@ -411,8 +411,8 @@
 
                     <form id="uploadForm" enctype="multipart/form-data">
                         <div class="form-group">
-                            <label for="csv_file">Upload Completed CSV <span class="text-danger">*</span></label>
-                            <input type="file" id="csv_file" name="csv_file" class="form-control" accept=".csv" required aria-required="true">
+                            <label for="csv_file">Upload Completed Excel File <span class="text-danger">*</span></label>
+                            <input type="file" id="csv_file" name="csv_file" class="form-control" accept=".xlsx" required aria-required="true">
                         </div>
 
                         <button type="button" class="btn btn-success" onclick="uploadMarks()" aria-label="Upload Marks">
@@ -550,7 +550,7 @@
             const fileInput = document.getElementById('csv_file');
 
             if (!sessionId || !examId || !classId || !fileInput.files[0]) {
-                showError('Please select all required fields and a CSV file');
+                showError('Please select all required fields and an Excel file');
                 return;
             }
 
