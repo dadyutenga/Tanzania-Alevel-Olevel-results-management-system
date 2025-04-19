@@ -196,7 +196,13 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->post('marks/delete', 'ViewAlevelMarksController::delete');
         $routes->get('marks/getExams/(:num)', 'ViewAlevelMarksController::getExams/$1');
         $routes->get('marks/getClasses/(:num)', 'ViewAlevelMarksController::getClasses/$1');
-        $routes->get('marks/getCombinations/(:num)/(:num)', 'ViewAlevelMarksController::getCombinations/$1/$2');
+        
+        $routes->get('results/publish', 'PublishAlevelResultsController::index');
+        $routes->get('results/getExams/(:num)', 'PublishAlevelResultsController::getExams/$1');
+        $routes->get('results/getClasses/(:num)', 'PublishAlevelResultsController::getClasses/$1');
+        $routes->get('results/getCombinations/(:num)/(:num)', 'PublishAlevelResultsController::getCombinations/$1/$2');
+        $routes->get('results/calculate', 'PublishAlevelResultsController::calculateResults');
+
     });
 
     // -----------------------------------------------------------------------------
@@ -214,21 +220,6 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('view-exams/get-allocations/(:num)', 'ViewAlevelExams::getAllocations/$1');
         $routes->delete('view-exams/deallocate/(:num)/(:num)', 'ViewAlevelExams::deallocate/$1/$2');
     });
-
-    // -----------------------------------------------------------------------------
-    // A-Level Results Publishing
-    // -----------------------------------------------------------------------------
-    $routes->group('results', ['namespace' => 'App\Controllers\Alevel'], function ($routes) {
-        // Publish Results Page
-        $routes->get('publish', 'PublishAlevelResultsController::index');
-        
-        // API Endpoints for Dropdowns
-        $routes->get('getExams/(:num)', 'PublishAlevelResultsController::getExams/$1');
-        $routes->get('getClasses/(:num)', 'PublishAlevelResultsController::getClasses/$1');
-        $routes->get('getCombinations/(:num)/(:num)', 'PublishAlevelResultsController::getCombinations/$1/$2');
-        
-        // Calculate and Publish Results
-        $routes->get('calculate', 'PublishAlevelResultsController::calculateResults');
-    });
 });
+
 ?>

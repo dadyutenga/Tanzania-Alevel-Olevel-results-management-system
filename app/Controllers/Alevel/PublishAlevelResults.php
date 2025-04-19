@@ -65,7 +65,7 @@ class PublishAlevelResultsController extends BaseController
                     ->getResultArray();
             }
 
-            return view('alevel/AlevelCalculateResults', $data);
+            return view('alevel/PublishResults', $data);
         } catch (\Exception $e) {
             log_message('error', '[AlevelResultsController.index] Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load results page: ' . $e->getMessage());

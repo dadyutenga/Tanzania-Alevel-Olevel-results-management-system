@@ -547,17 +547,12 @@
             }
 
             try {
-                const response = await fetch('<?= base_url('alevel/results/calculate') ?>', {
+                const url = `<?= base_url('alevel/results/calculate') ?>?exam_id=${examId}&class_id=${classId}&session_id=${sessionId}&combination_id=${combinationId}`;
+                const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        exam_id: examId,
-                        class_id: classId,
-                        session_id: sessionId,
-                        combination_id: combinationId
-                    })
+                    }
                 });
 
                 const data = await response.json();
