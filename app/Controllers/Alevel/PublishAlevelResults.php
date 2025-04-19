@@ -11,7 +11,7 @@ use App\Models\SessionModel;
 use App\Models\AlevelExamResultModel;
 use CodeIgniter\API\ResponseTrait;
 
-class PublishAlevelResultsController extends BaseController
+class PublishAlevelResults extends BaseController
 {
     use ResponseTrait;
 
@@ -36,12 +36,18 @@ class PublishAlevelResultsController extends BaseController
     public function index()
     {
         try {
+            // Add debug logging
+            log_message('debug', 'PublishAlevelResults::index started');
+            
             $data = [
                 'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
                 'exams' => [],
                 'classes' => [],
                 'combinations' => []
             ];
+
+            // Add more debug logging
+            log_message('debug', 'Sessions loaded: ' . json_encode($data['sessions']));
 
             $currentSession = $this->sessionModel->getCurrentSession();
             if ($currentSession) {
@@ -65,9 +71,13 @@ class PublishAlevelResultsController extends BaseController
                     ->getResultArray();
             }
 
+            // Add debug logging before view render
+            log_message('debug', 'About to render view with data: ' . json_encode($data));
             return view('alevel/PublishResults', $data);
         } catch (\Exception $e) {
-            log_message('error', '[AlevelResultsController.index] Error: ' . $e->getMessage());
+            // Enhance error logging
+            log_message('error', '[PublishAlevelResults.index] Error: ' . $e->getMessage());
+            log_message('error', '[PublishAlevelResults.index] Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()->with('error', 'Failed to load results page: ' . $e->getMessage());
         }
     }

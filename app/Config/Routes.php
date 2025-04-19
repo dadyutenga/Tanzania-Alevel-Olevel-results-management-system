@@ -197,11 +197,11 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('marks/getExams/(:num)', 'ViewAlevelMarksController::getExams/$1');
         $routes->get('marks/getClasses/(:num)', 'ViewAlevelMarksController::getClasses/$1');
         
-        $routes->get('results/publish', 'PublishAlevelResultsController::index');
-        $routes->get('results/getExams/(:num)', 'PublishAlevelResultsController::getExams/$1');
-        $routes->get('results/getClasses/(:num)', 'PublishAlevelResultsController::getClasses/$1');
-        $routes->get('results/getCombinations/(:num)/(:num)', 'PublishAlevelResultsController::getCombinations/$1/$2');
-        $routes->get('results/calculate', 'PublishAlevelResultsController::calculateResults');
+        $routes->get('results/publish', 'PublishAlevelResults::index');
+        $routes->get('results/getExams/(:num)', 'PublishAlevelResults::getExams/$1');
+        $routes->get('results/getClasses/(:num)', 'PublishAlevelResults::getClasses/$1');
+        $routes->get('results/getCombinations/(:num)/(:num)', 'PublishAlevelResults::getCombinations/$1/$2');
+        $routes->get('results/calculate', 'PublishAlevelResults::calculateResults');
 
     });
 
