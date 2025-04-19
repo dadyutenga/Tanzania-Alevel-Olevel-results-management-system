@@ -459,6 +459,54 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(74, 229, 74, 0.2);
         }
+
+        .maintenance-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 250px; /* Same as sidebar width to keep sidebar visible */
+            background-color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .maintenance-icon {
+            font-size: 5rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .maintenance-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .maintenance-message {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .maintenance-overlay {
+                left: 0; /* On mobile, overlay covers full width */
+            }
+        }
     </style>
 </head>
 <body>
@@ -632,6 +680,16 @@
                 <?php endif; ?>
             </div>
         </div>
+    </div>
+
+    <div class="maintenance-overlay">
+        <i class="fas fa-cog maintenance-icon"></i>
+        <h2 class="maintenance-title">Under Maintenance</h2>
+        <p class="maintenance-message">
+            We're currently updating this feature to serve you better. 
+            The marks viewing system will be back soon with improved functionality. 
+            Thank you for your patience!
+        </p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -962,6 +1020,75 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmButtonText: 'OK'
         });
     <?php endif; ?>
+
+    // Add this after the class change event listener in ViewAlevelExamMarks.php
+    const filterForm = document.getElementById('filterForm');
+    filterForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+        
+        const sessionId = sessionSelect.value;
+        const examId = examSelect.value;
+        const classId = classSelect.value;
+        const combinationId = combinationSelect.value;
+
+        // Validate all required fields
+        if (!sessionId || !examId || !classId || !combinationId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Please select all required fields.'
+            });
+            return;
+        }
+
+        // Show loading state
+        Swal.fire({
+            title: 'Loading...',
+            text: 'Please wait while fetching marks.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Get the form data
+        const formData = new FormData(filterForm);
+
+        // Make the AJAX request
+        fetch(filterForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                [csrfHeader]: csrfToken
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text(); // Get the response as text since it's HTML
+        })
+        .then(html => {
+            // Close the loading dialog
+            Swal.close();
+            
+            // Replace the content of the page with the new HTML
+            document.documentElement.innerHTML = html;
+            
+            // Reinitialize the JavaScript since we replaced the entire content
+            document.dispatchEvent(new Event('DOMContentLoaded'));
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Failed to fetch marks: ' + error.message
+            });
+        });
+    });
 });
 </script>
 </body>

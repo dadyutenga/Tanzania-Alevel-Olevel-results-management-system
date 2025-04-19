@@ -191,6 +191,7 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
 
         // View, Update, and Delete Marks
         $routes->get('marks/view', 'ViewAlevelMarksController::index');
+        $routes->post('marks/view', 'ViewAlevelMarksController::index'); 
         $routes->post('marks/update', 'ViewAlevelMarksController::update');
         $routes->post('marks/delete', 'ViewAlevelMarksController::delete');
         $routes->get('marks/getExams/(:num)', 'ViewAlevelMarksController::getExams/$1');

@@ -38,105 +38,143 @@ class ViewAlevelMarksController extends BaseController
     {
         log_message('debug', '[ViewAlevelMarksController.index] Method called');
         try {
-            log_message('debug', '[ViewAlevelMarksController.index] Fetching initial data');
             $data = [
                 'combinations' => $this->alevelCombinationModel->where('is_active', 'yes')->findAll(),
                 'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
                 'exams' => [],
                 'classes' => [],
                 'marks' => [],
-                'students' => [],
-                'subjects' => [],
+                'selected_filters' => null
             ];
-            log_message('debug', '[ViewAlevelMarksController.index] Initial data fetched: ' . json_encode(array_keys($data)));
-
-            $currentSession = $this->sessionModel->getCurrentSession();
-            if ($currentSession) {
-                log_message('debug', '[ViewAlevelMarksController.index] Current session found: ' . json_encode($currentSession));
-                $data['current_session'] = $currentSession;
-                $data['exams'] = $this->examModel
-                    ->where('session_id', $currentSession['id'])
-                    ->where('is_active', 'yes')
-                    ->findAll();
-                log_message('debug', '[ViewAlevelMarksController.index] Exams fetched for session ' . $currentSession['id'] . ': ' . count($data['exams']) . ' exams');
-                
-                $db = \Config\Database::connect('second_db');
-                $data['classes'] = $db->table('classes c')
-                    ->select('c.id, c.class')
-                    ->join('tz_student_alevel_combinations sac', 'c.id = sac.class_id')
-                    ->where([
-                        'sac.session_id' => $currentSession['id'],
-                        'sac.is_active' => 'yes',
-                        'c.is_active' => 'no'
-                    ])
-                    ->groupBy('c.id')
-                    ->get()
-                    ->getResultArray();
-                log_message('debug', '[ViewAlevelMarksController.index] Classes fetched for session ' . $currentSession['id'] . ': ' . count($data['classes']) . ' classes');
-            } else {
-                log_message('debug', '[ViewAlevelMarksController.index] No current session found');
-            }
 
             // Handle filter form submission
             if ($this->request->getMethod() === 'post') {
-                log_message('debug', '[ViewAlevelMarksController.index] Form submission detected');
+                log_message('debug', '[ViewAlevelMarksController.index] Processing POST request');
+                
                 $sessionId = $this->request->getPost('session_id');
                 $examId = $this->request->getPost('exam_id');
                 $classId = $this->request->getPost('class_id');
                 $combinationId = $this->request->getPost('combination_id');
-                log_message('debug', '[ViewAlevelMarksController.index] Form data - Session: ' . $sessionId . ', Exam: ' . $examId . ', Class: ' . $classId . ', Combination: ' . $combinationId);
+
+                log_message('debug', '[ViewAlevelMarksController.index] Filter values: ' . 
+                           "Session: $sessionId, Exam: $examId, Class: $classId, Combination: $combinationId");
 
                 if ($sessionId && $examId && $classId && $combinationId) {
-                    // Fetch marks based on filters
-                    log_message('debug', '[ViewAlevelMarksController.index] Fetching marks with filters');
-                    $data['marks'] = $this->alevelMarksModel
-                        ->select('alevel_subject_marks.*, students.firstname, students.lastname, students.roll_no, tz_alevel_combination_subjects.subject_name')
-                        ->join('students', 'students.id = alevel_subject_marks.student_id')
-                        ->join('second_db.tz_alevel_combination_subjects', 'tz_alevel_combination_subjects.id = alevel_subject_marks.subject_id')
-                        ->where([
-                            'alevel_subject_marks.session_id' => $sessionId,
-                            'alevel_subject_marks.exam_id' => $examId,
-                            'alevel_subject_marks.class_id' => $classId,
-                            'alevel_subject_marks.combination_id' => $combinationId,
-                            'alevel_subject_marks.is_active' => 'yes'
-                        ])
-                        ->orderBy('students.firstname', 'ASC')
-                        ->findAll();
-                    log_message('debug', '[ViewAlevelMarksController.index] Marks fetched: ' . count($data['marks']) . ' records');
-
-                    // Fetch subjects for the selected combination
-                    $db = \Config\Database::connect('second_db');
-                    $data['subjects'] = $db->table('tz_alevel_combination_subjects')
-                        ->select('id, subject_name')
-                        ->where([
-                            'combination_id' => $combinationId,
-                            'is_active' => 'yes'
-                        ])
-                        ->get()
-                        ->getResultArray();
-                    log_message('debug', '[ViewAlevelMarksController.index] Subjects fetched for combination ' . $combinationId . ': ' . count($data['subjects']) . ' subjects');
-
-                    // Store filter values for display
+                    // Store filter values
                     $data['selected_filters'] = [
                         'session_id' => $sessionId,
                         'exam_id' => $examId,
                         'class_id' => $classId,
                         'combination_id' => $combinationId
                     ];
-                    log_message('debug', '[ViewAlevelMarksController.index] Filter values stored for display');
+
+                    // Fetch marks with comprehensive join query
+                    $db = \Config\Database::connect();
+                    $marks = $db->table('students s')
+                        ->select('
+                            s.id AS student_id,
+                            CONCAT(s.firstname, " ", COALESCE(s.middlename, ""), " ", s.lastname) AS student_name,
+                            c.class AS class_name,
+                            sec.section AS section_name,
+                            sess.session AS session_name,
+                            ac.combination_code,
+                            ac.combination_name,
+                            acs.subject_name AS subject_name,
+                            acs.subject_type AS subject_type,
+                            e.exam_name,
+                            e.exam_date,
+                            asm.id as mark_id,
+                            asm.marks_obtained,
+                            s.roll_no
+                        ')
+                        ->join('student_session ss', 's.id = ss.student_id')
+                        ->join('classes c', 'ss.class_id = c.id')
+                        ->join('sections sec', 'ss.section_id = sec.id', 'left')
+                        ->join('sessions sess', 'ss.session_id = sess.id')
+                        ->join('tz_student_alevel_combinations sac', '
+                            sac.class_id = ss.class_id 
+                            AND sac.session_id = ss.session_id
+                            AND (sac.section_id = ss.section_id OR sac.section_id IS NULL)
+                        ')
+                        ->join('tz_alevel_combinations ac', 'sac.combination_id = ac.id')
+                        ->join('tz_alevel_combination_subjects acs', 'ac.id = acs.combination_id')
+                        ->join('tz_alevel_exam_combinations aec', '
+                            aec.combination_id = ac.id 
+                            AND aec.class_id = c.id 
+                            AND aec.session_id = sess.id
+                            AND aec.exam_id = ' . $examId
+                        )
+                        ->join('tz_exams e', 'aec.exam_id = e.id', 'left')
+                        ->join('tz_alevel_subject_marks asm', '
+                            asm.exam_id = e.id 
+                            AND asm.student_id = s.id 
+                            AND asm.class_id = c.id 
+                            AND asm.session_id = sess.id 
+                            AND asm.combination_id = ac.id
+                            AND asm.subject_id = acs.id
+                        ', 'left')
+                        ->where([
+                            's.is_active' => 'yes',
+                            'ss.is_active' => 'no',
+                            'c.is_active' => 'no',
+                            'sess.is_active' => 'no',
+                            'ac.is_active' => 'yes',
+                            'acs.is_active' => 'yes',
+                            'sac.is_active' => 'yes',
+                            'aec.is_active' => 'yes',
+                            'e.is_active' => 'yes',
+                            'ss.session_id' => $sessionId,
+                            'ss.class_id' => $classId,
+                            'sac.combination_id' => $combinationId
+                        ])
+                        ->orderBy('s.id')
+                        ->orderBy('ac.combination_code')
+                        ->orderBy('acs.subject_name')
+                        ->get()
+                        ->getResultArray();
+
+                    log_message('debug', '[ViewAlevelMarksController.index] Marks query executed. Found ' . count($marks) . ' records');
+                    
+                    if (empty($marks)) {
+                        log_message('debug', '[ViewAlevelMarksController.index] No marks found for the selected filters');
+                        session()->setFlashdata('message', 'No marks found for the selected criteria.');
+                    }
+
+                    $data['marks'] = $marks;
+
+                    // Fetch dropdowns data for the selected session
+                    $data['exams'] = $this->examModel
+                        ->where('session_id', $sessionId)
+                        ->where('is_active', 'yes')
+                        ->findAll();
+
+                    $db = \Config\Database::connect('second_db');
+                    $data['classes'] = $db->table('classes c')
+                        ->select('c.id, c.class')
+                        ->join('tz_student_alevel_combinations sac', 'c.id = sac.class_id')
+                        ->where([
+                            'sac.session_id' => $sessionId,
+                            'sac.is_active' => 'yes',
+                            'c.is_active' => 'no'
+                        ])
+                        ->groupBy('c.id')
+                        ->get()
+                        ->getResultArray();
+
+                    // Log the final data being sent to view
+                    log_message('debug', '[ViewAlevelMarksController.index] Data prepared for view: ' . 
+                               json_encode(array_keys($data)));
                 } else {
-                    log_message('warning', '[ViewAlevelMarksController.index] Missing required filters for marks retrieval');
-                    session()->setFlashdata('error', 'Please select all filters to view marks.');
+                    log_message('warning', '[ViewAlevelMarksController.index] Missing required filter values');
+                    session()->setFlashdata('error', 'Please select all required filters.');
                 }
-            } else {
-                log_message('debug', '[ViewAlevelMarksController.index] No form submission, loading page without filtered marks');
             }
 
-            log_message('debug', '[ViewAlevelMarksController.index] Rendering view alevel/ViewAlevelExamMarks');
             return view('alevel/ViewAlevelExamMarks', $data);
         } catch (\Exception $e) {
-            log_message('error', '[ViewAlevelMarksController.index] Error: ' . $e->getMessage() . ' at line ' . $e->getLine());
-            return redirect()->back()->with('error', 'Failed to load marks view page: ' . $e->getMessage());
+            log_message('error', '[ViewAlevelMarksController.index] Error: ' . $e->getMessage());
+            session()->setFlashdata('error', 'An error occurred while fetching marks: ' . $e->getMessage());
+            return view('alevel/ViewAlevelExamMarks', $data);
         }
     }
 
