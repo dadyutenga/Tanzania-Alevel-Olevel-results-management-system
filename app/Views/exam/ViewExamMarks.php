@@ -4,22 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Exam Marks</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #f8f9fa;
-            --primary-dark: #f1f3f5;
-            --secondary: #e9ecef;
-            --accent: #1a1f36;
-            --accent-light: #2d3748;
-            --text-primary: #1a1f36;
-            --text-secondary: #4a5568;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #4AE54A;
+            --primary-dark: #3AD03A;
+            --primary-light: #5FF25F;
+            --secondary: #f1f5f9;
+            --accent: #1a1a1a;
+            --accent-hover: #2d2d2d;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
             --border: #e2e8f0;
-            --success: #31c48d;
-            --warning: #f59e0b;
-            --danger: #e53e3e;
-            --shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+            --button-radius: 50px;
         }
 
         * {
@@ -31,108 +33,158 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 0.925rem;
-            background-color: var(--primary-dark);
+            background-color: var(--bg-color);
             color: var(--text-primary);
             line-height: 1.5;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 250px 1fr;
             min-height: 100vh;
         }
 
-        /* Sidebar styles */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
         .sidebar {
-            background-color: var(--accent);
-            color: var(--primary);
-            padding: 2rem 1rem;
-            position: fixed;
             width: 250px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border);
+            padding: 1rem 0;
+            position: fixed;
             height: 100vh;
             overflow-y: auto;
+            z-index: 100;
+            transition: all 0.3s ease;
         }
 
-        .sidebar-header {
+        .logo {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            margin-bottom: 2rem;
-            padding: 1.5rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            justify-content: center;
+            gap: 0.5rem;
         }
 
-        .sidebar-header i {
-            font-size: 2rem;
-            margin-right: 0.75rem;
-            opacity: 0.9;
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.25rem;
-            letter-spacing: -0.025em;
-            font-weight: 600;
-            opacity: 0.9;
+        .logo i {
+            color: var(--primary);
+            font-size: 1.75rem;
         }
 
         .sidebar-menu {
             list-style: none;
-            margin-top: 2rem;
+            padding: 0;
+            margin: 0;
         }
 
-        .sidebar-menu a {
+        .sidebar-menu li {
+            position: relative;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-menu li a {
             display: flex;
             align-items: center;
-            padding: 0.675rem 1rem;
-            color: rgba(255, 255, 255, 0.6);
+            padding: 0.75rem 1.5rem;
+            color: var(--text-primary);
             text-decoration: none;
-            border-radius: var(--radius);
+            font-weight: 500;
             transition: all 0.3s ease;
-            font-size: 0.875rem;
         }
 
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.9);
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            background-color: var(--primary);
+            color: black;
         }
 
-        .sidebar-menu i {
+        .sidebar-menu li a i {
             margin-right: 0.75rem;
-            font-size: 1.2rem;
+            width: 16px;
+            text-align: center;
         }
 
-        /* Main Content */
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: var(--secondary);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .submenu.show {
+            max-height: 500px;
+        }
+
+        .submenu li a {
+            padding: 0.5rem 1.5rem 0.5rem 2.5rem;
+            font-size: 0.85rem;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            margin-left: auto;
+        }
+
         .main-content {
-            grid-column: 2;
-            padding: 2rem;
-            background-color: var(--primary-dark);
+            flex: 1;
+            margin-left: 250px;
+            padding: 2rem 1rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
         }
 
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
             margin-bottom: 2rem;
         }
 
         .header h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.025em;
         }
 
-        /* Card styles */
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
         .card {
-            background: var(--primary);
+            background: var(--card-bg);
             border-radius: var(--radius);
-            padding: 1.5rem;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            margin-bottom: 1.5rem;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
         }
 
         .card-header {
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
+            padding: 1.5rem;
             border-bottom: 1px solid var(--border);
         }
 
@@ -143,19 +195,18 @@
         }
 
         .card-body {
-            padding: 0;
+            padding: 1.5rem;
         }
 
-        /* Form Elements */
         .form-group {
             margin-bottom: 1.5rem;
         }
 
         .form-group label {
-            display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
             color: var(--text-primary);
+            display: block;
         }
 
         .form-control {
@@ -165,103 +216,145 @@
             border-radius: var(--radius);
             font-size: 0.925rem;
             transition: all 0.3s ease;
+            background-color: var(--secondary);
+            color: var(--text-primary);
         }
 
         .form-control:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(30, 40, 55, 0.1);
             outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 229, 74, 0.2);
         }
 
-        /* Table styles */
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
         .table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-            background-color: white;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+            min-width: 800px;
         }
 
-        .table th {
-            background-color: var(--primary-dark);
-            text-align: left;
-            padding: 12px 15px;
+        .table thead th {
+            background-color: var(--primary);
+            color: #000000;
             font-weight: 600;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table tbody tr {
+            background-color: var(--card-bg);
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: rgba(74, 229, 74, 0.05);
         }
 
         .table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid var(--border);
+            padding: 1rem;
             vertical-align: middle;
+            border-bottom: 1px solid var(--border);
         }
 
-        .table tr:hover {
-            background-color: rgba(0, 0, 0, 0.02);
+        .table tr:last-child td {
+            border-bottom: none;
         }
 
         .subject-mark {
-            background-color: #f8f9fa;
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: 1px solid #eee;
-            display: inline-block;
-            margin-right: 10px;
-            margin-bottom: 5px;
+            background-color: var(--secondary);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
         }
 
         .subject-name {
-            font-weight: 600;
-            color: #555;
-            margin-right: 5px;
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
         .mark {
-            font-weight: bold;
-            color: #333;
+            font-weight: 600;
+            color: var(--accent);
         }
 
-        /* Button styles */
         .btn {
-            padding: 0.625rem 1.25rem;
-            border: none;
-            border-radius: var(--radius);
-            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--button-radius);
+            font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.875rem;
+            border: none;
             transition: all 0.3s ease;
+            background-color: var(--primary);
+            color: black;
+            box-shadow: 0 0 20px rgba(74, 229, 74, 0.3);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(74, 229, 74, 0.4);
         }
 
         .btn-sm {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.8125rem;
-        }
-
-        .btn-primary {
-            background-color: var(--accent);
-            color: var(--primary);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-light);
+            padding: 0.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 0.875rem;
+            justify-content: center;
         }
 
         .btn-danger {
-            background-color: var(--danger);
-            color: var(--primary);
+            background-color: #ef4444;
+            color: white;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
         }
 
         .btn-danger:hover {
-            background-color: #c53030;
+            background-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
         }
 
-        /* Modal styles */
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            box-shadow: 0 0 20px rgba(107, 114, 128, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(107, 114, 128, 0.4);
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -276,12 +369,26 @@
         }
 
         .modal-content {
-            background: var(--primary);
+            background: var(--card-bg);
             border-radius: var(--radius);
             padding: 2rem;
             width: 100%;
             max-width: 600px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
         }
 
         .modal-header {
@@ -297,98 +404,165 @@
         .modal-actions {
             display: flex;
             gap: 1rem;
+            justify-content: flex-end;
             margin-top: 2rem;
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .dashboard {
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: var(--primary);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem 0.5rem;
+            }
+
+            .container {
+                padding: 0 0.5rem;
+            }
+
+            .row {
                 grid-template-columns: 1fr;
             }
-            
-            .sidebar {
-                display: none;
+
+            .form-actions {
+                flex-direction: column;
+                align-items: stretch;
             }
-            
-            .main-content {
-                grid-column: 1;
-                padding: 1.5rem;
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .table {
+                display: block;
+                overflow-x: auto;
             }
 
             .modal-content {
                 width: 90%;
                 margin: 1rem;
             }
+
+            .modal-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .sidebar-toggle {
+                display: block;
+            }
+
+            .subject-mark {
+                display: flex;
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
 <body>
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <div class="dashboard">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
                 <i class="fas fa-graduation-cap"></i>
-                <h2>Exam Results Management</h2>
+                <span>ExamResults</span>
             </div>
             <?= $this->include('shared/sidebar_menu') ?>
         </div>
 
-        <!-- Main Content -->
         <div class="main-content">
-            <div class="card">
-                <div class="card-header">
-                    <h3>View Exam Marks</h3>
+            <div class="container">
+                <div class="header">
+                    <h1>View Exam Marks</h1>
+                    <p>View and manage student marks for selected exams and classes</p>
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label>Session</label>
-                        <select id="sessionFilter" class="form-control">
-                            <option value="">Select Session</option>
-                            <?php foreach ($sessions as $session): ?>
-                                <option value="<?= $session['id'] ?>" <?= isset($current_session) && $current_session['id'] == $session['id'] ? 'selected' : '' ?>>
-                                    <?= $session['session'] ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Exam</label>
-                        <select id="examFilter" class="form-control">
-                            <option value="">Select Exam</option>
-                        </select>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Filter Marks</h3>
                     </div>
+                    <div class="card-body">
+                        <form id="marksFilterForm">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="sessionFilter">Session <span class="text-danger">*</span></label>
+                                    <select id="sessionFilter" class="form-control" required aria-required="true">
+                                        <option value="">Select Session</option>
+                                        <?php foreach ($sessions as $session): ?>
+                                            <option value="<?= $session['id'] ?>" 
+                                                <?= isset($current_session) && $current_session['id'] == $session['id'] ? 'selected' : '' ?>>
+                                                <?= esc($session['session']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="examFilter">Exam <span class="text-danger">*</span></label>
+                                    <select id="examFilter" class="form-control" required aria-required="true">
+                                        <option value="">Select Exam</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="classFilter">Class <span class="text-danger">*</span></label>
+                                    <select id="classFilter" class="form-control" required aria-required="true">
+                                        <option value="">Select Class</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn" onclick="searchMarks()" aria-label="Search Marks">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </form>
 
-                    <div class="form-group">
-                        <label>Class</label>
-                        <select id="classFilter" class="form-control">
-                            <option value="">Select Class</option>
-                        </select>
+                        <div class="table-responsive">
+                            <table class="table" id="marksTable">
+                                <thead>
+                                    <tr>
+                                        <th>Roll No</th>
+                                        <th>Student Name</th>
+                                        <th>Subject Marks</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <button class="btn btn-primary" onclick="searchMarks()">
-                            <i class="fas fa-search"></i> Search
-                        </button>
-                    </div>
-
-                    <table class="table" id="marksTable">
-                        <thead>
-                            <tr>
-                                <th>Roll No</th>
-                                <th>Student Name</th>
-                                <th>Subject Marks</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Edit All Modal -->
     <div id="editAllModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -397,12 +571,10 @@
             <form id="editAllForm">
                 <input type="hidden" id="editAllStudentId">
                 <input type="hidden" id="editAllExamId">
-                <div id="marksContainer">
-                    <!-- Marks fields will be added dynamically here -->
-                </div>
+                <div id="marksContainer"></div>
                 <div class="modal-actions">
-                    <button type="submit" class="btn btn-primary">Save All</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('editAllModal')">Cancel</button>
+                    <button type="submit" class="btn" aria-label="Save All Marks">Save All</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editAllModal')" aria-label="Cancel">Cancel</button>
                 </div>
             </form>
         </div>
@@ -410,214 +582,312 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sessionFilter = document.getElementById('sessionFilter');
-            sessionFilter.addEventListener('change', loadExams);
-            
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('show');
+                });
+            }
+
+            const menuItems = document.querySelectorAll('.sidebar-menu > li');
+
+            menuItems.forEach(item => {
+                const link = item.querySelector('.expandable');
+                const submenu = item.querySelector('.submenu');
+
+                if (link && submenu) {
+                    if (!link.querySelector('.toggle-icon')) {
+                        const icon = document.createElement('i');
+                        icon.className = 'fas fa-chevron-up toggle-icon';
+                        link.appendChild(icon);
+                    }
+
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const toggleIcon = this.querySelector('.toggle-icon');
+
+                        document.querySelectorAll('.submenu').forEach(menu => {
+                            if (menu !== submenu) {
+                                menu.classList.remove('show');
+                                const otherIcon = menu.previousElementSibling.querySelector('.toggle-icon');
+                                if (otherIcon) {
+                                    otherIcon.style.transform = 'rotate(0deg)';
+                                }
+                            }
+                        });
+
+                        submenu.classList.toggle('show');
+                        toggleIcon.style.transform = submenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+                    });
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth <= 768 && !sidebar.contains(e.target) && e.target !== sidebarToggle) {
+                    sidebar.classList.remove('show');
+                }
+
+                if (!e.target.closest('.modal-content') && !e.target.closest('.btn') && 
+                    document.getElementById('editAllModal').style.display === 'flex') {
+                    closeModal('editAllModal');
+                }
+            });
+
+            const sessionId = document.getElementById('sessionFilter').value;
+            if (sessionId) {
+                loadExams();
+            }
+
+            document.getElementById('sessionFilter').addEventListener('change', loadExams);
             document.getElementById('examFilter').addEventListener('change', loadClasses);
-            
-            document.getElementById('editAllForm').addEventListener('submit', function(e) {
+            document.getElementById('editAllForm').addEventListener('submit', function (e) {
                 e.preventDefault();
                 updateAllMarks();
             });
         });
 
-        function loadExams() {
+        async function loadExams() {
             const sessionId = document.getElementById('sessionFilter').value;
-            if (!sessionId) return;
+            if (!sessionId) {
+                document.getElementById('examFilter').innerHTML = '<option value="">Select Exam</option>';
+                document.getElementById('classFilter').innerHTML = '<option value="">Select Class</option>';
+                document.querySelector('#marksTable tbody').innerHTML = '';
+                return;
+            }
 
-            fetch(`<?= base_url('exam/marks/view/getExams') ?>?session_id=${sessionId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const examSelect = document.getElementById('examFilter');
-                        examSelect.innerHTML = '<option value="">Select Exam</option>';
-                        data.data.forEach(exam => {
-                            examSelect.innerHTML += `<option value="${exam.id}">${exam.exam_name}</option>`;
-                        });
-                    }
+            try {
+                const response = await fetch(`<?= base_url('exam/marks/view/getExams') ?>?session_id=${sessionId}`);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const examSelect = document.getElementById('examFilter');
+                    examSelect.innerHTML = '<option value="">Select Exam</option>';
+                    data.data.forEach(exam => {
+                        examSelect.innerHTML += `<option value="${exam.id}">${exam.exam_name} (${new Date(exam.exam_date).toLocaleDateString('en-GB')})</option>`;
+                    });
+                    document.getElementById('classFilter').innerHTML = '<option value="">Select Class</option>';
+                    document.querySelector('#marksTable tbody').innerHTML = '';
+                } else {
+                    throw new Error(data.message || 'Failed to load exams');
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Failed to load exams'
                 });
+            }
         }
 
-        function loadClasses() {
+        async function loadClasses() {
             const examId = document.getElementById('examFilter').value;
             const sessionId = document.getElementById('sessionFilter').value;
-            if (!examId || !sessionId) return;
+            if (!examId || !sessionId) {
+                document.getElementById('classFilter').innerHTML = '<option value="">Select Class</option>';
+                document.querySelector('#marksTable tbody').innerHTML = '';
+                return;
+            }
 
-            fetch(`<?= base_url('exam/marks/view/getExamClasses') ?>?exam_id=${examId}&session_id=${sessionId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const classSelect = document.getElementById('classFilter');
-                        classSelect.innerHTML = '<option value="">Select Class</option>';
-                        data.data.forEach(cls => {
-                            classSelect.innerHTML += `<option value="${cls.class_id}">${cls.class_name}</option>`;
-                        });
-                    }
+            try {
+                const response = await fetch(`<?= base_url('exam/marks/view/getExamClasses') ?>?exam_id=${examId}&session_id=${sessionId}`);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const classSelect = document.getElementById('classFilter');
+                    classSelect.innerHTML = '<option value="">Select Class</option>';
+                    data.data.forEach(cls => {
+                        classSelect.innerHTML += `<option value="${cls.class_id}">${cls.class_name}</option>`;
+                    });
+                    document.querySelector('#marksTable tbody').innerHTML = '';
+                } else {
+                    throw new Error(data.message || 'Failed to load classes');
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Failed to load classes'
                 });
+            }
         }
 
-        function searchMarks() {
+        async function searchMarks() {
             const examId = document.getElementById('examFilter').value;
             const classId = document.getElementById('classFilter').value;
             const sessionId = document.getElementById('sessionFilter').value;
 
             if (!examId || !classId || !sessionId) {
-                Swal.fire('Error', 'Please select all filters', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please select all filters'
+                });
                 return;
             }
 
-            fetch(`<?= base_url('exam/marks/view/getStudentMarks') ?>?exam_id=${examId}&class_id=${classId}&session_id=${sessionId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const tbody = document.querySelector('#marksTable tbody');
-                        tbody.innerHTML = '';
-                        
-                        // Group marks by student
-                        const students = {};
-                        data.data.forEach(mark => {
-                            if (!students[mark.student_id]) {
-                                students[mark.student_id] = {
-                                    roll_no: mark.roll_no,
-                                    name: `${mark.firstname} ${mark.lastname}`,
-                                    marks: [],
-                                    markIds: []
-                                };
-                            }
-                            students[mark.student_id].marks.push({
-                                subject: mark.subject_name,
-                                obtained: mark.marks_obtained,
-                                max: mark.max_marks,
-                                passing: mark.passing_marks,
-                                id: mark.id,
-                                subject_id: mark.subject_id
-                            });
-                            students[mark.student_id].markIds.push(mark.id);
-                        });
+            try {
+                const response = await fetch(`<?= base_url('exam/marks/view/getStudentMarks') ?>?exam_id=${examId}&class_id=${classId}&session_id=${sessionId}`);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const tbody = document.querySelector('#marksTable tbody');
+                    tbody.innerHTML = '';
 
-                        // Create table rows
-                        Object.entries(students).forEach(([studentId, student]) => {
-                            const row = document.createElement('tr');
-                            
-                            // Roll No
-                            const rollCell = document.createElement('td');
-                            rollCell.textContent = student.roll_no;
-                            row.appendChild(rollCell);
-                            
-                            // Student Name
-                            const nameCell = document.createElement('td');
-                            nameCell.textContent = student.name;
-                            row.appendChild(nameCell);
-                            
-                            // Subject Marks
-                            const marksCell = document.createElement('td');
-                            student.marks.forEach(mark => {
-                                const markDiv = document.createElement('div');
-                                markDiv.className = 'subject-mark';
-                                
-                                const subjectSpan = document.createElement('span');
-                                subjectSpan.className = 'subject-name';
-                                subjectSpan.textContent = `${mark.subject}:`;
-                                
-                                const markSpan = document.createElement('span');
-                                markSpan.className = 'mark';
-                                markSpan.textContent = `${mark.obtained}/${mark.max}`;
-                                
-                                markDiv.appendChild(subjectSpan);
-                                markDiv.appendChild(markSpan);
-                                marksCell.appendChild(markDiv);
-                            });
-                            row.appendChild(marksCell);
-                            
-                            // Actions
-                            const actionsCell = document.createElement('td');
-                            actionsCell.style.whiteSpace = 'nowrap';
-                            
-                            // Edit button
-                            const editBtn = document.createElement('button');
-                            editBtn.className = 'btn btn-primary btn-sm';
-                            editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit All';
-                            editBtn.onclick = () => editAllMarks(studentId, student.name, student.marks, examId);
-                            editBtn.style.marginRight = '5px';
-                            
-                            // Delete button
-                            const deleteBtn = document.createElement('button');
-                            deleteBtn.className = 'btn btn-danger btn-sm';
-                            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete All';
-                            deleteBtn.onclick = () => deleteAllMarks(student.markIds, student.name);
-                            
-                            actionsCell.appendChild(editBtn);
-                            actionsCell.appendChild(deleteBtn);
-                            
-                            row.appendChild(actionsCell);
-                            tbody.appendChild(row);
-                        });
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No marks found</td></tr>';
+                        return;
                     }
+
+                    const students = {};
+                    data.data.forEach(mark => {
+                        if (!students[mark.student_id]) {
+                            students[mark.student_id] = {
+                                roll_no: mark.roll_no,
+                                name: `${mark.firstname} ${mark.lastname}`.trim(),
+                                marks: [],
+                                markIds: []
+                            };
+                        }
+                        students[mark.student_id].marks.push({
+                            subject: mark.subject_name,
+                            obtained: mark.marks_obtained,
+                            max: mark.max_marks,
+                            passing: mark.passing_marks,
+                            id: mark.id,
+                            subject_id: mark.subject_id
+                        });
+                        students[mark.student_id].markIds.push(mark.id);
+                    });
+
+                    Object.entries(students).forEach(([studentId, student]) => {
+                        const row = document.createElement('tr');
+
+                        const rollCell = document.createElement('td');
+                        rollCell.textContent = student.roll_no || 'N/A';
+                        row.appendChild(rollCell);
+
+                        const nameCell = document.createElement('td');
+                        nameCell.textContent = student.name;
+                        row.appendChild(nameCell);
+
+                        const marksCell = document.createElement('td');
+                        student.marks.forEach(mark => {
+                            const markDiv = document.createElement('div');
+                            markDiv.className = 'subject-mark';
+
+                            const subjectSpan = document.createElement('span');
+                            subjectSpan.className = 'subject-name';
+                            subjectSpan.textContent = `${mark.subject}:`;
+
+                            const markSpan = document.createElement('span');
+                            markSpan.className = 'mark';
+                            markSpan.textContent = `${mark.obtained}/${mark.max}`;
+
+                            markDiv.appendChild(subjectSpan);
+                            markDiv.appendChild(markSpan);
+                            marksCell.appendChild(markDiv);
+                        });
+                        row.appendChild(marksCell);
+
+                        const actionsCell = document.createElement('td');
+                        actionsCell.style.whiteSpace = 'nowrap';
+
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'btn btn-sm';
+                        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                        editBtn.setAttribute('aria-label', 'Edit All Marks');
+                        editBtn.onclick = () => editAllMarks(studentId, student.name, student.marks, examId);
+                        editBtn.style.marginRight = '5px';
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'btn btn-danger btn-sm';
+                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                        deleteBtn.setAttribute('aria-label', 'Delete All Marks');
+                        deleteBtn.onclick = () => deleteAllMarks(student.markIds, student.name);
+
+                        actionsCell.appendChild(editBtn);
+                        actionsCell.appendChild(deleteBtn);
+
+                        row.appendChild(actionsCell);
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    throw new Error(data.message || 'Failed to load marks');
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Failed to load marks'
                 });
+            }
         }
 
         function editAllMarks(studentId, studentName, marks, examId) {
             document.getElementById('editAllStudentName').textContent = studentName;
             document.getElementById('editAllStudentId').value = studentId;
             document.getElementById('editAllExamId').value = examId;
-            
+
             const container = document.getElementById('marksContainer');
             container.innerHTML = '';
-            
+
             marks.forEach(mark => {
                 const group = document.createElement('div');
                 group.className = 'form-group';
-                
+
                 const label = document.createElement('label');
                 label.textContent = mark.subject;
-                
+                label.setAttribute('for', `mark_${mark.id}`);
+
                 const inputGroup = document.createElement('div');
                 inputGroup.style.display = 'flex';
                 inputGroup.style.gap = '10px';
                 inputGroup.style.alignItems = 'center';
-                
+
                 const input = document.createElement('input');
                 input.type = 'number';
                 input.className = 'form-control';
+                input.id = `mark_${mark.id}`;
                 input.value = mark.obtained;
                 input.dataset.markId = mark.id;
                 input.dataset.subjectId = mark.subject_id;
+                input.min = '0';
+                input.max = mark.max;
                 input.style.flex = '1';
-                
+                input.setAttribute('aria-label', `Marks for ${mark.subject}`);
+
                 const maxSpan = document.createElement('span');
                 maxSpan.textContent = `/ ${mark.max}`;
                 maxSpan.style.minWidth = '50px';
-                
+
                 inputGroup.appendChild(input);
                 inputGroup.appendChild(maxSpan);
-                
+
                 group.appendChild(label);
                 group.appendChild(inputGroup);
                 container.appendChild(group);
             });
-            
+
             document.getElementById('editAllModal').style.display = 'flex';
         }
 
-        function updateAllMarks() {
+        async function updateAllMarks() {
             const studentId = document.getElementById('editAllStudentId').value;
             const examId = document.getElementById('editAllExamId').value;
             const inputs = document.querySelectorAll('#marksContainer input');
-            
+
             const updates = [];
             let hasError = false;
-            
+
             inputs.forEach(input => {
                 const markId = input.dataset.markId;
                 const subjectId = input.dataset.subjectId;
                 const marksObtained = input.value;
                 const maxMarks = input.nextElementSibling.textContent.split('/')[1].trim();
-                
-                if (parseFloat(marksObtained) > parseFloat(maxMarks)) {
+
+                if (marksObtained === '' || parseFloat(marksObtained) < 0 || parseFloat(marksObtained) > parseFloat(maxMarks)) {
                     hasError = true;
-                    input.style.borderColor = 'var(--danger)';
-                    Swal.fire('Error', `Marks for ${input.previousElementSibling.textContent} cannot exceed maximum marks`, 'error');
+                    input.style.borderColor = '#ef4444';
                 } else {
                     input.style.borderColor = '';
                     updates.push({
@@ -629,26 +899,43 @@
                     });
                 }
             });
-            
-            if (hasError) return;
-            
-            fetch(`<?= base_url('exam/marks/view/updateAll') ?>`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ updates })
-            })
-            .then(response => response.json())
-            .then(data => {
+
+            if (hasError) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please enter valid marks (between 0 and max marks)'
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch(`<?= base_url('exam/marks/view/updateAll') ?>`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ updates })
+                });
+                const data = await response.json();
                 if (data.status === 'success') {
-                    Swal.fire('Success', 'All marks updated successfully', 'success');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'All marks updated successfully'
+                    });
                     closeModal('editAllModal');
                     searchMarks();
                 } else {
-                    Swal.fire('Error', data.message, 'error');
+                    throw new Error(data.message || 'Failed to update marks');
                 }
-            });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Failed to update marks'
+                });
+            }
         }
 
         function deleteAllMarks(markIds, studentName) {
@@ -657,27 +944,37 @@
                 text: "This will remove all subject marks for this student in this exam!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
+                confirmButtonColor: '#4AE54A',
+                cancelButtonColor: '#ef4444',
                 confirmButtonText: 'Yes, delete all!'
-            }).then((result) => {
+            }).then(async (result) => {
                 if (result.isConfirmed) {
-                    fetch(`<?= base_url('exam/marks/view/deleteAll') ?>`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ mark_ids: markIds })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
+                    try {
+                        const response = await fetch(`<?= base_url('exam/marks/view/deleteAll') ?>`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ mark_ids: markIds })
+                        });
+                        const data = await response.json();
                         if (data.status === 'success') {
-                            Swal.fire('Deleted!', 'All marks have been deleted.', 'success');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'All marks have been deleted.'
+                            });
                             searchMarks();
                         } else {
-                            Swal.fire('Error', data.message, 'error');
+                            throw new Error(data.message || 'Failed to delete marks');
                         }
-                    });
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Failed to delete marks'
+                        });
+                    }
                 }
             });
         }
@@ -685,39 +982,6 @@
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
-
-        // Add this script for expandable sidebar
-        document.addEventListener('DOMContentLoaded', function () {
-            // Add expandable sidebar functionality
-            const expandableLinks = document.querySelectorAll('.expandable');
-            expandableLinks.forEach(link => {
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const submenu = this.nextElementSibling;
-                    const toggleIcon = this.querySelector('.toggle-icon');
-                    if (submenu.style.display === 'none' || submenu.style.display === '') {
-                        submenu.style.display = 'block';
-                        toggleIcon.classList.remove('fa-chevron-down');
-                        toggleIcon.classList.add('fa-chevron-up');
-                    } else {
-                        submenu.style.display = 'none';
-                        toggleIcon.classList.remove('fa-chevron-up');
-                        toggleIcon.classList.add('fa-chevron-down');
-                    }
-                });
-            });
-
-            // Combine with your existing DOMContentLoaded event handlers
-            const sessionFilter = document.getElementById('sessionFilter');
-            sessionFilter.addEventListener('change', loadExams);
-            
-            document.getElementById('examFilter').addEventListener('change', loadClasses);
-            
-            document.getElementById('editAllForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                updateAllMarks();
-            });
-        });
     </script>
 </body>
 </html>
