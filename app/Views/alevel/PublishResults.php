@@ -438,14 +438,19 @@
             });
         });
 
-        document.getElementById('session').addEventListener('change', updateDropdowns);
-        document.getElementById('class').addEventListener('change', updateDropdowns);
+        document.getElementById('session').addEventListener('change', async function() {
+            const sessionId = this.value;
+            await updateExams(sessionId);
+            await updateClasses(sessionId);
+        });
 
-        async function updateDropdowns() {
+        document.getElementById('class').addEventListener('change', async function() {
             const sessionId = document.getElementById('session').value;
-            const classId = document.getElementById('class').value;
+            const classId = this.value;
+            await updateCombinations(sessionId, classId);
+        });
 
-            // Update Exams
+        async function updateExams(sessionId) {
             if (sessionId) {
                 try {
                     const response = await fetch(`<?= base_url('alevel/results/getExams') ?>/${sessionId}`);
@@ -470,11 +475,10 @@
                         text: 'Failed to load exams'
                     });
                 }
-            } else {
-                document.getElementById('exam').innerHTML = '<option value="">Select Exam</option>';
             }
+        }
 
-            // Update Classes if session is selected
+        async function updateClasses(sessionId) {
             if (sessionId) {
                 try {
                     const response = await fetch(`<?= base_url('alevel/results/getClasses') ?>/${sessionId}`);
@@ -500,8 +504,9 @@
                     });
                 }
             }
+        }
 
-            // Update Combinations if both session and class are selected
+        async function updateCombinations(sessionId, classId) {
             if (sessionId && classId) {
                 try {
                     const response = await fetch(`<?= base_url('alevel/results/getCombinations') ?>/${sessionId}/${classId}`);
@@ -526,8 +531,6 @@
                         text: 'Failed to load combinations'
                     });
                 }
-            } else {
-                document.getElementById('combination').innerHTML = '<option value="">Select Combination</option>';
             }
         }
 
@@ -536,6 +539,14 @@
             const classId = document.getElementById('class').value;
             const sessionId = document.getElementById('session').value;
             const combinationId = document.getElementById('combination').value;
+
+            // Add this debugging section
+            console.log({
+                examId,
+                classId,
+                sessionId,
+                combinationId
+            });
 
             if (!examId || !classId || !sessionId || !combinationId) {
                 Swal.fire({
