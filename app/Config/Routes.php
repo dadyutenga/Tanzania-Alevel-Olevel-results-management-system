@@ -203,6 +203,14 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('results/getCombinations/(:num)/(:num)', 'PublishAlevelResults::getCombinations/$1/$2');
         $routes->get('results/calculate', 'PublishAlevelResults::calculateResults');
 
+        // Routes for viewing A-Level results
+        $routes->get('results/view', 'ViewAlevelResultsController::showResultsPage');
+        $routes->get('results/view/getExams', 'ViewAlevelResultsController::getExams');
+        $routes->post('results/view/getFilteredResults', 'ViewAlevelResultsController::getFilteredResults');
+        $routes->post('results/view/getStudentSubjectMarks', 'ViewAlevelResultsController::getStudentSubjectMarks');
+        $routes->post('results/view/generateResultsPDF', 'ViewAlevelResultsController::generateResultsPDF');
+        $routes->post('results/view/downloadResultPDF', 'ViewAlevelResultsController::downloadResultPDF');
+
     });
 
     // -----------------------------------------------------------------------------
