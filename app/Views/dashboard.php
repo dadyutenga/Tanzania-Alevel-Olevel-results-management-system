@@ -579,65 +579,7 @@
                 <span>ExamResults</span>
             </div>
             <ul class="sidebar-menu">
-                <li>
-                    <a href="#" class="active">
-                        <i class="fas fa-home"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="fas fa-users"></i>
-                        <span>Students</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="expandable">
-                        <i class="fas fa-file-alt"></i>
-                        <span>Exams</span>
-                        <i class="fas fa-chevron-up toggle-icon"></i>
-                    </a>
-                    <ul class="submenu">
-                        <li><a href="#">All Exams</a></li>
-                        <li><a href="#">Create Exam</a></li>
-                        <li><a href="#">Exam Schedule</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#" class="expandable">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Results</span>
-                        <i class="fas fa-chevron-up toggle-icon"></i>
-                    </a>
-                    <ul class="submenu">
-                        <li><a href="#">View Results</a></li>
-                        <li><a href="#">Enter Marks</a></li>
-                        <li><a href="#">Generate Reports</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#" class="expandable">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span>A-Level</span>
-                        <i class="fas fa-chevron-up toggle-icon"></i>
-                    </a>
-                    <ul class="submenu">
-                        <li><a href="#">A-Level Results</a></li>
-                        <li><a href="#">A-Level Reports</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
+                <?php include(APPPATH . 'Views/shared/sidebar_menu.php'); ?>
             </ul>
         </div>
         
