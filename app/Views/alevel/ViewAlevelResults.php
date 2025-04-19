@@ -617,9 +617,6 @@
                         <button class="btn btn-secondary" onclick="viewDetails(${result.student_id})" aria-label="View Details">
                             <i class="fas fa-eye"></i> View
                         </button>
-                        <button class="btn btn-secondary" onclick="downloadStudentResult(${result.student_id})" aria-label="Download Result">
-                            <i class="fas fa-download"></i> Download
-                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -638,13 +635,13 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Validation Error',
-                    text: 'Please select all required fields'
+                    text: 'Please select all required fields before downloading.'
                 });
                 return;
             }
 
             try {
-                const response = await fetch('<?= base_url('alevel/results/view/generateResultsPDF') ?>', {
+                const response = await fetch('<?= base_url('alevel/results/view/generateClassResultsPDF') ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -653,14 +650,15 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to download PDF');
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to download PDF');
                 }
 
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'alevel_results.pdf';
+                a.download = 'alevel_class_results.pdf';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -670,7 +668,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Failed to download results'
+                    text: error.message || 'Failed to download results. Please try again.'
                 });
             }
         }
@@ -746,41 +744,6 @@
                 showCloseButton: true,
                 showConfirmButton: false
             });
-        }
-
-        async function downloadStudentResult(studentId) {
-            const examId = document.getElementById('exam').value;
-
-            try {
-                const response = await fetch('<?= base_url('alevel/results/view/downloadResultPDF') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `student_id=${studentId}&exam_id=${examId}`
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to download PDF');
-                }
-
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'student_alevel_result.pdf';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                a.remove();
-            } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to download student result'
-                });
-            }
         }
     </script>
 </body>

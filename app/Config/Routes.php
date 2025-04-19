@@ -208,8 +208,8 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('results/view/getExams', 'ViewAlevelResultsController::getExams');
         $routes->post('results/view/getFilteredResults', 'ViewAlevelResultsController::getFilteredResults');
         $routes->post('results/view/getStudentSubjectMarks', 'ViewAlevelResultsController::getStudentSubjectMarks');
-        $routes->post('results/view/generateResultsPDF', 'ViewAlevelResultsController::generateResultsPDF');
-        $routes->post('results/view/downloadResultPDF', 'ViewAlevelResultsController::downloadResultPDF');
+        $routes->post('results/view/generateClassResultsPDF', 'ViewAlevelResultsController::generateClassResultsPDF');
+        $routes->post('results/view/downloadStudentResultPDF', 'ViewAlevelResultsController::downloadStudentResultPDF');
 
     });
 

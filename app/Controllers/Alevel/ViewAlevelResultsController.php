@@ -66,8 +66,7 @@ class ViewAlevelResultsController extends BaseController
                 ->where('students.is_active', 'yes')
                 ->where('tz_exams.is_active', 'yes')
                 ->where('tz_alevel_combinations.is_active', 'yes')
-                ->where('tz_alevel_exam_combinations.is_active', 'yes')
-                ->where('tz_alevel_exam_results.is_active', 'yes');
+                ->where('tz_alevel_exam_combinations.is_active', 'yes');
 
             // Add conditional filters
             if ($classId) {
@@ -204,18 +203,21 @@ class ViewAlevelResultsController extends BaseController
             $subjectMarks = $this->alevelSubjectMarksModel
                 ->select('
                     tz_alevel_combination_subjects.subject_name,
-                    tz_alevel_subject_marks.marks_obtained
+                    tz_alevel_subject_marks.marks_obtained,
+                    tz_alevel_combination_subjects.subject_type
                 ')
                 ->join('tz_alevel_combination_subjects', 'tz_alevel_combination_subjects.id = tz_alevel_subject_marks.subject_id')
                 ->where('tz_alevel_subject_marks.student_id', $studentId)
                 ->where('tz_alevel_subject_marks.exam_id', $examId)
-                ->where('tz_alevel_combination_subjects.subject_type', 'major')
                 ->where('tz_alevel_combination_subjects.is_active', 'yes')
+                ->orderBy('tz_alevel_combination_subjects.subject_type', 'ASC') // Major subjects first
                 ->findAll();
 
             // Calculate grades using ACSEE scale
             foreach ($subjectMarks as &$mark) {
                 $mark['grade'] = $this->calculateGrade($mark['marks_obtained']);
+                // Optionally, label the subject type for clarity in the view
+                $mark['subject_type'] = ucfirst($mark['subject_type']);
             }
 
             return $this->respond([
@@ -260,22 +262,24 @@ class ViewAlevelResultsController extends BaseController
             
             $pdfData = [];
             foreach ($results as $result) {
-                // Get subject marks for each student
+                // Get subject marks for each student including additional subjects
                 $subjectMarks = $this->alevelSubjectMarksModel
                     ->select('
                         tz_alevel_combination_subjects.subject_name,
-                        tz_alevel_subject_marks.marks_obtained
+                        tz_alevel_subject_marks.marks_obtained,
+                        tz_alevel_combination_subjects.subject_type
                     ')
                     ->join('tz_alevel_combination_subjects', 'tz_alevel_combination_subjects.id = tz_alevel_subject_marks.subject_id')
                     ->where('tz_alevel_subject_marks.student_id', $result['student_id'])
                     ->where('tz_alevel_subject_marks.exam_id', $examId)
-                    ->where('tz_alevel_combination_subjects.subject_type', 'major')
                     ->where('tz_alevel_combination_subjects.is_active', 'yes')
+                    ->orderBy('tz_alevel_combination_subjects.subject_type', 'ASC')
                     ->findAll();
 
                 // Calculate grades for each subject
                 foreach ($subjectMarks as &$mark) {
                     $mark['grade'] = $this->calculateGrade($mark['marks_obtained']);
+                    $mark['subject_type'] = ucfirst($mark['subject_type']);
                 }
 
                 $pdfData[] = [
@@ -288,74 +292,41 @@ class ViewAlevelResultsController extends BaseController
                 ];
             }
 
-            return [
-                'status' => 'success',
-                'data' => $pdfData
-            ];
+            // Delegate to PDFController for PDF generation
+            $pdfController = new \App\Controllers\PDFController();
+            return $pdfController->generateAlevelClassPDF($pdfData);
 
         } catch (\Exception $e) {
             log_message('error', '[ViewAlevelResultsController.generateResultsPDF] Error: ' . $e->getMessage());
-            return [
+            return $this->respond([
                 'status' => 'error',
                 'message' => 'Failed to generate A-level PDF data'
-            ];
+            ]);
         }
     }
 
-    public function downloadResultPDF($studentId, $examId)
+    public function generateClassResultsPDF()
     {
         try {
-            // Get student details and marks
-            $studentMarks = $this->alevelSubjectMarksModel
-                ->select('
-                    students.id AS student_id,
-                    CONCAT(students.firstname, " ", COALESCE(students.middlename, ""), " ", students.lastname) AS full_name,
-                    classes.class AS class_name,
-                    tz_alevel_combinations.combination_code,
-                    tz_alevel_combinations.combination_name,
-                    tz_exams.exam_name,
-                    tz_alevel_combination_subjects.subject_name,
-                    tz_alevel_subject_marks.marks_obtained,
-                    tz_alevel_exam_results.total_points,
-                    tz_alevel_exam_results.division
-                ')
-                ->join('students', 'students.id = tz_alevel_subject_marks.student_id')
-                ->join('student_session', 'students.id = student_session.student_id')
-                ->join('classes', 'student_session.class_id = classes.id')
-                ->join('tz_student_alevel_combinations', 'tz_student_alevel_combinations.class_id = student_session.class_id AND tz_student_alevel_combinations.session_id = student_session.session_id AND tz_student_alevel_combinations.student_id = students.id')
-                ->join('tz_alevel_combinations', 'tz_alevel_combinations.id = tz_student_alevel_combinations.combination_id')
-                ->join('tz_exams', 'tz_exams.id = tz_alevel_subject_marks.exam_id')
-                ->join('tz_alevel_combination_subjects', 'tz_alevel_combination_subjects.id = tz_alevel_subject_marks.subject_id')
-                ->join('tz_alevel_exam_results', 'tz_alevel_exam_results.student_id = students.id AND tz_alevel_exam_results.exam_id = tz_exams.id')
-                ->where('students.id', $studentId)
-                ->where('tz_alevel_subject_marks.exam_id', $examId)
-                ->where('tz_alevel_combination_subjects.subject_type', 'major')
-                ->where('tz_alevel_combination_subjects.is_active', 'yes')
-                ->findAll();
-
-            if (empty($studentMarks)) {
-                return [
+            $examId = $this->request->getPost('exam_id');
+            $classId = $this->request->getPost('class_id');
+            $sessionId = $this->request->getPost('session_id');
+            $combinationId = $this->request->getPost('combination_id');
+            
+            if (!$examId || !$classId || !$sessionId || !$combinationId) {
+                return $this->respond([
                     'status' => 'error',
-                    'message' => 'No A-level results found for this student'
-                ];
+                    'message' => 'Missing required parameters for PDF generation'
+                ]);
             }
-
-            // Process grades for each subject
-            foreach ($studentMarks as &$mark) {
-                $mark['grade'] = $this->calculateGrade($mark['marks_obtained']);
-            }
-
-            return [
-                'status' => 'success',
-                'data' => $studentMarks
-            ];
-
+            
+            return $this->generateResultsPDF($examId, $classId, $sessionId, $combinationId);
         } catch (\Exception $e) {
-            log_message('error', '[ViewAlevelResultsController.downloadResultPDF] Error: ' . $e->getMessage());
-            return [
+            log_message('error', '[ViewAlevelResultsController.generateClassResultsPDF] Error: ' . $e->getMessage());
+            return $this->respond([
                 'status' => 'error',
-                'message' => 'Failed to generate A-level PDF'
-            ];
+                'message' => 'Failed to generate class results PDF'
+            ]);
         }
     }
 }
