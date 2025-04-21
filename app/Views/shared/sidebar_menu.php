@@ -50,7 +50,7 @@
            <li><a href="<?= base_url('alevel/results/view') ?>"><i class="fas fa-eye"></i> View Results</a></li>
         </ul>
     </li>
-    <li><a href="#" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">
+    <li><a href="<?= base_url('settings') ?>" class="<?= strpos(current_url(), 'settings') !== false ? 'active' : '' ?>">
         <i class="fas fa-cog"></i> Settings
     </a></li>
     <li class="logout-section">

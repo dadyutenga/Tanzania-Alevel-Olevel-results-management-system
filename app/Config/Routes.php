@@ -228,6 +228,15 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('view-exams/get-allocations/(:num)', 'ViewAlevelExams::getAllocations/$1');
         $routes->delete('view-exams/deallocate/(:num)/(:num)', 'ViewAlevelExams::deallocate/$1/$2');
     });
+
+    // -----------------------------------------------------------------------------
+    // Settings
+    // -----------------------------------------------------------------------------
+    $routes->group('settings', ['namespace' => 'App\Controllers'], function ($routes) {
+        $routes->get('/', 'SettingsController::settingsPage');
+        $routes->get('index', 'SettingsController::index');
+        $routes->post('update/(:num)', 'SettingsController::update/$1');
+    });
 });
 
 ?>
