@@ -50,7 +50,7 @@ class SettingsController extends ResourceController
             $file = $this->request->getFile('school_logo');
 
             // Handle file upload if a new file is provided
-            if ($file) {
+            if ($file && !empty($file)) {
                 if ($file->isValid()) {
                     // Check file size (limit to 5MB for example)
                     $maxSize = 5 * 1024 * 1024; // 5MB in bytes
@@ -103,10 +103,17 @@ class SettingsController extends ResourceController
             // Retrieve the updated settings
             $updatedSettings = $this->settingsModel->getCurrentSettings();
 
+            // Prepare response data without binary image data to avoid JSON encoding issues
+            $responseData = $updatedSettings;
+            if (isset($responseData['school_logo']) && !empty($responseData['school_logo'])) {
+                // Replace binary data with a flag or placeholder to indicate an image exists
+                $responseData['school_logo'] = 'uploaded'; // This avoids including binary data in JSON
+            }
+
             return $this->respond([
                 'status' => 'success',
                 'message' => 'Settings saved successfully',
-                'data' => $updatedSettings
+                'data' => $responseData
             ]);
         } catch (\Exception $e) {
             log_message('error', '[SettingsController.update] Error: ' . $e->getMessage());
