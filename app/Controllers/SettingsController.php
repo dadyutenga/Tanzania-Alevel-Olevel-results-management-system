@@ -85,10 +85,10 @@ class SettingsController extends ResourceController
                 'settings' => $settings
             ];
 
-            return view('view/Settings', $data);
+            return view('Settings', $data);
         } catch (\Exception $e) {
             log_message('error', '[SettingsController.settingsPage] Error: ' . $e->getMessage());
-            return view('errors/custom_error', [
+            return view('errors/html/error_404', [
                 'title' => 'Error',
                 'message' => 'Failed to load settings page: ' . $e->getMessage()
             ]);
