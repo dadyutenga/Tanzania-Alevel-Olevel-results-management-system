@@ -1,8 +1,5 @@
 
 
-    bugs  in  results 
-
-
     bugs  in  view  allocatiosns   in  alevel  
     
     bugs  in  view  of  subjects  incorrect  filtring  
@@ -15,10 +12,6 @@
     wrong  highlihghting  of  the  wrong  sections  in the   view  allocatiosns   page   of  exams  linked  
     
 
-    fixing  the  sidebar  linking  in  the   dashboard  and  remocal  of  some  components  adn  creation  for  s
-
-
-    bilk  upload  in  olevel
-
+    
 
     
