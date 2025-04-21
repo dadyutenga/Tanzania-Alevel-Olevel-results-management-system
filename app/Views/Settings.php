@@ -328,6 +328,57 @@
                 display: block;
             }
         }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 0.75rem;
+            color: var(--text-secondary);
+            z-index: 2;
+        }
+
+        .input-addon {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 0.75rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .input-group .form-control {
+            padding-left: 2.5rem !important;
+        }
+
+        .input-group .form-control:focus + .input-icon,
+        .input-group .form-control:focus ~ .input-addon {
+            color: var(--primary);
+        }
+
+        .file-upload-group {
+            align-items: center;
+        }
+
+        .file-upload-input {
+            position: relative;
+            z-index: 1;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -372,51 +423,107 @@
                     <form id="settingsForm">
                         <div class="form-group">
                             <label for="school_name">School Name <span class="text-danger">*</span></label>
-                            <input type="text" id="school_name" name="school_name" class="form-control" 
-                                   value="<?= esc($settings['school_name'] ?? '') ?>" required aria-required="true">
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-school"></i>
+                                </div>
+                                <input type="text" id="school_name" name="school_name" class="form-control" 
+                                       value="<?= esc($settings['school_name'] ?? '') ?>" required aria-required="true" placeholder="Enter school name">
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label for="total_classes">Total Classes <span class="text-danger">*</span></label>
-                            <input type="number" id="total_classes" name="total_classes" class="form-control" 
-                                   value="<?= esc($settings['total_classes'] ?? 0) ?>" required aria-required="true">
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <input type="number" id="total_classes" name="total_classes" class="form-control" 
+                                       value="<?= esc($settings['total_classes'] ?? 0) ?>" required aria-required="true" min="1" placeholder="Enter total number of classes">
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label for="school_year">School Year (YYYY-YYYY) <span class="text-danger">*</span></label>
-                            <input type="text" id="school_year" name="school_year" class="form-control" 
-                                   value="<?= esc($settings['school_year'] ?? '') ?>" required aria-required="true">
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <input type="text" id="school_year" name="school_year" class="form-control" 
+                                       value="<?= esc($settings['school_year'] ?? '') ?>" required aria-required="true" placeholder="e.g., 2023-2024">
+                                <div class="input-addon" onclick="showYearPicker()">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            <div id="yearPicker" class="year-picker" style="display: none; position: absolute; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow); z-index: 1000;">
+                                <div class="year-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                    <!-- JavaScript will populate years here -->
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label for="school_address">School Address</label>
-                            <textarea id="school_address" name="school_address" class="form-control" rows="3"><?= esc($settings['school_address'] ?? '') ?></textarea>
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <textarea id="school_address" name="school_address" class="form-control" rows="3" placeholder="Enter school address"><?= esc($settings['school_address'] ?? '') ?></textarea>
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="school_logo_url">School Logo URL</label>
-                            <input type="text" id="school_logo_url" name="school_logo_url" class="form-control" 
-                                   value="<?= esc($settings['school_logo_url'] ?? '') ?>">
+                            <label for="school_logo">School Logo</label>
+                            <div class="input-group file-upload-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <input type="file" id="school_logo" name="school_logo" class="form-control file-upload-input" accept="image/*" style="padding: 0.75rem 1rem 0.75rem 2.5rem;">
+                                <label for="school_logo" class="file-upload-label" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; display: flex; align-items: center; padding-left: 2.5rem; background: transparent; border-radius: var(--radius); color: var(--text-secondary); overflow: hidden;">
+                                    <span id="fileName">Choose an image file...</span>
+                                </label>
+                            </div>
+                            <?php if (!empty($settings['school_logo'])): ?>
+                                <div style="margin-top: 10px;">
+                                    <p>Current Logo:</p>
+                                    <img src="data:image/jpeg;base64,<?= base64_encode($settings['school_logo']) ?>" alt="School Logo" style="max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border);">
+                                </div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="form-group">
                             <label for="contact_email">Contact Email</label>
-                            <input type="email" id="contact_email" name="contact_email" class="form-control" 
-                                   value="<?= esc($settings['contact_email'] ?? '') ?>">
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <input type="email" id="contact_email" name="contact_email" class="form-control" 
+                                       value="<?= esc($settings['contact_email'] ?? '') ?>" placeholder="Enter contact email">
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label for="contact_phone">Contact Phone</label>
-                            <input type="text" id="contact_phone" name="contact_phone" class="form-control" 
-                                   value="<?= esc($settings['contact_phone'] ?? '') ?>">
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <input type="text" id="contact_phone" name="contact_phone" class="form-control" 
+                                       value="<?= esc($settings['contact_phone'] ?? '') ?>" placeholder="Enter contact phone number">
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label for="is_active">Active Status <span class="text-danger">*</span></label>
-                            <select id="is_active" name="is_active" class="form-control" required aria-required="true">
-                                <option value="yes" <?= (isset($settings['is_active']) && $settings['is_active'] == 'yes') ? 'selected' : '' ?>>Yes</option>
-                                <option value="no" <?= (isset($settings['is_active']) && $settings['is_active'] == 'no') ? 'selected' : '' ?>>No</option>
-                            </select>
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-toggle-on"></i>
+                                </div>
+                                <select id="is_active" name="is_active" class="form-control" required aria-required="true">
+                                    <option value="yes" <?= (isset($settings['is_active']) && $settings['is_active'] == 'yes') ? 'selected' : '' ?>>Yes</option>
+                                    <option value="no" <?= (isset($settings['is_active']) && $settings['is_active'] == 'no') ? 'selected' : '' ?>>No</option>
+                                </select>
+                            </div>
                         </div>
 
                         <button type="button" class="btn btn-success" onclick="saveSettings()" aria-label="Save Settings">
@@ -477,7 +584,68 @@
                     sidebar.classList.remove('show');
                 }
             });
+
+            // File input label update
+            const fileInput = document.getElementById('school_logo');
+            const fileNameSpan = document.getElementById('fileName');
+            if (fileInput) {
+                fileInput.addEventListener('change', function () {
+                    if (this.files.length > 0) {
+                        fileNameSpan.textContent = this.files[0].name;
+                    } else {
+                        fileNameSpan.textContent = 'Choose an image file...';
+                    }
+                });
+            }
+
+            // Initialize year picker
+            initializeYearPicker();
         });
+
+        function initializeYearPicker() {
+            const currentYear = new Date().getFullYear();
+            const yearGrid = document.querySelector('.year-grid');
+            yearGrid.innerHTML = '';
+            
+            // Generate years from current year to next year as a range
+            for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+                const yearBtn = document.createElement('button');
+                yearBtn.type = 'button';
+                yearBtn.style.cssText = 'padding: 0.5rem; border: none; background: transparent; cursor: pointer; border-radius: 6px; color: var(--text-primary);';
+                yearBtn.textContent = `${i}-${i+1}`;
+                yearBtn.onclick = function() {
+                    document.getElementById('school_year').value = `${i}-${i+1}`;
+                    document.getElementById('yearPicker').style.display = 'none';
+                };
+                yearBtn.onmouseover = function() {
+                    this.style.background = 'var(--secondary)';
+                };
+                yearBtn.onmouseout = function() {
+                    this.style.background = 'transparent';
+                };
+                yearGrid.appendChild(yearBtn);
+            }
+        }
+
+        function showYearPicker() {
+            const yearPicker = document.getElementById('yearPicker');
+            const inputRect = document.getElementById('school_year').getBoundingClientRect();
+            yearPicker.style.top = `${inputRect.bottom + window.scrollY + 10}px`;
+            yearPicker.style.left = `${inputRect.left + window.scrollX}px`;
+            yearPicker.style.display = 'block';
+            
+            // Close when clicking outside
+            document.addEventListener('click', closeYearPickerOutside);
+        }
+
+        function closeYearPickerOutside(event) {
+            const yearPicker = document.getElementById('yearPicker');
+            const input = document.getElementById('school_year');
+            if (!input.contains(event.target) && !yearPicker.contains(event.target)) {
+                yearPicker.style.display = 'none';
+                document.removeEventListener('click', closeYearPickerOutside);
+            }
+        }
 
         async function saveSettings() {
             const form = document.getElementById('settingsForm');

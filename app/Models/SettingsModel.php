@@ -18,7 +18,7 @@ class SettingsModel extends Model
         'total_classes',
         'school_year',
         'school_address',
-        'school_logo_url',
+        'school_logo',
         'contact_email',
         'contact_phone',
         'is_active'
