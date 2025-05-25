@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class AlevelExamResultModel extends Model
 {
-    protected $DBGroup          = 'second_db';
     protected $table            = 'tz_alevel_exam_results';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;

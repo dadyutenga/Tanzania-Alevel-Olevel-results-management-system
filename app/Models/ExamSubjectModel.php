@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class ExamSubjectModel extends Model
 {
-    protected $DBGroup = 'second_db';
     protected $table = 'tz_exam_subjects';
     protected $allowedFields = [
         'exam_id',

@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class ExamSubjectMarkModel extends Model
 {
-    protected $DBGroup = 'second_db';
     protected $table = 'tz_exam_subject_marks';
     protected $primaryKey = 'id';
     protected $returnType = 'array';

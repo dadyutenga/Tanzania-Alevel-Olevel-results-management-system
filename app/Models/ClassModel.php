@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class ClassModel extends Model
 {
-    protected $DBGroup          = 'second_db';
     protected $table            = 'classes';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;

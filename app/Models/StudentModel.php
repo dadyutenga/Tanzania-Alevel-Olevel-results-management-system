@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class StudentModel extends Model
 {
-    protected $DBGroup          = 'second_db';
     protected $table            = 'students';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;

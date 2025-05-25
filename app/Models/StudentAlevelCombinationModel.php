@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class StudentAlevelCombinationModel extends Model
 {
-    protected $DBGroup          = 'second_db';
     protected $table            = 'tz_student_alevel_combinations';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;

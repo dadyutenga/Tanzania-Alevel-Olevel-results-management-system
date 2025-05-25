@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class SettingsModel extends Model
 {
-    protected $DBGroup = 'second_db';
     protected $table = 'tz_web_setting';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = false;

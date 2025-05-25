@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class AlevelCombinationSubjectModel extends Model
 {
-    protected $DBGroup          = 'second_db';
     protected $table            = 'tz_alevel_combination_subjects';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;

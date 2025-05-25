@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class SessionModel extends Model
 {
-    protected $DBGroup = 'second_db';
     protected $table = 'sessions';
     protected $primaryKey = 'id';
     protected $returnType = 'array';
@@ -61,13 +60,13 @@ class SessionModel extends Model
     // Custom Methods
     public function getActiveSessions()
     {
-        return $this->where('is_active', 'no')  // Since you're using 'no' as active
+        return $this->where('is_active', 'yes')  // Since you're using 'no' as active
                     ->findAll();
     }
 
     public function getCurrentSession()
     {
-        return $this->where('is_active', 'no')->first();
+        return $this->where('is_active', 'yes')->first();
     }
 
     public function setActiveSession($sessionId)
@@ -81,7 +80,7 @@ class SessionModel extends Model
                  ->update();
             
             // Set the selected session to active
-            $this->update($sessionId, ['is_active' => 'no']);
+            $this->update($sessionId, ['is_active' => 'yes']);
             
             $this->db->transComplete();
             
@@ -102,7 +101,7 @@ class SessionModel extends Model
         try {
             return $this->insert([
                 'session' => $sessionData['session'],
-                'is_active' => $sessionData['is_active'] ?? 'no'
+                'is_active' => $sessionData['is_active'] ?? 'yes'
             ]);
         } catch (\Exception $e) {
             log_message('error', 'Error creating session: ' . $e->getMessage());
@@ -115,7 +114,7 @@ class SessionModel extends Model
         try {
             return $this->update($id, [
                 'session' => $sessionData['session'],
-                'is_active' => $sessionData['is_active'] ?? 'no'
+                'is_active' => $sessionData['is_active'] ?? 'yes'
             ]);
         } catch (\Exception $e) {
             log_message('error', 'Error updating session: ' . $e->getMessage());

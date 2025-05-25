@@ -124,7 +124,7 @@ class AddExamController extends ResourceController
     {
         try {
             $session = $this->sessionModel->find($sessionId);
-            return ($session && $session['is_active'] === 'no'); // 'no' means active in your system
+            return ($session && $session['is_active'] === 'yes'); // 'no' means active in your system
         } catch (\Exception $e) {
             log_message('error', '[validateSession] Exception: {message}', ['message' => $e->getMessage()]);
             return false;

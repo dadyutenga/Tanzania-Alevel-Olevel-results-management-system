@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class AlevelSubjectMarksModel extends Model
 {
-    protected $DBGroup          = 'second_db';
     protected $table = 'tz_alevel_subject_marks';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;

@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class ClassSectionModel extends Model
 {
-    protected $DBGroup = 'second_db';
     protected $table = 'class_sections';
     protected $primaryKey = 'id';
     protected $returnType = 'array';

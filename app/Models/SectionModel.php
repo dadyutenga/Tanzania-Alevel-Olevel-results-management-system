@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class SectionModel extends Model
 {
-    protected $DBGroup          = 'second_db';
     protected $table            = 'sections';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
