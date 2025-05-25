@@ -59,7 +59,7 @@ class BulkExamMarksController extends ResourceController
                 ->where([
                     'student_session.session_id' => $sessionId,
                     'student_session.class_id' => $classId,
-                    'student_session.is_active' => 'no',
+                    'student_session.is_active' => 'yes',
                     'students.is_active' => 'yes'
                 ])
                 ->findAll();
@@ -366,7 +366,7 @@ class BulkExamMarksController extends ResourceController
         try {
             $data = [
                 'title' => 'Bulk Upload Exam Marks',
-                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(), // Changed 'yes' to 'no'
+                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(), // Changed 'yes' to 'no'
                 'exams' => [],
                 'classes' => [],
             ];
@@ -419,7 +419,7 @@ class BulkExamMarksController extends ResourceController
                 ->where([
                     'e.session_id' => $sessionId,
                     'e.is_active' => 'yes',
-                    'c.is_active' => 'no'
+                    'c.is_active' => 'yes'  // Changed 'no' to 'yes'
                 ])
                 ->groupBy('c.id')
                 ->get()

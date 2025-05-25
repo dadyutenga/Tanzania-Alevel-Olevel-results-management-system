@@ -28,7 +28,7 @@ class AllocationController extends ResourceController
     {
         try {
             $data = [
-                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
+                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(),
                 'exams' => [],
                 'classes' => [],
                 'existingSubjects' => [],
@@ -48,7 +48,7 @@ class AllocationController extends ResourceController
 
                 // Get active classes
                 $data['classes'] = $this->classModel
-                    ->where('is_active', 'no')
+                    ->where('is_active', 'yes')
                     ->findAll();
 
                 // Get existing allocations
@@ -89,7 +89,7 @@ class AllocationController extends ResourceController
     {
         try {
             $classes = $this->classModel
-                ->where('is_active', 'no')
+                ->where('is_active', 'yes')
                 ->findAll();
 
             return $this->respond([

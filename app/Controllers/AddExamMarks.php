@@ -31,7 +31,7 @@ class AddExamMarks extends ResourceController
     {
         try {
             $data = [
-                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
+                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(),
                 'exams' => [],
                 'classes' => [],
                 'students' => [],
@@ -73,7 +73,7 @@ class AddExamMarks extends ResourceController
                 ->where([
                     'student_session.session_id' => $sessionId,
                     'student_session.class_id' => $classId,
-                    'student_session.is_active' => 'no',
+                    'student_session.is_active' => 'yes',
                     'students.is_active' => 'yes'
                 ])
                 ->findAll();
@@ -258,7 +258,7 @@ class AddExamMarks extends ResourceController
                 ->where([
                     'e.session_id' => $sessionId,
                     'e.is_active' => 'yes',
-                    'c.is_active' => 'no'
+                    'c.is_active' => 'yes'
                 ])
                 ->groupBy('c.id')
                 ->get()

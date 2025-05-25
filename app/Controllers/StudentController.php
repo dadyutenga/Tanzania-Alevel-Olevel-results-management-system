@@ -30,8 +30,8 @@ class StudentController extends ResourceController
             // Get active classes that have sections (is_active = 'no' means active)
             $classes = $classModel->select('classes.*')
                                 ->join('class_sections', 'classes.id = class_sections.class_id')
-                                ->where('classes.is_active', 'no')
-                                ->where('class_sections.is_active', 'no')
+                                ->where('classes.is_active', 'yes')
+                                ->where('class_sections.is_active', 'yes')
                                 ->groupBy('classes.id')
                                 ->findAll();
             
@@ -70,8 +70,8 @@ class StudentController extends ResourceController
             $sections = $sectionModel->select('sections.*, class_sections.id as class_section_id')
                                    ->join('class_sections', 'sections.id = class_sections.section_id')
                                    ->where('class_sections.class_id', $classId)
-                                   ->where('sections.is_active', 'no')
-                                   ->where('class_sections.is_active', 'no')
+                                   ->where('sections.is_active', 'yes')
+                                   ->where('class_sections.is_active', 'yes')
                                    ->findAll();
             
             log_message('debug', 'Sections query: ' . $sectionModel->getLastQuery());
@@ -159,7 +159,7 @@ class StudentController extends ResourceController
             ->join('sections', 'student_session.section_id = sections.id')
             ->where([
                 'students.is_active' => 'yes',
-                'student_session.is_active' => 'no',
+                'student_session.is_active' => 'yes',
                 'student_session.session_id' => $session,
                 'student_session.class_id' => $class,
                 'student_session.section_id' => $section

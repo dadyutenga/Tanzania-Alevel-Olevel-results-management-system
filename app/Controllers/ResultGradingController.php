@@ -42,8 +42,8 @@ class ResultGradingController extends ResourceController
     {
         try {
             $data = [
-                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
-                'classes' => $this->classModel->where('is_active', 'no')->findAll(),
+                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(),
+                'classes' => $this->classModel->where('is_active', 'yes')->findAll(),
                 'levels' => [
                     ['id' => 4, 'name' => 'O-Level']
                 ]

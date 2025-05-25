@@ -88,7 +88,7 @@ class DashboardController extends Controller
     private function getExamStats()
     {
         $total = $this->examModel->countAll();
-        $completed = $this->examModel->where('is_active', 'no')->countAllResults();
+        $completed = $this->examModel->where('is_active', 'yes')->countAllResults();
         $ongoing = $this->examModel->where('is_active', 'yes')->countAllResults();
         
         return [

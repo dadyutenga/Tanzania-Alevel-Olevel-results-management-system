@@ -42,7 +42,7 @@ class AddExamController extends ResourceController
             log_message('info', 'Fetching available sessions for exam creation');
             
             // Get only active sessions (where is_active = 'no')
-            $sessions = $this->sessionModel->where('is_active', 'no')
+            $sessions = $this->sessionModel->where('is_active', 'yes')
                                          ->orderBy('session', 'DESC')
                                          ->findAll();
             
