@@ -203,8 +203,8 @@ class AllocationCombinationClasssController extends BaseController
             // Log the request for debugging
             log_message('debug', '[AllocationCombinationClasssController.getClassesBySession] Session ID: ' . $sessionId);
 
-            // Fetch classes and sections based on session ID using the provided custom query with the second_db connection
-            $db = \Config\Database::connect('second_db');
+            // Fetch classes and sections based on session ID using the provided custom query with the default connection
+            $db = \Config\Database::connect('default');
             $query = $db->query("
                 SELECT DISTINCT
                     c.id AS class_id,

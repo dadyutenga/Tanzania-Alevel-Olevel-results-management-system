@@ -61,7 +61,7 @@ class BulkMarksUploadController extends BaseController
                     ->where('is_active', 'yes')
                     ->findAll();
                 
-                $db = \Config\Database::connect('second_db');
+                $db = \Config\Database::connect('default');
                 $data['classes'] = $db->table('classes c')
                     ->select('c.id, c.class')
                     ->join('tz_student_alevel_combinations sac', 'c.id = sac.class_id')
@@ -117,7 +117,7 @@ class BulkMarksUploadController extends BaseController
             }
 
             // Fetch subjects
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $subjects = $db->table('tz_alevel_combination_subjects')
                 ->select('id, subject_name, subject_type')
                 ->where([
@@ -205,7 +205,7 @@ class BulkMarksUploadController extends BaseController
             }
 
             // Validate exam allocation
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $examAllocation = $db->table('tz_alevel_exam_combinations')
                 ->where([
                     'exam_id' => $examId,

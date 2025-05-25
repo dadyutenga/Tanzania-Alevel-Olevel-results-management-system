@@ -125,7 +125,7 @@ class ViewAlevelExams extends ResourceController
     public function getAllocationsWithDetails($conditions = [])
     {
         try {
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $builder = $db->table('tz_alevel_exam_combinations');
             
             $builder->select('

@@ -89,7 +89,7 @@ class AlllocateAlevelExam extends ResourceController
     public function getClassesBySession($sessionId)
     {
         try {
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $query = $db->query("
                 SELECT DISTINCT
                     c.id AS class_id,
@@ -269,7 +269,7 @@ class AlllocateAlevelExam extends ResourceController
     public function getAllocationsWithDetails($conditions = [])
     {
         try {
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $builder = $db->table('tz_alevel_exam_combinations');
             
             $builder->select('

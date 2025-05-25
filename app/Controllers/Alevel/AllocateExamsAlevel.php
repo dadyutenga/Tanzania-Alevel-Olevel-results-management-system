@@ -86,7 +86,7 @@ class AllocateExamsAlevel extends ResourceController
     public function getClassesBySession($sessionId)
     {
         try {
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $query = $db->query("
                 SELECT DISTINCT
                     c.id AS class_id,

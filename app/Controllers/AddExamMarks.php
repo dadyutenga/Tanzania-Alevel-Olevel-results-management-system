@@ -100,7 +100,7 @@ class AddExamMarks extends ResourceController
                 throw new \Exception('Exam ID is required');
             }
 
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $subjects = $db->table('tz_exam_subjects')
                 ->where('exam_id', $examId)
                 ->get()
@@ -194,7 +194,7 @@ class AddExamMarks extends ResourceController
     public function getExistingMarks($examId, $studentId)
     {
         try {
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $marks = $db->table('tz_exam_subject_marks')
                 ->select('tz_exam_subject_marks.*, tz_exam_subjects.subject_name, tz_exam_subjects.max_marks')
                 ->join('tz_exam_subjects', 'tz_exam_subjects.id = tz_exam_subject_marks.exam_subject_id')
@@ -250,7 +250,7 @@ class AddExamMarks extends ResourceController
                 throw new \Exception('Session ID is required');
             }
 
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $classes = $db->table('classes c')
                 ->select('c.id, c.class')
                 ->join('tz_exam_classes ec', 'c.id = ec.class_id')

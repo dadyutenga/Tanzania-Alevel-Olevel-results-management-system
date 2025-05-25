@@ -107,7 +107,7 @@ class AllocationController extends ResourceController
     public function getAllocations($sessionId)
     {
         try {
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $builder = $db->table('tz_exam_classes');
             
             $allocations = $builder

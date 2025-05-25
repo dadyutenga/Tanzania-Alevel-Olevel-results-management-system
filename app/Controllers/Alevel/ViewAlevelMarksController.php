@@ -148,7 +148,7 @@ class ViewAlevelMarksController extends BaseController
                         ->where('is_active', 'yes')
                         ->findAll();
 
-                    $db = \Config\Database::connect('second_db');
+                    $db = \Config\Database::connect('default');
                     $data['classes'] = $db->table('classes c')
                         ->select('c.id, c.class')
                         ->join('tz_student_alevel_combinations sac', 'c.id = sac.class_id')
@@ -297,7 +297,7 @@ class ViewAlevelMarksController extends BaseController
                 return $this->respond(['status' => 'error', 'message' => 'Session ID is required'], 400);
             }
 
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $classes = $db->table('classes c')
                 ->select('c.id, c.class')
                 ->join('tz_student_alevel_combinations sac', 'c.id = sac.class_id')
@@ -327,7 +327,7 @@ class ViewAlevelMarksController extends BaseController
                 return $this->respond(['status' => 'error', 'message' => 'Session ID and Class ID are required'], 400);
             }
 
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $combinations = $db->table('tz_student_alevel_combinations sac')
                 ->select('ac.id, ac.combination_code, ac.combination_name')
                 ->join('tz_alevel_combinations ac', 'ac.id = sac.combination_id')

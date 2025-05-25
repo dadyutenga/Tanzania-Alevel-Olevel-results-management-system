@@ -94,7 +94,7 @@ class AddExamController extends ResourceController
                 'is_active' => $this->request->getPost('is_active') ?? 'yes'
             ];
 
-            // Using examModel which is correctly configured for second_db
+            // Using examModel which is correctly configured for default
             $examId = $this->examModel->insert($data);
 
             if (!$examId) {

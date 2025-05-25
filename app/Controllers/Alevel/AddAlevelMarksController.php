@@ -57,7 +57,7 @@ class AddAlevelMarksController extends BaseController
                     ->findAll();
                 
                 // Updated is_active to 'no' for classes
-                $db = \Config\Database::connect('second_db');
+                $db = \Config\Database::connect('default');
                 $data['classes'] = $db->table('classes c')
                     ->select('c.id, c.class')
                     ->join('tz_student_alevel_combinations sac', 'c.id = sac.class_id')
@@ -128,7 +128,7 @@ public function getSubjects()
             throw new \Exception('Combination ID is required');
         }
 
-        $db = \Config\Database::connect('second_db');
+        $db = \Config\Database::connect('default');
         $subjects = $db->table('tz_alevel_combination_subjects')
             ->select('id, subject_name, subject_type') // Removed max_marks
             ->where([
@@ -182,7 +182,7 @@ public function saveMarks()
         }
 
         // Validate exam allocation
-        $db = \Config\Database::connect('second_db');
+        $db = \Config\Database::connect('default');
         $examAllocation = $db->table('tz_alevel_exam_combinations')
             ->where([
                 'exam_id' => $examId,
@@ -271,7 +271,7 @@ public function saveMarks()
     public function getExistingMarks($examId, $studentId)
     {
         try {
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $marks = $db->table('tz_alevel_subject_marks')
                 ->select('tz_alevel_subject_marks.*, tz_alevel_combination_subjects.subject_name')  // Removed max_marks
                 ->join('tz_alevel_combination_subjects', 'tz_alevel_combination_subjects.id = tz_alevel_subject_marks.subject_id')
@@ -329,7 +329,7 @@ public function saveMarks()
                 throw new \Exception('Session ID is required');
             }
 
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $classes = $db->table('classes c')
                 ->select('c.id, c.class')
                 ->join('tz_student_alevel_combinations sac', 'c.id = sac.class_id')
@@ -362,7 +362,7 @@ public function saveMarks()
                 throw new \Exception('Session ID and Class ID are required');
             }
 
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $combinations = $db->table('tz_alevel_combinations ac')
                 ->select('ac.id, ac.combination_code, ac.combination_name')
                 ->join('tz_student_alevel_combinations sac', 'ac.id = sac.combination_id')

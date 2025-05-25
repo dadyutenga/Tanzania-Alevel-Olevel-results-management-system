@@ -34,7 +34,7 @@ class BulkExamMarksController extends ResourceController
         $this->studentSessionModel = new StudentSessionModel();
         $this->examSubjectMarkModel = new ExamSubjectMarkModel();
         $this->sessionModel = new SessionModel();
-        $this->db = \Config\Database::connect('second_db');
+        $this->db = \Config\Database::connect('default');
     }
 
     public function downloadTemplate()
@@ -411,7 +411,7 @@ class BulkExamMarksController extends ResourceController
     public function getClasses($sessionId)
     {
         try {
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $classes = $db->table('classes c')
                 ->select('c.id, c.class')
                 ->join('tz_exam_classes ec', 'c.id = ec.class_id')

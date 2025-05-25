@@ -57,7 +57,7 @@ class PublishAlevelResults extends BaseController
                     ->where('is_active', 'yes')
                     ->findAll();
 
-                $db = \Config\Database::connect('second_db');
+                $db = \Config\Database::connect('default');
                 $data['classes'] = $db->table('classes c')
                     ->select('c.id, c.class')
                     ->join('tz_student_alevel_combinations sac', 'c.id = sac.class_id')
@@ -116,7 +116,7 @@ class PublishAlevelResults extends BaseController
                 throw new \Exception('Session ID is required');
             }
 
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $classes = $db->table('classes c')
                 ->select('c.id, c.class')
                 ->join('tz_student_alevel_combinations sac', 'c.id = sac.class_id')
@@ -149,7 +149,7 @@ class PublishAlevelResults extends BaseController
                 throw new \Exception('Session ID and Class ID are required');
             }
 
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $combinations = $db->table('tz_alevel_combinations ac')
                 ->select('ac.id, ac.combination_code, ac.combination_name')
                 ->join('tz_student_alevel_combinations sac', 'ac.id = sac.combination_id')
@@ -189,7 +189,7 @@ class PublishAlevelResults extends BaseController
             }
 
             // Fetch marks for major subjects only
-            $db = \Config\Database::connect('second_db');
+            $db = \Config\Database::connect('default');
             $marks = $db->table('tz_alevel_subject_marks asm')
                 ->select('
                     asm.student_id,

@@ -233,8 +233,8 @@ class AddExamSubjectController extends ResourceController
             'passing_marks' => 'required|numeric|greater_than[0]|less_than_equal_to[' . ($subject['max_marks'] ?? 0) . ']'
         ];
 
-        // Use the second_db group for validation
-        $db = \Config\Database::connect('second_db');
+        // Use the default group for validation
+        $db = \Config\Database::connect('default');
         $validation = \Config\Services::validation();
         $validation->setRules($rules);
         
@@ -245,7 +245,7 @@ class AddExamSubjectController extends ResourceController
     {
         try {
             $rules = [
-                'exam_id' => 'required|numeric|is_not_unique[second_db.tz_exams.id]',
+                'exam_id' => 'required|numeric|is_not_unique[default.tz_exams.id]',
                 'subject_name' => 'required|max_length[100]',
                 'max_marks' => 'required|numeric|greater_than[0]',
                 'passing_marks' => 'required|numeric|greater_than[0]'
