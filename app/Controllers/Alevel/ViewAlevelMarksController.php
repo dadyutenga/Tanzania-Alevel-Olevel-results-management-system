@@ -40,7 +40,7 @@ class ViewAlevelMarksController extends BaseController
         try {
             $data = [
                 'combinations' => $this->alevelCombinationModel->where('is_active', 'yes')->findAll(),
-                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
+                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(),
                 'exams' => [],
                 'classes' => [],
                 'marks' => [],
@@ -115,9 +115,9 @@ class ViewAlevelMarksController extends BaseController
                         ', 'left')
                         ->where([
                             's.is_active' => 'yes',
-                            'ss.is_active' => 'no',
-                            'c.is_active' => 'no',
-                            'sess.is_active' => 'no',
+                            'ss.is_active' => 'yes',
+                            'c.is_active' => 'yes',
+                            'sess.is_active' => 'yes',
                             'ac.is_active' => 'yes',
                             'acs.is_active' => 'yes',
                             'sac.is_active' => 'yes',
@@ -155,7 +155,7 @@ class ViewAlevelMarksController extends BaseController
                         ->where([
                             'sac.session_id' => $sessionId,
                             'sac.is_active' => 'yes',
-                            'c.is_active' => 'no'
+                            'c.is_active' => 'yes'
                         ])
                         ->groupBy('c.id')
                         ->get()
@@ -304,7 +304,7 @@ class ViewAlevelMarksController extends BaseController
                 ->where([
                     'sac.session_id' => $sessionId,
                     'sac.is_active' => 'yes',
-                    'c.is_active' => 'no'
+                    'c.is_active' => 'yes'
                 ])
                 ->groupBy('c.id')
                 ->get()

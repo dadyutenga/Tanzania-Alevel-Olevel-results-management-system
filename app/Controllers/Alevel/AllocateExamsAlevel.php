@@ -47,7 +47,7 @@ class AllocateExamsAlevel extends ResourceController
                     ->where('is_active', 'yes')
                     ->findAll();
                 $data['classes'] = $this->classModel
-                    ->where('is_active', 'no')
+                    ->where('is_active', 'yes')
                     ->findAll();
                 $data['combinations'] = $this->combinationModel
                     ->where('is_active', 'yes')
@@ -97,7 +97,7 @@ class AllocateExamsAlevel extends ResourceController
                     student_session ss ON ss.class_id = c.id
                 WHERE 
                     ss.session_id = ?
-                    AND c.is_active = 'no'
+                    AND c.is_active = 'yes'
                 ORDER BY 
                     c.class
             ", [$sessionId]);
@@ -106,7 +106,7 @@ class AllocateExamsAlevel extends ResourceController
 
             if (empty($classes)) {
                 $classes = $this->classModel
-                    ->where('is_active', 'no')
+                    ->where('is_active', 'yes')
                     ->findAll();
             }
 

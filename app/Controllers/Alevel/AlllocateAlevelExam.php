@@ -32,7 +32,7 @@ class AlllocateAlevelExam extends ResourceController
     {
         try {
             $data = [
-                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
+                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(),
                 'exams' => [],
                 'classes' => [],
                 'combinations' => [],
@@ -48,7 +48,7 @@ class AlllocateAlevelExam extends ResourceController
                     ->where('is_active', 'yes')
                     ->findAll();
                 $data['classes'] = $this->classModel
-                    ->where('is_active', 'no')
+                    ->where('is_active', 'yes')
                     ->findAll();
                 $data['combinations'] = $this->combinationModel
                     ->where('is_active', 'yes')
@@ -100,7 +100,7 @@ class AlllocateAlevelExam extends ResourceController
                     student_session ss ON ss.class_id = c.id
                 WHERE 
                     ss.session_id = ?
-                    AND c.is_active = 'no'
+                    AND c.is_active = 'yes'
                 ORDER BY 
                     c.class
             ", [$sessionId]);
@@ -109,7 +109,7 @@ class AlllocateAlevelExam extends ResourceController
 
             if (empty($classes)) {
                 $classes = $this->classModel
-                    ->where('is_active', 'no')
+                    ->where('is_active', 'yes')
                     ->findAll();
             }
 

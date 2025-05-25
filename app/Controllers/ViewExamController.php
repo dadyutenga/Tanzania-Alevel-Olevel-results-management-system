@@ -62,7 +62,7 @@ class ViewExamController extends ResourceController
     public function getSessions()
     {
         try {
-            $sessions = $this->sessionModel->where('is_active', 'no')
+            $sessions = $this->sessionModel->where('is_active', 'yes')
                                          ->orderBy('session', 'DESC')
                                          ->findAll();
             
@@ -173,7 +173,7 @@ class ViewExamController extends ResourceController
     {
         try {
             $session = $this->sessionModel->find($sessionId);
-            return ($session && $session['is_active'] === 'no');
+            return ($session && $session['is_active'] === 'yes');
         } catch (\Exception $e) {
             log_message('error', '[validateSession] Exception: {message}', ['message' => $e->getMessage()]);
             return false;

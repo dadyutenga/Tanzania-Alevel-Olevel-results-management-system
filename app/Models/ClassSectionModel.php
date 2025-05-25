@@ -70,7 +70,7 @@ class ClassSectionModel extends Model
     public function getActiveClassSections($classId = null)
     {
         $builder = $this->builder();
-        $builder->where('is_active', 'no'); // Since you're using 'no' as active
+        $builder->where('is_active', 'yes'); // Since you're using 'no' as active
 
         if ($classId !== null) {
             $builder->where('class_id', $classId);

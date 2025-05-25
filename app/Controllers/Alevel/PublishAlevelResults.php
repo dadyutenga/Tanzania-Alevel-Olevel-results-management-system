@@ -40,7 +40,7 @@ class PublishAlevelResults extends BaseController
             log_message('debug', 'PublishAlevelResults::index started');
             
             $data = [
-                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
+                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(),
                 'exams' => [],
                 'classes' => [],
                 'combinations' => []
@@ -64,7 +64,7 @@ class PublishAlevelResults extends BaseController
                     ->where([
                         'sac.session_id' => $currentSession['id'],
                         'sac.is_active' => 'yes',
-                        'c.is_active' => 'no'
+                        'c.is_active' => 'yes'
                     ])
                     ->groupBy('c.id')
                     ->get()
@@ -123,7 +123,7 @@ class PublishAlevelResults extends BaseController
                 ->where([
                     'sac.session_id' => $sessionId,
                     'sac.is_active' => 'yes',
-                    'c.is_active' => 'no'
+                    'c.is_active' => 'yes'
                 ])
                 ->groupBy('c.id')
                 ->get()

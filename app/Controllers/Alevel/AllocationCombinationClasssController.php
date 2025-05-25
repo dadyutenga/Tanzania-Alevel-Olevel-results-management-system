@@ -222,10 +222,10 @@ class AllocationCombinationClasssController extends BaseController
                     student_session ss ON ss.class_id = c.id AND ss.section_id = s.id
                 WHERE 
                     ss.session_id = ?
-                    AND c.is_active = 'no'
-                    AND s.is_active = 'no'
-                    AND cs.is_active = 'no'
-                    AND ss.is_active = 'no'
+                    AND c.is_active = 'yes'
+                    AND s.is_active = 'yes'
+                    AND cs.is_active = 'yes'
+                    AND ss.is_active = 'yes'
                 ORDER BY 
                     c.class, s.section
             ", [$sessionId]);
@@ -266,7 +266,7 @@ class AllocationCombinationClasssController extends BaseController
                     FROM 
                         classes
                     WHERE 
-                        is_active = 'no'
+                        is_active = 'yes'
                     ORDER BY 
                         class
                 ");

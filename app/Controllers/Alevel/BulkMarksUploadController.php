@@ -47,8 +47,8 @@ class BulkMarksUploadController extends BaseController
             $data = [
                 'combinations' => $this->alevelCombinationModel->where('is_active', 'yes')->findAll(),
                 'subjects' => $this->alevelCombinationSubjectModel->where('is_active', 'yes')->findAll(),
-                'students' => $this->studentModel->where('is_active', 'no')->findAll(),
-                'sessions' => $this->sessionModel->where('is_active', 'no')->findAll(),
+                'students' => $this->studentModel->where('is_active', 'yes')->findAll(),
+                'sessions' => $this->sessionModel->where('is_active', 'yes')->findAll(),
                 'exams' => [],
                 'classes' => [],
             ];
@@ -68,7 +68,7 @@ class BulkMarksUploadController extends BaseController
                     ->where([
                         'sac.session_id' => $currentSession['id'],
                         'sac.is_active' => 'yes',
-                        'c.is_active' => 'no'
+                        'c.is_active' => 'yes'
                     ])
                     ->groupBy('c.id')
                     ->get()
@@ -104,7 +104,7 @@ class BulkMarksUploadController extends BaseController
                 ->where([
                     'student_session.session_id' => $sessionId,
                     'student_session.class_id' => $classId,
-                    'student_session.is_active' => 'no',
+                    'student_session.is_active' => 'yes',
                     'students.is_active' => 'yes',
                     'sac.combination_id' => $combinationId,
                     'sac.is_active' => 'yes',
