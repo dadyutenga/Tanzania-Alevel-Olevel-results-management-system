@@ -1,5 +1,0 @@
-student  table  or  model  uses   is  active  as  no
-session  table  uses  is active  as  no 
-student_Session  uses  is  active  as  no
-sections  uses  is  active  as  no  
-classes  also  uses   is a acitve  as no  
