@@ -36,7 +36,6 @@ class PublishAlevelResults extends BaseController
     public function index()
     {
         try {
-            // Add debug logging
             log_message('debug', 'PublishAlevelResults::index started');
             
             $data = [
@@ -46,7 +45,6 @@ class PublishAlevelResults extends BaseController
                 'combinations' => []
             ];
 
-            // Add more debug logging
             log_message('debug', 'Sessions loaded: ' . json_encode($data['sessions']));
 
             $currentSession = $this->sessionModel->getCurrentSession();
@@ -71,11 +69,9 @@ class PublishAlevelResults extends BaseController
                     ->getResultArray();
             }
 
-            // Add debug logging before view render
             log_message('debug', 'About to render view with data: ' . json_encode($data));
             return view('alevel/PublishResults', $data);
         } catch (\Exception $e) {
-            // Enhance error logging
             log_message('error', '[PublishAlevelResults.index] Error: ' . $e->getMessage());
             log_message('error', '[PublishAlevelResults.index] Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()->with('error', 'Failed to load results page: ' . $e->getMessage());
@@ -188,7 +184,6 @@ class PublishAlevelResults extends BaseController
                 throw new \Exception('Missing required parameters');
             }
 
-            // Fetch marks for major subjects only
             $db = \Config\Database::connect('default');
             $marks = $db->table('tz_alevel_subject_marks asm')
                 ->select('
@@ -219,7 +214,6 @@ class PublishAlevelResults extends BaseController
                 throw new \Exception('No marks found for the specified exam, class, session, and combination');
             }
 
-            // Group marks by student
             $studentMarks = [];
             foreach ($marks as $mark) {
                 $studentId = $mark['student_id'];
@@ -236,14 +230,12 @@ class PublishAlevelResults extends BaseController
                 ];
             }
 
-            // Calculate grades, points, and divisions
             $results = [];
             foreach ($studentMarks as $studentId => $data) {
                 $subjects = $data['subjects'];
                 $gradeDetails = [];
                 $totalPoints = 0;
 
-                // Ensure exactly 3 major subjects
                 if (count($subjects) !== 3) {
                     log_message('warning', "[AlevelResultsController.calculateResults] Student ID $studentId has " . count($subjects) . " major subjects instead of 3");
                     continue;
@@ -289,7 +281,6 @@ class PublishAlevelResults extends BaseController
                     ];
                 }
 
-                // Determine division
                 if ($totalPoints >= 3 && $totalPoints <= 9) {
                     $division = 'I';
                 } elseif ($totalPoints >= 10 && $totalPoints <= 12) {
@@ -311,11 +302,9 @@ class PublishAlevelResults extends BaseController
                 ];
             }
 
-            // Save results to tz_alevel_exam_results
             $this->alevelExamResultModel->db->transStart();
 
             foreach ($results as $result) {
-                // Delete existing result
                 $this->alevelExamResultModel->where([
                     'exam_id' => $examId,
                     'student_id' => $result['student_id'],
@@ -324,7 +313,6 @@ class PublishAlevelResults extends BaseController
                     'combination_id' => $combinationId
                 ])->delete();
 
-                // Insert new result
                 $resultData = [
                     'exam_id' => $examId,
                     'student_id' => $result['student_id'],
