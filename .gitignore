@@ -6,6 +6,7 @@
 .DS_Store
 .AppleDouble
 .LSOverride
+.grok
 
 # OS X Thumbnails
 ._*
