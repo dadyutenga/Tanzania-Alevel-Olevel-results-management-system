@@ -15,28 +15,20 @@ class CreateStudents extends Migration
                 'unsigned' => true,
                 'auto_increment' => true,
             ],
-            'parent_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'null' => false,
-            ],
             'admission_no' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100,
-                'null' => true,
-            ],
-            'roll_no' => [
-                'type' => 'VARCHAR',
-                'constraint' => 50,
-                'null' => true,
+                'null' => false,
+                'unique' => true,
             ],
             'admission_date' => [
                 'type' => 'DATE',
-                'null' => true,
+                'null' => false,
             ],
             'firstname' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100,
+                'null' => false,
             ],
             'middlename' => [
                 'type' => 'VARCHAR',
@@ -46,142 +38,65 @@ class CreateStudents extends Migration
             'lastname' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100,
-            ],
-            'rte' => [
-                'type' => 'VARCHAR',
-                'constraint' => 20,
-                'null' => true,
+                'null' => false,
             ],
             'image' => [
                 'type' => 'VARCHAR',
                 'constraint' => 255,
                 'null' => true,
             ],
-            'mobileno' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'email' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'state' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'city' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'pincode' => [
-                'type' => 'VARCHAR',
-                'constraint' => 20,
-                'null' => true,
-            ],
-            'religion' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
             'dob' => [
                 'type' => 'DATE',
-                'null' => true,
+                'null' => false,
             ],
             'gender' => [
-                'type' => 'VARCHAR',
-                'constraint' => 20,
-                'null' => true,
-            ],
-            'current_address' => [
-                'type' => 'TEXT',
-                'null' => true,
+                'type' => 'ENUM',
+                'constraint' => ['male', 'female', 'other'],
+                'null' => false,
             ],
             'permanent_address' => [
                 'type' => 'TEXT',
-                'null' => true,
-            ],
-            'father_name' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'father_phone' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'father_occupation' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'mother_name' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'mother_phone' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'mother_occupation' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
+                'null' => false,
             ],
             'guardian_name' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100,
-                'null' => true,
+                'null' => false,
             ],
             'guardian_relation' => [
                 'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
+                'constraint' => 50,
+                'null' => false,
             ],
             'guardian_phone' => [
                 'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
-            ],
-            'guardian_occupation' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => true,
+                'constraint' => 15,
+                'null' => false,
             ],
             'guardian_address' => [
                 'type' => 'TEXT',
-                'null' => true,
+                'null' => false,
             ],
             'guardian_email' => [
                 'type' => 'VARCHAR',
                 'constraint' => 100,
                 'null' => true,
             ],
-            'father_pic' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
+            'height' => [
+                'type' => 'DECIMAL',
+                'constraint' => '5,2',
                 'null' => true,
             ],
-            'mother_pic' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
-                'null' => true,
-            ],
-            'guardian_pic' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
+            'weight' => [
+                'type' => 'DECIMAL',
+                'constraint' => '5,2',
                 'null' => true,
             ],
             'is_active' => [
                 'type' => 'ENUM',
                 'constraint' => ['yes', 'no'],
                 'default' => 'yes',
+                'null' => false,
             ],
             'created_at' => [
                 'type' => 'DATETIME',
@@ -194,6 +109,7 @@ class CreateStudents extends Migration
         ]);
         
         $this->forge->addKey('id', true);
+        $this->forge->addUniqueKey('admission_no');
         $this->forge->createTable('students');
     }
 

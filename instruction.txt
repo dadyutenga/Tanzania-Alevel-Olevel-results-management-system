@@ -1,0 +1,6 @@
+we  need  too  create the   
+exam  migration  -> exam class  migration -> exam  result model  migration -> exam  subject  model->exam  subject  marks  model 
+
+and  for the   alevel   tables  we  start  
+
+alevelcombinations -> alevelcombinationSubject -> alevelCombinationSubjects -> alevelsubjectmarks ->alevelexamresult
