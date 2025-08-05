@@ -109,7 +109,6 @@ class CreateStudents extends Migration
         ]);
         
         $this->forge->addKey('id', true);
-        $this->forge->addUniqueKey('admission_no');
         $this->forge->createTable('students');
     }
 

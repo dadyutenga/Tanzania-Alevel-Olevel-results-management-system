@@ -14,9 +14,8 @@ class StudentSessionModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'session_id', 'student_id', 'class_id', 'section_id',
-        'hostel_room_id', 'vehroute_id', 'route_pickup_point_id',
-        'transport_fees', 'fees_discount', 'is_leave', 'is_active',
-        'is_alumni', 'default_login'
+         'is_active',
+        
     ];
 
     // Dates
