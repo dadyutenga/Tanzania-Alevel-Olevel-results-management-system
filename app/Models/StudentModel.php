@@ -13,21 +13,23 @@ class StudentModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'parent_id', 'admission_no', 'roll_no', 'admission_date',
-        'firstname', 'middlename', 'lastname', 'rte', 'image',
-        'mobileno', 'email', 'state', 'city', 'pincode',
-        'religion', 'cast', 'dob', 'gender', 'current_address',
-        'permanent_address', 'category_id', 'school_house_id',
-        'blood_group', 'hostel_room_id', 'adhar_no', 'samagra_id',
-        'bank_account_no', 'bank_name', 'ifsc_code', 'guardian_is',
-        'father_name', 'father_phone', 'father_occupation',
-        'mother_name', 'mother_phone', 'mother_occupation',
-        'guardian_name', 'guardian_relation', 'guardian_phone',
-        'guardian_occupation', 'guardian_address', 'guardian_email',
-        'father_pic', 'mother_pic', 'guardian_pic', 'is_active',
-        'previous_school', 'height', 'weight', 'measurement_date',
-        'dis_reason', 'note', 'dis_note', 'app_key', 'parent_app_key',
-        'disable_at'
+        'admission_no',
+        'admission_date',
+        'firstname',
+        'middlename',
+        'lastname',
+        'image',
+        'dob',
+        'gender',
+        'permanent_address',
+        'guardian_name',
+        'guardian_relation',
+        'guardian_phone',
+        'guardian_address',
+        'guardian_email',
+        'is_active',
+        'height',
+        'weight'
     ];
 
     // Dates
@@ -38,12 +40,39 @@ class StudentModel extends Model
 
     // Validation
     protected $validationRules = [
-        'parent_id'    => 'required|integer',
-        'admission_no' => 'permit_empty|max_length[100]',
-        'firstname'    => 'permit_empty|max_length[100]',
-        'lastname'     => 'permit_empty|max_length[100]',
-        'email'        => 'permit_empty|valid_email|max_length[100]',
-        'mobileno'     => 'permit_empty|max_length[100]',
-        'is_active'    => 'permit_empty|in_list[yes,no]',
+        'admission_no'      => 'required|max_length[100]|is_unique[students.admission_no,id,{id}]',
+        'admission_date'    => 'required|valid_date',
+        'firstname'         => 'required|min_length[2]|max_length[100]|alpha_space',
+        'middlename'        => 'permit_empty|max_length[100]|alpha_space',
+        'lastname'          => 'required|min_length[2]|max_length[100]|alpha_space',
+        'image'            => 'permit_empty|max_size[1024]|is_image[image]',
+        'dob'              => 'required|valid_date',
+        'gender'           => 'required|in_list[male,female,other]',
+        'permanent_address'=> 'required|min_length[5]|max_length[255]',
+        'guardian_name'    => 'required|min_length[3]|max_length[100]|alpha_space',
+        'guardian_relation'=> 'required|max_length[50]',
+        'guardian_phone'   => 'required|min_length[10]|max_length[15]|numeric',
+        'guardian_address' => 'required|min_length[5]|max_length[255]',
+        'guardian_email'   => 'permit_empty|valid_email|max_length[100]',
+        'is_active'        => 'required|in_list[yes,no]',
+        'height'           => 'permit_empty|numeric|greater_than[0]',
+        'weight'           => 'permit_empty|numeric|greater_than[0]'
     ];
-} 
+
+    protected $validationMessages = [
+        'admission_no' => [
+            'required' => 'Admission number is required',
+            'is_unique' => 'This admission number already exists'
+        ],
+        'firstname' => [
+            'required' => 'First name is required',
+            'min_length' => 'First name must be at least 2 characters long'
+        ],
+        'lastname' => [
+            'required' => 'Last name is required',
+            'min_length' => 'Last name must be at least 2 characters long'
+        ]
+    ];
+
+    protected $skipValidation = false;
+}
