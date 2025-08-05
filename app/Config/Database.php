@@ -29,7 +29,7 @@ class Database extends Config
         'hostname'     => 'localhost',
         'username'     => '',
         'password'     => '',
-        'database'     => '',
+        'database'     => 'school_results',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
@@ -193,6 +193,13 @@ class Database extends Config
     public function __construct()
     {
         parent::__construct();
+
+        // Override with environment variables if available
+        $this->default['hostname'] = getenv('database.default.hostname') ?: $this->default['hostname'];
+        $this->default['username'] = getenv('database.default.username') ?: $this->default['username'];
+        $this->default['password'] = getenv('database.default.password') ?: $this->default['password'];
+        $this->default['database'] = getenv('database.default.database') ?: $this->default['database'];
+        $this->default['DBDriver'] = getenv('database.default.DBDriver') ?: $this->default['DBDriver'];
 
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
