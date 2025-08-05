@@ -31,7 +31,7 @@ class CreateStudentAlevelCombinations extends Migration
                 'type' => 'INT',
                 'constraint' => 11,
                 'unsigned' => true,
-                'null' => false,
+                'null' => true, // Changed to true as it's optional
             ],
             'session_id' => [
                 'type' => 'INT',
@@ -59,9 +59,9 @@ class CreateStudentAlevelCombinations extends Migration
         $this->forge->addKey('id', true);
         
         // Adding Foreign Keys
-        $this->forge->addForeignKey('combination_id', 'tz_combinations', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('combination_id', 'tz_alevel_combinations', 'id', 'CASCADE', 'CASCADE'); // Fixed table name
         $this->forge->addForeignKey('class_id', 'classes', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('section_id', 'sections', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('section_id', 'sections', 'id', 'CASCADE', 'SET NULL'); // Changed to SET NULL
         $this->forge->addForeignKey('session_id', 'sessions', 'id', 'CASCADE', 'CASCADE');
         
         // Adding Unique Key for student combination

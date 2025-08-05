@@ -60,7 +60,7 @@ class CreateAlevelExamCombinations extends Migration
         
         // Adding Foreign Keys
         $this->forge->addForeignKey('exam_id', 'tz_exams', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('combination_id', 'tz_combinations', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('combination_id', 'tz_alevel_combinations', 'id', 'CASCADE', 'CASCADE'); // Fixed table name
         $this->forge->addForeignKey('class_id', 'classes', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('session_id', 'sessions', 'id', 'CASCADE', 'CASCADE');
         
