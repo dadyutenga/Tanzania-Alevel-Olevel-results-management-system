@@ -2,22 +2,26 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class ExamModel extends Model
+class ExamModel extends BaseModel
 {
     protected $table = 'tz_exams';
     protected $allowedFields = [
+        'id',
         'exam_name',
         'exam_date',
         'session_id',
-        'is_active'
+        'is_active',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id',
     ];
     protected $returnType = 'array';
     protected $validationRules = [
         'exam_name' => 'required|max_length[100]',
         'exam_date' => 'required|valid_date',
-        'session_id' => 'required|numeric|is_not_unique[sessions.id]',
+        'session_id' => 'required|max_length[36]|is_not_unique[sessions.id]',
         'is_active' => 'required|in_list[yes,no]'
     ];
 

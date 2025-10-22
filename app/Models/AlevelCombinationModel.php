@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class AlevelCombinationModel extends Model
+class AlevelCombinationModel extends BaseModel
 {
     protected $table            = 'tz_alevel_combinations';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'combination_code', 'combination_name', 'is_active'
+        'id',
+        'combination_code',
+        'combination_name',
+        'is_active',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id'
     ];
 
     // Dates

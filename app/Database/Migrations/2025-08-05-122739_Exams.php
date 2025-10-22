@@ -10,10 +10,8 @@ class Exams extends Migration
     {
         $this->forge->addField([
             'id' => [
-                'type'           => 'INT',
-                'constraint'     => 5,
-                'unsigned'       => true,
-                'auto_increment' => true,
+                'type'           => 'CHAR',
+                'constraint'     => 36,
             ],
             'exam_name' => [
                 'type'       => 'VARCHAR',
@@ -23,14 +21,28 @@ class Exams extends Migration
                 'type' => 'DATE',
             ],
             'session_id' => [
-                'type'       => 'INT',
-                'constraint' => 5,
-                'unsigned'   => true,
+                'type'       => 'CHAR',
+                'constraint' => 36,
             ],
             'is_active' => [
                 'type'       => 'ENUM',
                 'constraint' => ['yes', 'no'],
                 'default'    => 'yes',
+            ],
+            'school_id' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+                'null'       => true,
+            ],
+            'created_by' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+                'null'       => true,
+            ],
+            'updated_by' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+                'null'       => true,
             ],
             'created_at' => [
                 'type' => 'DATETIME',
@@ -42,6 +54,10 @@ class Exams extends Migration
             ],
         ]);
         $this->forge->addKey('id', true);
+        $this->forge->addKey('session_id');
+        $this->forge->addKey('school_id');
+        $this->forge->addKey('created_by');
+        $this->forge->addKey('updated_by');
         $this->forge->addForeignKey('session_id', 'sessions', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('tz_exams');
     }

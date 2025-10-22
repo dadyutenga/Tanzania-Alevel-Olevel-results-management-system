@@ -10,10 +10,8 @@ class CreateStudents extends Migration
     {
         $this->forge->addField([
             'id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => true,
-                'auto_increment' => true,
+                'type' => 'CHAR',
+                'constraint' => 36,
             ],
             'admission_no' => [
                 'type' => 'VARCHAR',
@@ -98,6 +96,21 @@ class CreateStudents extends Migration
                 'default' => 'yes',
                 'null' => false,
             ],
+            'school_id' => [
+                'type' => 'CHAR',
+                'constraint' => 36,
+                'null' => true,
+            ],
+            'created_by' => [
+                'type' => 'CHAR',
+                'constraint' => 36,
+                'null' => true,
+            ],
+            'updated_by' => [
+                'type' => 'CHAR',
+                'constraint' => 36,
+                'null' => true,
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,
@@ -107,8 +120,11 @@ class CreateStudents extends Migration
                 'null' => true,
             ],
         ]);
-        
+
         $this->forge->addKey('id', true);
+        $this->forge->addKey('school_id');
+        $this->forge->addKey('created_by');
+        $this->forge->addKey('updated_by');
         $this->forge->createTable('students');
     }
 

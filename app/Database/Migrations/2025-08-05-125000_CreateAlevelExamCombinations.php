@@ -10,33 +10,27 @@ class CreateAlevelExamCombinations extends Migration
     {
         $this->forge->addField([
             'id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => true,
-                'auto_increment' => true,
+                'type' => 'CHAR',
+                'constraint' => 36,
             ],
             'exam_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => true,
+                'type' => 'CHAR',
+                'constraint' => 36,
                 'null' => false,
             ],
             'combination_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => true,
+                'type' => 'CHAR',
+                'constraint' => 36,
                 'null' => false,
             ],
             'class_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => true,
+                'type' => 'CHAR',
+                'constraint' => 36,
                 'null' => false,
             ],
             'session_id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => true,
+                'type' => 'CHAR',
+                'constraint' => 36,
                 'null' => false,
             ],
             'is_active' => [
@@ -44,6 +38,21 @@ class CreateAlevelExamCombinations extends Migration
                 'constraint' => ['yes', 'no'],
                 'default' => 'yes',
                 'null' => false,
+            ],
+            'school_id' => [
+                'type' => 'CHAR',
+                'constraint' => 36,
+                'null' => true,
+            ],
+            'created_by' => [
+                'type' => 'CHAR',
+                'constraint' => 36,
+                'null' => true,
+            ],
+            'updated_by' => [
+                'type' => 'CHAR',
+                'constraint' => 36,
+                'null' => true,
             ],
             'created_at' => [
                 'type' => 'DATETIME',
@@ -57,6 +66,13 @@ class CreateAlevelExamCombinations extends Migration
 
         // Adding Primary Key
         $this->forge->addKey('id', true);
+        $this->forge->addKey('exam_id');
+        $this->forge->addKey('combination_id');
+        $this->forge->addKey('class_id');
+        $this->forge->addKey('session_id');
+        $this->forge->addKey('school_id');
+        $this->forge->addKey('created_by');
+        $this->forge->addKey('updated_by');
         
         // Adding Foreign Keys
         $this->forge->addForeignKey('exam_id', 'tz_exams', 'id', 'CASCADE', 'CASCADE');

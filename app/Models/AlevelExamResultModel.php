@@ -2,19 +2,25 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class AlevelExamResultModel extends Model
+class AlevelExamResultModel extends BaseModel
 {
     protected $table            = 'tz_alevel_exam_results';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'student_id', 'exam_id', 'class_id', 'session_id', 'combination_id', 
-        'total_points', 'division', 'division_description'
+        'id',
+        'student_id',
+        'exam_id',
+        'class_id',
+        'session_id',
+        'combination_id',
+        'total_points',
+        'division',
+        'division_description',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id'
     ];
 
     // Dates
@@ -25,11 +31,11 @@ class AlevelExamResultModel extends Model
 
     // Validation
     protected $validationRules = [
-        'student_id'      => 'required|numeric',
-        'exam_id'         => 'required|numeric',
-        'class_id'        => 'required|numeric',
-        'session_id'      => 'required|numeric',
-        'combination_id'  => 'required|numeric',
+        'student_id'      => 'required|max_length[36]',
+        'exam_id'         => 'required|max_length[36]',
+        'class_id'        => 'required|max_length[36]',
+        'session_id'      => 'required|max_length[36]',
+        'combination_id'  => 'required|max_length[36]',
         'division'        => 'permit_empty|max_length[5]',
         'division_description' => 'permit_empty|max_length[50]'
     ];

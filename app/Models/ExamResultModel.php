@@ -2,22 +2,23 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class ExamResultModel extends Model
+class ExamResultModel extends BaseModel
 {
     protected $table = 'tz_exam_results';
-    protected $primaryKey = 'id';
-    protected $returnType = 'array';
-    protected $useSoftDeletes = false;
     protected $allowedFields = [
+        'id',
         'student_id',
         'exam_id',
         'class_id',
         'session_id',
         'total_points',
         'division',
-        'division_description'
+        'division_description',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
@@ -25,10 +26,10 @@ class ExamResultModel extends Model
 
     // Validation rules matching SQL constraints
     protected $validationRules = [
-        'student_id' => 'required|numeric|is_not_unique[students.id]',
-        'exam_id' => 'required|numeric|is_not_unique[tz_exams.id]',
-        'class_id' => 'required|numeric|is_not_unique[classes.id]',
-        'session_id' => 'required|numeric|is_not_unique[sessions.id]',
+        'student_id' => 'required|max_length[36]|is_not_unique[students.id]',
+        'exam_id' => 'required|max_length[36]|is_not_unique[tz_exams.id]',
+        'class_id' => 'required|max_length[36]|is_not_unique[classes.id]',
+        'session_id' => 'required|max_length[36]|is_not_unique[sessions.id]',
         'total_points' => 'permit_empty|numeric',
         'division' => 'permit_empty|max_length[5]',
         'division_description' => 'permit_empty|max_length[50]'

@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class ClassModel extends Model
+class ClassModel extends BaseModel
 {
     protected $table            = 'classes';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['class', 'is_active'];
+    protected $allowedFields    = [
+        'id',
+        'class',
+        'is_active',
+        'created_by',
+        'updated_by',
+        'school_id',
+        'created_at',
+        'updated_at',
+    ];
 
     // Dates
     protected $useTimestamps = true;

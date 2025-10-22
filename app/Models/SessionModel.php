@@ -2,22 +2,21 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class SessionModel extends Model
+class SessionModel extends BaseModel
 {
     protected $table = 'sessions';
-    protected $primaryKey = 'id';
-    protected $returnType = 'array';
-    protected $useSoftDeletes = false;
     protected $protectFields = true;
-    
+
 
     protected $allowedFields = [
+        'id',
         'session',
         'is_active',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id',
     ];
 
     // Dates
@@ -42,20 +41,6 @@ class SessionModel extends Model
             'in_list' => 'Active status must be either yes or no'
         ]
     ];
-
-    // Callbacks
-    protected function beforeInsert(array $data)
-    {
-        $data['data']['created_at'] = date('Y-m-d H:i:s');
-        $data['data']['updated_at'] = date('Y-m-d H:i:s');
-        return $data;
-    }
-
-    protected function beforeUpdate(array $data)
-    {
-        $data['data']['updated_at'] = date('Y-m-d H:i:s');
-        return $data;
-    }
 
     // Custom Methods
     public function getActiveSessions()

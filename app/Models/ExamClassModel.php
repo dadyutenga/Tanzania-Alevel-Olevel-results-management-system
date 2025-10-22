@@ -2,17 +2,24 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class ExamClassModel extends Model
+class ExamClassModel extends BaseModel
 {
     protected $table = 'tz_exam_classes';
-    protected $primaryKey = 'id';
-    protected $allowedFields = ['exam_id', 'class_id', 'session_id'];   
-    
+    protected $allowedFields = [
+        'id',
+        'exam_id',
+        'class_id',
+        'session_id',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id',
+    ];
+
     // Specify the return type for all queries
     protected $returnType = 'array';
-    
+
     // Enable automatic timestamps
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
@@ -20,27 +27,24 @@ class ExamClassModel extends Model
     
     // Validation rules
     protected $validationRules = [
-        'exam_id' => 'required|numeric|is_natural_no_zero',
-        'class_id' => 'required|numeric|is_natural_no_zero',
-        'session_id' => 'required|numeric|is_natural_no_zero'
+        'exam_id' => 'required|max_length[36]',
+        'class_id' => 'required|max_length[36]',
+        'session_id' => 'required|max_length[36]'
     ];
     
     // Validation messages
     protected $validationMessages = [
         'exam_id' => [
             'required' => 'Exam ID is required',
-            'numeric' => 'Exam ID must be numeric',
-            'is_natural_no_zero' => 'Invalid Exam ID'
+            'max_length' => 'Exam ID must be a valid identifier'
         ],
         'class_id' => [
             'required' => 'Class ID is required',
-            'numeric' => 'Class ID must be numeric',
-            'is_natural_no_zero' => 'Invalid Class ID'
+            'max_length' => 'Class ID must be a valid identifier'
         ],
         'session_id' => [
             'required' => 'Session ID is required',
-            'numeric' => 'Session ID must be numeric',
-            'is_natural_no_zero' => 'Invalid Session ID'
+            'max_length' => 'Session ID must be a valid identifier'
         ]
     ];
 
@@ -68,10 +72,10 @@ class ExamClassModel extends Model
     /**
      * Get classes assigned to a specific exam
      *
-     * @param int $examId
+     * @param string $examId
      * @return array
      */
-    public function getClassesByExamId(int $examId)
+    public function getClassesByExamId(string $examId)
     {
         return $this->where('exam_id', $examId)
                     ->findAll();
@@ -80,10 +84,10 @@ class ExamClassModel extends Model
     /**
      * Get exams assigned to a specific class
      *
-     * @param int $classId
+     * @param string $classId
      * @return array
      */
-    public function getExamsByClassId(int $classId)
+    public function getExamsByClassId(string $classId)
     {
         return $this->where('class_id', $classId)
                     ->findAll();
@@ -92,11 +96,11 @@ class ExamClassModel extends Model
     /**
      * Check if an exam is assigned to a class
      *
-     * @param int $examId
-     * @param int $classId
+     * @param string $examId
+     * @param string $classId
      * @return bool
      */
-    public function isExamAssignedToClass(int $examId, int $classId): bool
+    public function isExamAssignedToClass(string $examId, string $classId): bool
     {
         return $this->where([
             'exam_id' => $examId,
@@ -107,12 +111,12 @@ class ExamClassModel extends Model
     /**
      * Assign multiple classes to an exam
      *
-     * @param int $examId
+     * @param string $examId
      * @param array $classIds
-     * @param int $sessionId
+     * @param string $sessionId
      * @return bool
      */
-    public function assignClassesToExam(int $examId, array $classIds, int $sessionId): bool
+    public function assignClassesToExam(string $examId, array $classIds, string $sessionId): bool
     {
         $data = [];
         foreach ($classIds as $classId) {
