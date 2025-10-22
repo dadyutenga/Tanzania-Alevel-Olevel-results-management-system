@@ -10,21 +10,17 @@ class CreateUserUserRoles extends Migration
     {
         $this->forge->addField([
             "id" => [
-                "type" => "INT",
-                "constraint" => 11,
-                "unsigned" => true,
-                "auto_increment" => true,
+                "type" => "CHAR",
+                "constraint" => 36,
             ],
             "user_id" => [
-                "type" => "INT",
-                "constraint" => 11,
-                "unsigned" => true,
+                "type" => "CHAR",
+                "constraint" => 36,
                 "null" => false,
             ],
             "user_role_id" => [
-                "type" => "INT",
-                "constraint" => 11,
-                "unsigned" => true,
+                "type" => "CHAR",
+                "constraint" => 36,
                 "null" => false,
             ],
             "created_at" => [

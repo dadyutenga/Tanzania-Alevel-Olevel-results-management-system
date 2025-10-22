@@ -29,7 +29,7 @@ class Database extends Config
         "hostname" => "localhost",
         "username" => "root",
         "password" => "",
-        "database" => "school_results",
+        "database" => "school_result",
         "DBDriver" => "MySQLi",
         "DBPrefix" => "",
         "pConnect" => false,
