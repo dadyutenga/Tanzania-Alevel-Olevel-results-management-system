@@ -398,12 +398,12 @@
 
   <!-- Alerts Container -->
   <div id="alerts-container">
-    <?php if (session('error')) : ?>
+    <?php if (session("error")): ?>
       <div class="alert alert-danger">
         <i class="fas fa-exclamation-circle"></i>
         <div class="alert-content">
           <div class="alert-title">Error</div>
-          <div class="alert-message"><?= session('error') ?></div>
+          <div class="alert-message"><?= session("error") ?></div>
         </div>
         <button class="alert-close">
           <i class="fas fa-times"></i>
@@ -412,8 +412,8 @@
       </div>
     <?php endif; ?>
 
-    <?php if (session('errors')) : ?>
-      <?php foreach (session('errors') as $error) : ?>
+    <?php if (session("errors")): ?>
+      <?php foreach (session("errors") as $error): ?>
         <div class="alert alert-danger">
           <i class="fas fa-exclamation-circle"></i>
           <div class="alert-content">
@@ -425,15 +425,15 @@
           </button>
           <div class="alert-progress"></div>
         </div>
-      <?php endforeach ?>
+      <?php endforeach; ?>
     <?php endif; ?>
 
-    <?php if (session('message')) : ?>
+    <?php if (session("message")): ?>
       <div class="alert alert-success">
         <i class="fas fa-check-circle"></i>
         <div class="alert-content">
           <div class="alert-title">Success</div>
-          <div class="alert-message"><?= session('message') ?></div>
+          <div class="alert-message"><?= session("message") ?></div>
         </div>
         <button class="alert-close">
           <i class="fas fa-times"></i>
@@ -451,70 +451,66 @@
       <h1>Exam Results Management</h1>
     </div>
 
-    <form class="login-form" action="<?= base_url('login') ?>" method="post">
+    <form class="login-form" action="<?= base_url("login") ?>" method="post">
       <?= csrf_field() ?>
 
       <div class="form-group">
         <label for="email">Email</label>
         <div class="input-with-icon">
           <i class="fas fa-envelope"></i>
-          <input type="email" id="email" name="email" 
-                 value="<?= old('email') ?>"
-                 class="<?php if (session('errors.email')) : ?>is-invalid<?php endif ?>"
+          <input type="email" id="email" name="email"
+                 value="<?= old("email") ?>"
+                 class="<?php if (
+                     session("errors.email")
+                 ): ?>is-invalid<?php endif; ?>"
                  placeholder="Enter your email" required>
         </div>
-        <?php if (session('errors.email')) : ?>
+        <?php if (session("errors.email")): ?>
           <div class="invalid-feedback">
-            <?= session('errors.email') ?>
+            <?= session("errors.email") ?>
           </div>
-        <?php endif ?>
+        <?php endif; ?>
       </div>
 
       <div class="form-group">
         <label for="password">Password</label>
         <div class="input-with-icon">
           <i class="fas fa-lock"></i>
-          <input type="password" id="password" name="password" 
-                 class="<?php if (session('errors.password')) : ?>is-invalid<?php endif ?>"
+          <input type="password" id="password" name="password"
+                 class="<?php if (
+                     session("errors.password")
+                 ): ?>is-invalid<?php endif; ?>"
                  placeholder="Enter your password" required>
           <i class="fas fa-eye password-toggle" id="togglePassword"></i>
         </div>
-        <?php if (session('errors.password')) : ?>
+        <?php if (session("errors.password")): ?>
           <div class="invalid-feedback">
-            <?= session('errors.password') ?>
+            <?= session("errors.password") ?>
           </div>
-        <?php endif ?>
+        <?php endif; ?>
       </div>
-
-      <?php if (setting('Auth.sessionConfig')['allowRemembering']): ?>
-      <div class="form-check">
-        <input type="checkbox" id="remember" name="remember" class="form-check-input" 
-               <?php if (old('remember')): ?> checked<?php endif ?>>
-        <label for="remember">Remember me</label>
-      </div>
-      <?php endif; ?>
 
       <div class="forgot-password">
-        <?php if (setting('Auth.allowForgotPassword')) : ?>
-          <a href="<?= url_to('forgot') ?>">Forgot password?</a>
-        <?php endif; ?>
+        <span>Forgot password? Contact the system administrator.</span>
       </div>
 
       <button type="submit" class="login-btn">
         <i class="fas fa-sign-in-alt"></i> Login
       </button>
-      
+
       <div style="margin-top: 1.5rem; text-align: center;">
-        <a href="<?= base_url('/') ?>" class="login-btn" style="background-color: var(--secondary); color: var(--text-primary); box-shadow: none;">
+        <a href="<?= base_url(
+            "/",
+        ) ?>" class="login-btn" style="background-color: var(--secondary); color: var(--text-primary); box-shadow: none;">
           <i class="fas fa-home"></i> Back to Home
         </a>
       </div>
     </form>
 
     <div class="login-footer">
-      <?php if (setting('Auth.allowRegistration')) : ?>
-        <p>Don't have an account? <a href="<?= base_url('register') ?>">Register here</a></p>
-      <?php endif; ?>
+      <p>Don't have an account? <a href="<?= base_url(
+          "register",
+      ) ?>">Register here</a></p>
     </div>
   </div>
 
@@ -522,7 +518,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       // Show all alerts
       const alerts = document.querySelectorAll('.alert');
-      
+
       alerts.forEach(alert => {
         // Show alert
         setTimeout(() => {
@@ -553,7 +549,7 @@
         group.style.transform = 'translateY(20px)';
         group.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
         group.style.transitionDelay = `${index * 0.1}s`;
-        
+
         setTimeout(() => {
           group.style.opacity = '1';
           group.style.transform = 'translateY(0)';
@@ -563,13 +559,13 @@
       // Password toggle functionality
       const togglePassword = document.querySelector('#togglePassword');
       const password = document.querySelector('#password');
-      
+
       if (togglePassword && password) {
         togglePassword.addEventListener('click', function() {
           // Toggle the type attribute
           const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
           password.setAttribute('type', type);
-          
+
           // Toggle the eye icon
           this.classList.toggle('fa-eye');
           this.classList.toggle('fa-eye-slash');

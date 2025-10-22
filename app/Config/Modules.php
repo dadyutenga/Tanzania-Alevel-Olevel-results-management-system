@@ -47,7 +47,7 @@ class Modules extends BaseModules
      *   [
      *       'only' => [
      *           // List up all packages to auto-discover
-     *           'codeigniter4/shield',
+     *           'vendor/package',
      *       ],
      *   ]
      *   or
@@ -74,11 +74,5 @@ class Modules extends BaseModules
      *
      * @var list<string>
      */
-    public $aliases = [
-        'events',
-        'filters',
-        'registrars',
-        'routes',
-        'services',
-    ];
+    public $aliases = ["events", "filters", "registrars", "routes", "services"];
 }
