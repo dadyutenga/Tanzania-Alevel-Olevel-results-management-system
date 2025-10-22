@@ -10,35 +10,28 @@ class AlevelExamResults extends Migration
     {
         $this->forge->addField([
             'id' => [
-                'type'           => 'INT',
-                'constraint'     => 5,
-                'unsigned'       => true,
-                'auto_increment' => true,
+                'type'           => 'CHAR',
+                'constraint'     => 36,
             ],
             'student_id' => [
-                'type'       => 'INT',
-                'constraint' => 5,
-                'unsigned'   => true,
+                'type'       => 'CHAR',
+                'constraint' => 36,
             ],
             'exam_id' => [
-                'type'       => 'INT',
-                'constraint' => 5,
-                'unsigned'   => true,
+                'type'       => 'CHAR',
+                'constraint' => 36,
             ],
             'class_id' => [
-                'type'       => 'INT',
-                'constraint' => 5,
-                'unsigned'   => true,
+                'type'       => 'CHAR',
+                'constraint' => 36,
             ],
             'session_id' => [
-                'type'       => 'INT',
-                'constraint' => 5,
-                'unsigned'   => true,
+                'type'       => 'CHAR',
+                'constraint' => 36,
             ],
             'combination_id' => [
-                'type'       => 'INT',
-                'constraint' => 5,
-                'unsigned'   => true,
+                'type'       => 'CHAR',
+                'constraint' => 36,
             ],
             'total_points' => [
                 'type'       => 'INT',
@@ -55,6 +48,21 @@ class AlevelExamResults extends Migration
                 'constraint' => '50',
                 'null'       => true,
             ],
+            'school_id' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+                'null'       => true,
+            ],
+            'created_by' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+                'null'       => true,
+            ],
+            'updated_by' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+                'null'       => true,
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,
@@ -65,6 +73,14 @@ class AlevelExamResults extends Migration
             ],
         ]);
         $this->forge->addKey('id', true);
+        $this->forge->addKey('student_id');
+        $this->forge->addKey('exam_id');
+        $this->forge->addKey('class_id');
+        $this->forge->addKey('session_id');
+        $this->forge->addKey('combination_id');
+        $this->forge->addKey('school_id');
+        $this->forge->addKey('created_by');
+        $this->forge->addKey('updated_by');
         $this->forge->addForeignKey('student_id', 'students', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('exam_id', 'tz_exams', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('class_id', 'classes', 'id', 'CASCADE', 'CASCADE');

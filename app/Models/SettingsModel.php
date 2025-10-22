@@ -2,17 +2,12 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class SettingsModel extends Model
+class SettingsModel extends BaseModel
 {
     protected $table = 'tz_web_setting';
-    protected $primaryKey = 'id';
-    protected $useAutoIncrement = false;
-    protected $returnType = 'array';
-    protected $useSoftDeletes = false;
     protected $protectFields = true;
     protected $allowedFields = [
+        'id',
         'school_name',
         'total_classes',
         'school_year',
@@ -20,7 +15,12 @@ class SettingsModel extends Model
         'school_logo',
         'contact_email',
         'contact_phone',
-        'is_active'
+        'is_active',
+        'created_by',
+        'updated_by',
+        'school_id',
+        'created_at',
+        'updated_at',
     ];
 
     // Dates
@@ -68,23 +68,11 @@ class SettingsModel extends Model
     protected $skipValidation = false;
     protected $cleanValidationRules = true;
 
-    // Callbacks
-    protected $allowCallbacks = true;
-    protected $beforeInsert = [];
-    protected $afterInsert = [];
-    protected $beforeUpdate = [];
-    protected $afterUpdate = [];
-    protected $beforeFind = [];
-    protected $afterFind = [];
-    protected $beforeDelete = [];
-    protected $afterDelete = [];
-
     /**
-     * Get the current settings
-     * Since ID is always 1 as per the table structure
+     * Get the current settings for the active context.
      */
     public function getCurrentSettings()
     {
-        return $this->find(1);
+        return $this->first();
     }
 }

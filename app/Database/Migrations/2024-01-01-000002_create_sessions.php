@@ -10,10 +10,8 @@ class CreateSessions extends Migration
     {
         $this->forge->addField([
             'id' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => true,
-                'auto_increment' => true,
+                'type' => 'CHAR',
+                'constraint' => 36,
             ],
             'session' => [
                 'type' => 'VARCHAR',
@@ -24,6 +22,21 @@ class CreateSessions extends Migration
                 'constraint' => ['yes', 'no'],
                 'default' => 'no',
             ],
+            'school_id' => [
+                'type' => 'CHAR',
+                'constraint' => 36,
+                'null' => true,
+            ],
+            'created_by' => [
+                'type' => 'CHAR',
+                'constraint' => 36,
+                'null' => true,
+            ],
+            'updated_by' => [
+                'type' => 'CHAR',
+                'constraint' => 36,
+                'null' => true,
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,
@@ -33,12 +46,16 @@ class CreateSessions extends Migration
                 'null' => true,
             ],
         ]);
-        
+
         $this->forge->addKey('id', true);
+        $this->forge->addKey('school_id');
+        $this->forge->addKey('created_by');
+        $this->forge->addKey('updated_by');
         $this->forge->createTable('sessions');
 
         // Add default academic session
         $defaultSession = [
+            'id' => $this->generateUuid(),
             'session' => '2024-2025',
             'is_active' => 'yes',
             'created_at' => date('Y-m-d H:i:s'),
@@ -51,5 +68,14 @@ class CreateSessions extends Migration
     public function down()
     {
         $this->forge->dropTable('sessions');
+}
+
+    private function generateUuid(): string
+    {
+        $data = random_bytes(16);
+        $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+        $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 }

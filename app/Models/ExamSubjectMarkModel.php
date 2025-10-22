@@ -2,21 +2,22 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class ExamSubjectMarkModel extends Model
+class ExamSubjectMarkModel extends BaseModel
 {
     protected $table = 'tz_exam_subject_marks';
-    protected $primaryKey = 'id';
-    protected $returnType = 'array';
-    protected $useSoftDeletes = false;
     protected $allowedFields = [
+        'id',
         'exam_id',
         'student_id',
         'class_id',
         'session_id',
         'exam_subject_id',
-        'marks_obtained'
+        'marks_obtained',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
@@ -24,11 +25,11 @@ class ExamSubjectMarkModel extends Model
 
     // Validation rules matching SQL constraints
     protected $validationRules = [
-        'exam_id' => 'required|numeric|is_not_unique[tz_exams.id]',
-        'student_id' => 'required|numeric|is_not_unique[students.id]',
-        'class_id' => 'required|numeric|is_not_unique[classes.id]',
-        'session_id' => 'required|numeric|is_not_unique[sessions.id]',
-        'exam_subject_id' => 'required|numeric|is_not_unique[tz_exam_subjects.id]',
+        'exam_id' => 'required|max_length[36]|is_not_unique[tz_exams.id]',
+        'student_id' => 'required|max_length[36]|is_not_unique[students.id]',
+        'class_id' => 'required|max_length[36]|is_not_unique[classes.id]',
+        'session_id' => 'required|max_length[36]|is_not_unique[sessions.id]',
+        'exam_subject_id' => 'required|max_length[36]|is_not_unique[tz_exam_subjects.id]',
         'marks_obtained' => 'numeric|permit_empty'
     ];
 

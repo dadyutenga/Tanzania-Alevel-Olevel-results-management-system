@@ -2,25 +2,24 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class AlevelSubjectMarksModel extends Model
+class AlevelSubjectMarksModel extends BaseModel
 {
     protected $table = 'tz_alevel_subject_marks';
-    protected $primaryKey = 'id';
-    protected $useAutoIncrement = true;
-
-    protected $returnType = 'array';
-    protected $useSoftDeletes = false;
 
     protected $allowedFields = [
+        'id',
         'exam_id',
         'student_id',
         'class_id',
         'session_id',
         'combination_id',
         'subject_id',
-        'marks_obtained'
+        'marks_obtained',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id'
     ];
 
     protected $useTimestamps = true;
@@ -29,42 +28,42 @@ class AlevelSubjectMarksModel extends Model
     protected $deletedField = '';
 
     protected $validationRules = [
-        'exam_id' => 'required|integer',
-        'student_id' => 'required|integer',
-        'class_id' => 'required|integer',
-        'session_id' => 'required|integer',
-        'combination_id' => 'required|integer',
-        'subject_id' => 'required|integer',
-        'marks_obtained' => 'permit_empty|integer'
+        'exam_id' => 'required|max_length[36]',
+        'student_id' => 'required|max_length[36]',
+        'class_id' => 'required|max_length[36]',
+        'session_id' => 'required|max_length[36]',
+        'combination_id' => 'required|max_length[36]',
+        'subject_id' => 'required|max_length[36]',
+        'marks_obtained' => 'permit_empty|numeric'
     ];
 
     protected $validationMessages = [
         'exam_id' => [
             'required' => 'Exam ID is required.',
-            'integer' => 'Exam ID must be an integer.'
+            'max_length' => 'Exam ID must be a valid identifier.'
         ],
         'student_id' => [
             'required' => 'Student ID is required.',
-            'integer' => 'Student ID must be an integer.'
+            'max_length' => 'Student ID must be a valid identifier.'
         ],
         'class_id' => [
             'required' => 'Class ID is required.',
-            'integer' => 'Class ID must be an integer.'
+            'max_length' => 'Class ID must be a valid identifier.'
         ],
         'session_id' => [
             'required' => 'Session ID is required.',
-            'integer' => 'Session ID must be an integer.'
+            'max_length' => 'Session ID must be a valid identifier.'
         ],
         'combination_id' => [
             'required' => 'Combination ID is required.',
-            'integer' => 'Combination ID must be an integer.'
+            'max_length' => 'Combination ID must be a valid identifier.'
         ],
         'subject_id' => [
             'required' => 'Subject ID is required.',
-            'integer' => 'Subject ID must be an integer.'
+            'max_length' => 'Subject ID must be a valid identifier.'
         ],
         'marks_obtained' => [
-            'integer' => 'Marks obtained must be an integer.'
+            'numeric' => 'Marks obtained must be numeric.'
         ]
     ];
 
@@ -139,12 +138,12 @@ class AlevelSubjectMarksModel extends Model
     /**
      * Custom method to check if a mark entry already exists
      * 
-     * @param int $examId
-     * @param int $studentId
-     * @param int $subjectId
+     * @param string $examId
+     * @param string $studentId
+     * @param string $subjectId
      * @return bool
      */
-    public function markExists(int $examId, int $studentId, int $subjectId): bool
+    public function markExists(string $examId, string $studentId, string $subjectId): bool
     {
         return $this->where([
             'exam_id' => $examId,

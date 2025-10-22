@@ -2,18 +2,22 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class StudentAlevelCombinationModel extends Model
+class StudentAlevelCombinationModel extends BaseModel
 {
     protected $table            = 'tz_student_alevel_combinations';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'combination_id', 'class_id', 'section_id', 'session_id', 'is_active'
+        'id',
+        'combination_id',
+        'class_id',
+        'section_id',
+        'session_id',
+        'is_active',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id'
     ];
 
     // Dates
@@ -24,9 +28,9 @@ class StudentAlevelCombinationModel extends Model
 
     // Validation
     protected $validationRules = [
-        'combination_id' => 'required|numeric',
-        'class_id'       => 'required|numeric',
-        'session_id'     => 'required|numeric',
+        'combination_id' => 'required|max_length[36]',
+        'class_id'       => 'required|max_length[36]',
+        'session_id'     => 'required|max_length[36]',
         'is_active'      => 'in_list[yes,no]'
     ];
 }

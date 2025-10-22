@@ -109,7 +109,8 @@ class AllocationController extends ResourceController
         try {
             $db = \Config\Database::connect('default');
             $builder = $db->table('tz_exam_classes');
-            
+            $this->applySchoolScopeToBuilder($builder, 'tz_exam_classes');
+
             $allocations = $builder
                 ->select('
                     tz_exam_classes.id,
@@ -147,9 +148,9 @@ class AllocationController extends ResourceController
     {
         try {
             $rules = [
-                'exam_id' => 'required|numeric',
-                'session_id' => 'required|numeric',
-                'class_id' => 'required|numeric'  // Changed from class_ids to class_id
+                'exam_id' => 'required|max_length[36]',
+                'session_id' => 'required|max_length[36]',
+                'class_id' => 'required|max_length[36]'  // Changed from class_ids to class_id
             ];
 
             if (!$this->validate($rules)) {

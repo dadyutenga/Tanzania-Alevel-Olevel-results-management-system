@@ -2,18 +2,22 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class AlevelExamCombinationModel extends Model
+class AlevelExamCombinationModel extends BaseModel
 {
     protected $table            = 'tz_alevel_exam_combinations';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'exam_id', 'combination_id', 'class_id', 'session_id', 'is_active'
+        'id',
+        'exam_id',
+        'combination_id',
+        'class_id',
+        'session_id',
+        'is_active',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id'
     ];
 
     // Dates
@@ -24,10 +28,10 @@ class AlevelExamCombinationModel extends Model
 
     // Validation
     protected $validationRules = [
-        'exam_id'         => 'required|numeric',
-        'combination_id'  => 'required|numeric',
-        'class_id'        => 'required|numeric',
-        'session_id'      => 'required|numeric',
+        'exam_id'         => 'required|max_length[36]',
+        'combination_id'  => 'required|max_length[36]',
+        'class_id'        => 'required|max_length[36]',
+        'session_id'      => 'required|max_length[36]',
         'is_active'       => 'in_list[yes,no]'
     ];
-} 
+}

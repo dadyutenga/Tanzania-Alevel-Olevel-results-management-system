@@ -2,18 +2,21 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class AlevelCombinationSubjectModel extends Model
+class AlevelCombinationSubjectModel extends BaseModel
 {
     protected $table            = 'tz_alevel_combination_subjects';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'combination_id', 'subject_name', 'subject_type', 'is_active'
+        'id',
+        'combination_id',
+        'subject_name',
+        'subject_type',
+        'is_active',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id'
     ];
 
     // Dates
@@ -24,7 +27,7 @@ class AlevelCombinationSubjectModel extends Model
 
     // Validation
     protected $validationRules = [
-        'combination_id' => 'required|numeric',
+        'combination_id' => 'required|max_length[36]',
         'subject_name'   => 'required|max_length[100]',
         'subject_type'   => 'required|in_list[major,additional]',
         'is_active'      => 'in_list[yes,no]'

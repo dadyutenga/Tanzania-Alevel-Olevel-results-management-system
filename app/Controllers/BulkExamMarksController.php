@@ -50,7 +50,9 @@ class BulkExamMarksController extends ResourceController
 
             // Get exam details
             $exam = $this->examModel->find($examId);
-            $class = $this->db->table('classes')->where('id', $classId)->get()->getRowArray();
+            $classBuilder = $this->db->table('classes');
+            $this->applySchoolScopeToBuilder($classBuilder, 'classes');
+            $class = $classBuilder->where('id', $classId)->get()->getRowArray();
 
             // Get students
             $students = $this->studentSessionModel
@@ -65,7 +67,9 @@ class BulkExamMarksController extends ResourceController
                 ->findAll();
 
             // Get subjects
-            $subjects = $this->db->table('tz_exam_subjects')
+            $subjectBuilder = $this->db->table('tz_exam_subjects');
+            $this->applySchoolScopeToBuilder($subjectBuilder, 'tz_exam_subjects');
+            $subjects = $subjectBuilder
                 ->where('exam_id', $examId)
                 ->get()
                 ->getResultArray();
@@ -215,7 +219,9 @@ class BulkExamMarksController extends ResourceController
             }
 
             // Validate exam allocation
-            $examAllocation = $this->db->table('tz_exam_classes')
+            $allocationBuilder = $this->db->table('tz_exam_classes');
+            $this->applySchoolScopeToBuilder($allocationBuilder, 'tz_exam_classes');
+            $examAllocation = $allocationBuilder
                 ->where([
                     'exam_id' => $examId,
                     'class_id' => $classId,
@@ -228,7 +234,9 @@ class BulkExamMarksController extends ResourceController
             }
 
             // Validate subjects
-            $validSubjects = $this->db->table('tz_exam_subjects')
+            $validSubjectBuilder = $this->db->table('tz_exam_subjects');
+            $this->applySchoolScopeToBuilder($validSubjectBuilder, 'tz_exam_subjects');
+            $validSubjects = $validSubjectBuilder
                 ->select('id, subject_name, max_marks')
                 ->where([
                     'exam_id' => $examId
@@ -279,7 +287,7 @@ class BulkExamMarksController extends ResourceController
             $maxConsecutiveEmptyRows = 2;
             for ($row = 6; $row < count($data); $row++) {
                 $studentId = trim($data[$row][0]);
-                if (empty($studentId) || !is_numeric($studentId)) {
+                if (empty($studentId)) {
                     $consecutiveEmptyRows++;
                     if ($consecutiveEmptyRows >= $maxConsecutiveEmptyRows) {
                         log_message('debug', "[BulkExamMarksController.uploadMarks] Stopping processing at Row $row due to consecutive empty rows.");
@@ -412,7 +420,9 @@ class BulkExamMarksController extends ResourceController
     {
         try {
             $db = \Config\Database::connect('default');
-            $classes = $db->table('classes c')
+            $classesBuilder = $db->table('classes c');
+            $this->applySchoolScopeToBuilder($classesBuilder, 'ec');
+            $classes = $classesBuilder
                 ->select('c.id, c.class')
                 ->join('tz_exam_classes ec', 'c.id = ec.class_id')
                 ->join('tz_exams e', 'e.id = ec.exam_id')

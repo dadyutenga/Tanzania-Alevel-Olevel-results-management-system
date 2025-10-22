@@ -2,20 +2,22 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class StudentSessionModel extends Model
+class StudentSessionModel extends BaseModel
 {
     protected $table            = 'student_session';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'session_id', 'student_id', 'class_id', 'section_id',
-         'is_active',
-        
+        'id',
+        'session_id',
+        'student_id',
+        'class_id',
+        'section_id',
+        'is_active',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id',
     ];
 
     // Dates
@@ -26,9 +28,9 @@ class StudentSessionModel extends Model
 
     // Validation
     protected $validationRules = [
-        'session_id' => 'required|numeric',
-        'student_id' => 'required|numeric',
-        'class_id' => 'required|numeric',
-        'section_id' => 'required|numeric'
+        'session_id' => 'required|max_length[36]',
+        'student_id' => 'required|max_length[36]',
+        'class_id' => 'required|max_length[36]',
+        'section_id' => 'required|max_length[36]'
     ];
 }

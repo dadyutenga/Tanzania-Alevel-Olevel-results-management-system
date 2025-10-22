@@ -2,17 +2,12 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class StudentModel extends Model
+class StudentModel extends BaseModel
 {
     protected $table            = 'students';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
+        'id',
         'admission_no',
         'admission_date',
         'firstname',
@@ -29,7 +24,12 @@ class StudentModel extends Model
         'guardian_email',
         'is_active',
         'height',
-        'weight'
+        'weight',
+        'created_by',
+        'updated_by',
+        'school_id',
+        'created_at',
+        'updated_at',
     ];
 
     // Dates

@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class SectionModel extends Model
+class SectionModel extends BaseModel
 {
     protected $table            = 'sections';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['section', 'is_active'];
+    protected $allowedFields    = [
+        'id',
+        'section',
+        'is_active',
+        'created_by',
+        'updated_by',
+        'school_id',
+        'created_at',
+        'updated_at',
+    ];
 
     // Dates
     protected $useTimestamps = true;

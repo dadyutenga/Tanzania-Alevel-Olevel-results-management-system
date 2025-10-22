@@ -10,15 +10,12 @@ class ExamSubjects extends Migration
     {
         $this->forge->addField([
             'id' => [
-                'type'           => 'INT',
-                'constraint'     => 5,
-                'unsigned'       => true,
-                'auto_increment' => true,
+                'type'           => 'CHAR',
+                'constraint'     => 36,
             ],
             'exam_id' => [
-                'type'       => 'INT',
-                'constraint' => 5,
-                'unsigned'   => true,
+                'type'       => 'CHAR',
+                'constraint' => 36,
             ],
             'subject_name' => [
                 'type'       => 'VARCHAR',
@@ -32,6 +29,21 @@ class ExamSubjects extends Migration
                 'type'       => 'INT',
                 'constraint' => 5,
             ],
+            'school_id' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+                'null'       => true,
+            ],
+            'created_by' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+                'null'       => true,
+            ],
+            'updated_by' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+                'null'       => true,
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,
@@ -42,6 +54,10 @@ class ExamSubjects extends Migration
             ],
         ]);
         $this->forge->addKey('id', true);
+        $this->forge->addKey('exam_id');
+        $this->forge->addKey('school_id');
+        $this->forge->addKey('created_by');
+        $this->forge->addKey('updated_by');
         $this->forge->addForeignKey('exam_id', 'tz_exams', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('tz_exam_subjects');
     }

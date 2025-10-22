@@ -2,23 +2,22 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class ClassSectionModel extends Model
+class ClassSectionModel extends BaseModel
 {
     protected $table = 'class_sections';
-    protected $primaryKey = 'id';
-    protected $returnType = 'array';
-    protected $useSoftDeletes = false;
     protected $protectFields = true;
-        
+
 
     protected $allowedFields = [
+        'id',
         'class_id',
         'section_id',
         'is_active',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'school_id',
     ];
 
     // Dates
@@ -29,42 +28,25 @@ class ClassSectionModel extends Model
 
     // Validation
     protected $validationRules = [
-        'class_id' => 'required|numeric',
-        'section_id' => 'required|numeric',
+        'class_id' => 'required|max_length[36]',
+        'section_id' => 'required|max_length[36]',
         'is_active' => 'required|in_list[yes,no]'
     ];
 
     protected $validationMessages = [
         'class_id' => [
             'required' => 'Class ID is required',
-            'numeric' => 'Class ID must be numeric'
+            'max_length' => 'Class ID must be a valid identifier'
         ],
         'section_id' => [
             'required' => 'Section ID is required',
-            'numeric' => 'Section ID must be numeric'
+            'max_length' => 'Section ID must be a valid identifier'
         ],
         'is_active' => [
             'required' => 'Active status is required',
             'in_list' => 'Active status must be either yes or no'
         ]
     ];
-
-    // Callbacks
-    protected $beforeInsert = ['beforeInsert'];
-    protected $beforeUpdate = ['beforeUpdate'];
-
-    protected function beforeInsert(array $data)
-    {
-        $data['data']['created_at'] = date('Y-m-d H:i:s');
-        $data['data']['updated_at'] = date('Y-m-d H:i:s');
-        return $data;
-    }
-
-    protected function beforeUpdate(array $data)
-    {
-        $data['data']['updated_at'] = date('Y-m-d H:i:s');
-        return $data;
-    }
 
     // Custom Methods
     public function getActiveClassSections($classId = null)
