@@ -2,6 +2,9 @@
     <li><a href="<?= base_url('dashboard') ?>" class="<?= current_url() == base_url('dashboard') ? 'active' : '' ?>">
         <i class="fas fa-home"></i> Dashboard
     </a></li>
+    <li><a href="<?= base_url('analytics') ?>" class="<?= strpos(current_url(), 'analytics') !== false ? 'active' : '' ?>">
+        <i class="fas fa-chart-line"></i> Analytics
+    </a></li>
     <li><a href="<?= base_url('student') ?>" class="<?= strpos(current_url(), 'student') !== false ? 'active' : '' ?>">
         <i class="fas fa-users"></i> Students
     </a></li>

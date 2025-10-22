@@ -456,6 +456,12 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
         $routes->get("index", "SettingsController::index");
         $routes->post("update/(:num)", 'SettingsController::update/$1');
     });
+
+    // -------------------------------------------------------------------------
+    // Analytics
+    // -------------------------------------------------------------------------
+    $routes->get("analytics", "DataAnalyticsController::index");
+    $routes->get("analytics/overview", "DataAnalyticsController::overview");
 });
 
 ?>
