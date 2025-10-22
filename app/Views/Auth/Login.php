@@ -85,44 +85,45 @@
     .login-header {
       background-color: rgba(0, 0, 0, 0.2);
       color: var(--text-primary);
-      padding: 2rem;
+      padding: 1rem;
       text-align: center;
       position: relative;
     }
 
     .login-header h1 {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 600;
-      margin-top: 0.5rem;
+      margin-top: 0.15rem;
     }
 
     .login-header .logo {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+      font-size: 1.75rem;
+      margin-bottom: 0.15rem;
       color: var(--primary);
     }
 
     .login-form {
-      padding: 2rem;
+      padding: 1.25rem;
     }
 
     .form-group {
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .form-group label {
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
       font-weight: 500;
+      font-size: 0.95rem;
       color: var(--text-primary);
     }
 
     .form-group input {
       width: 100%;
-      padding: 0.85rem 1rem;
+      padding: 0.7rem 0.9rem;
       border: 1px solid var(--input-border);
       border-radius: var(--border-radius);
-      font-size: 1rem;
+      font-size: 0.95rem;
       transition: var(--transition);
       background-color: var(--input-bg);
       color: var(--text-primary);
@@ -168,7 +169,7 @@
     .form-check {
       display: flex;
       align-items: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .form-check input {
@@ -185,12 +186,12 @@
 
     .login-btn {
       width: 100%;
-      padding: 0.85rem;
+      padding: 0.7rem;
       background-color: var(--primary);
       color: black;
       border: none;
       border-radius: var(--button-radius);
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       transition: var(--transition);
@@ -209,7 +210,7 @@
 
     .login-footer {
       text-align: center;
-      padding: 1rem 2rem 2rem;
+      padding: 0.6rem 1.25rem 1.25rem;
     }
 
     .login-footer a {
@@ -226,11 +227,11 @@
 
     .forgot-password {
       text-align: right;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .forgot-password a {
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       color: var(--primary);
       text-decoration: none;
       transition: var(--transition);
@@ -498,7 +499,7 @@
         <i class="fas fa-sign-in-alt"></i> Login
       </button>
 
-      <div style="margin-top: 1.5rem; text-align: center;">
+      <div style="margin-top: 0.75rem; text-align: center;">
         <a href="<?= base_url(
             "/",
         ) ?>" class="login-btn" style="background-color: var(--secondary); color: var(--text-primary); box-shadow: none;">

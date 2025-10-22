@@ -85,35 +85,35 @@
     .register-header {
       background-color: rgba(0, 0, 0, 0.2);
       color: var(--text-primary);
-      padding: 2rem;
+      padding: 1.25rem;
       text-align: center;
       position: relative;
     }
 
     .register-header h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 600;
-      margin-top: 0.5rem;
+      margin-top: 0.25rem;
     }
 
     .register-header .logo {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+      font-size: 2rem;
+      margin-bottom: 0.25rem;
       color: var(--primary);
     }
 
     .register-form {
-      padding: 2rem;
+      padding: 1.5rem;
     }
 
     .form-row {
       display: flex;
       gap: 1rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
     }
 
     .form-group {
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       flex: 1;
     }
 
@@ -207,7 +207,7 @@
 
     .register-footer {
       text-align: center;
-      padding: 1rem 2rem 2rem;
+      padding: 0.75rem 1.5rem 1.5rem;
     }
 
     .register-footer a {
@@ -396,7 +396,7 @@
         flex-direction: column;
         gap: 1.5rem;
       }
-      
+
       .alert {
         max-width: 90%;
         right: 1rem;
@@ -424,12 +424,12 @@
 
   <!-- Alerts Container -->
   <div id="alerts-container">
-    <?php if (session('error')) : ?>
+    <?php if (session("error")): ?>
       <div class="alert alert-danger">
         <i class="fas fa-exclamation-circle"></i>
         <div class="alert-content">
           <div class="alert-title">Error</div>
-          <div class="alert-message"><?= session('error') ?></div>
+          <div class="alert-message"><?= session("error") ?></div>
         </div>
         <button class="alert-close">
           <i class="fas fa-times"></i>
@@ -438,8 +438,8 @@
       </div>
     <?php endif; ?>
 
-    <?php if (session('errors')) : ?>
-      <?php foreach (session('errors') as $error) : ?>
+    <?php if (session("errors")): ?>
+      <?php foreach (session("errors") as $error): ?>
         <div class="alert alert-danger">
           <i class="fas fa-exclamation-circle"></i>
           <div class="alert-content">
@@ -451,15 +451,15 @@
           </button>
           <div class="alert-progress"></div>
         </div>
-      <?php endforeach ?>
+      <?php endforeach; ?>
     <?php endif; ?>
 
-    <?php if (session('message')) : ?>
+    <?php if (session("message")): ?>
       <div class="alert alert-success">
         <i class="fas fa-check-circle"></i>
         <div class="alert-content">
           <div class="alert-title">Success</div>
-          <div class="alert-message"><?= session('message') ?></div>
+          <div class="alert-message"><?= session("message") ?></div>
         </div>
         <button class="alert-close">
           <i class="fas fa-times"></i>
@@ -477,90 +477,108 @@
       <h1>Create Your Account</h1>
     </div>
 
-    <?= view('Auth/_message_block') ?>
+    <?= view("Auth/_message_block") ?>
 
-    <form class="register-form" action="<?= base_url('register') ?>" method="post">
+    <form class="register-form" action="<?= base_url(
+        "register",
+    ) ?>" method="post">
       <?= csrf_field() ?>
 
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <div class="input-with-icon">
-          <i class="fas fa-envelope"></i>
-          <input type="email" id="email" name="email" 
-                 value="<?= old('email') ?>"
-                 class="<?php if (session('errors.email')) : ?>is-invalid<?php endif ?>"
-                 placeholder="Enter your email address" required>
-        </div>
-        <?php if (session('errors.email')) : ?>
-          <div class="invalid-feedback">
-            <?= session('errors.email') ?>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-with-icon">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="email" name="email"
+                   value="<?= old("email") ?>"
+                   class="<?php if (
+                       session("errors.email")
+                   ): ?>is-invalid<?php endif; ?>"
+                   placeholder="Enter your email address" required>
           </div>
-        <?php endif ?>
+          <?php if (session("errors.email")): ?>
+            <div class="invalid-feedback">
+              <?= session("errors.email") ?>
+            </div>
+          <?php endif; ?>
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <div class="input-with-icon">
+            <i class="fas fa-user"></i>
+            <input type="text" id="username" name="username"
+                   value="<?= old("username") ?>"
+                   class="<?php if (
+                       session("errors.username")
+                   ): ?>is-invalid<?php endif; ?>"
+                   placeholder="Choose a username" required>
+          </div>
+          <?php if (session("errors.username")): ?>
+            <div class="invalid-feedback">
+              <?= session("errors.username") ?>
+            </div>
+          <?php endif; ?>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="username">Username</label>
-        <div class="input-with-icon">
-          <i class="fas fa-user"></i>
-          <input type="text" id="username" name="username" 
-                 value="<?= old('username') ?>"
-                 class="<?php if (session('errors.username')) : ?>is-invalid<?php endif ?>"
-                 placeholder="Choose a username" required>
-        </div>
-        <?php if (session('errors.username')) : ?>
-          <div class="invalid-feedback">
-            <?= session('errors.username') ?>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" name="password"
+                   class="<?php if (
+                       session("errors.password")
+                   ): ?>is-invalid<?php endif; ?>"
+                   placeholder="Create a password" required>
           </div>
-        <?php endif ?>
-      </div>
-      
-      <div class="form-group">
-        <label for="password">Password</label>
-        <div class="input-with-icon">
-          <i class="fas fa-lock"></i>
-          <input type="password" id="password" name="password"
-                 class="<?php if (session('errors.password')) : ?>is-invalid<?php endif ?>"
-                 placeholder="Create a password" required>
-        </div>
-        <?php if (session('errors.password')) : ?>
-          <div class="invalid-feedback">
-            <?= session('errors.password') ?>
+          <?php if (session("errors.password")): ?>
+            <div class="invalid-feedback">
+              <?= session("errors.password") ?>
+            </div>
+          <?php endif; ?>
+          <div class="password-strength">
+            <div class="password-strength-meter" id="passwordStrengthMeter"></div>
           </div>
-        <?php endif ?>
-        <div class="password-strength">
-          <div class="password-strength-meter" id="passwordStrengthMeter"></div>
+          <div class="password-strength-text" id="passwordStrengthText"></div>
         </div>
-        <div class="password-strength-text" id="passwordStrengthText"></div>
-      </div>
 
-      <div class="form-group">
-        <label for="password_confirm">Confirm Password</label>
-        <div class="input-with-icon">
-          <i class="fas fa-lock"></i>
-          <input type="password" id="password_confirm" name="password_confirm"
-                 class="<?php if (session('errors.password_confirm')) : ?>is-invalid<?php endif ?>"
-                 placeholder="Confirm your password" required>
-        </div>
-        <?php if (session('errors.password_confirm')) : ?>
-          <div class="invalid-feedback">
-            <?= session('errors.password_confirm') ?>
+        <div class="form-group">
+          <label for="password_confirm">Confirm Password</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password_confirm" name="password_confirm"
+                   class="<?php if (
+                       session("errors.password_confirm")
+                   ): ?>is-invalid<?php endif; ?>"
+                   placeholder="Confirm your password" required>
           </div>
-        <?php endif ?>
+          <?php if (session("errors.password_confirm")): ?>
+            <div class="invalid-feedback">
+              <?= session("errors.password_confirm") ?>
+            </div>
+          <?php endif; ?>
+        </div>
       </div>
 
       <button type="submit" class="register-btn">
         <i class="fas fa-user-plus"></i> Create Account
       </button>
-      
+
       <div style="margin-top: 1.5rem; text-align: center;">
-        <a href="<?= base_url('/') ?>" class="register-btn" style="background-color: var(--secondary); color: var(--text-primary); box-shadow: none;">
+        <a href="<?= base_url(
+            "/",
+        ) ?>" class="register-btn" style="background-color: var(--secondary); color: var(--text-primary); box-shadow: none;">
           <i class="fas fa-home"></i> Back to Home
         </a>
       </div>
     </form>
 
     <div class="register-footer">
-      <p>Already have an account? <a href="<?= base_url('login') ?>">Login here</a></p>
+      <p>Already have an account? <a href="<?= base_url(
+          "login",
+      ) ?>">Login here</a></p>
     </div>
   </div>
 
@@ -568,7 +586,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       // Show all alerts
       const alerts = document.querySelectorAll('.alert');
-      
+
       alerts.forEach(alert => {
         // Show alert
         setTimeout(() => {
@@ -600,15 +618,15 @@
       // Check password strength
       function checkPasswordStrength(password) {
         let strength = 0;
-        
+
         if (password.length >= 8) strength += 1;
         if (password.match(/[a-z]+/)) strength += 1;
         if (password.match(/[A-Z]+/)) strength += 1;
         if (password.match(/[0-9]+/)) strength += 1;
         if (password.match(/[^a-zA-Z0-9]+/)) strength += 1;
-        
+
         passwordStrengthMeter.className = 'password-strength-meter';
-        
+
         if (password.length === 0) {
           passwordStrengthMeter.style.width = '0';
           passwordStrengthText.textContent = '';
@@ -643,7 +661,7 @@
         group.style.transform = 'translateY(20px)';
         group.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
         group.style.transitionDelay = `${index * 0.1}s`;
-        
+
         setTimeout(() => {
           group.style.opacity = '1';
           group.style.transform = 'translateY(0)';
