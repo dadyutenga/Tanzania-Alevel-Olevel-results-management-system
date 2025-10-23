@@ -125,7 +125,7 @@ class AddExamMarks extends ResourceController
                 'exam_id' => 'required|numeric',
                 'student_id' => 'required|numeric',
                 'class_id' => 'required|numeric',
-                'session_id' => 'required|numeric'
+                'session_id' => 'required|string|min_length[36]|max_length[36]'
             ];
 
             if (!$this->validate($rules)) {

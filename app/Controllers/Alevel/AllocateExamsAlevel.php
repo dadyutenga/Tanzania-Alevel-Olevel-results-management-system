@@ -128,7 +128,7 @@ class AllocateExamsAlevel extends ResourceController
         try {
             $rules = [
                 'exam_id' => 'required|numeric',
-                'session_id' => 'required|numeric',
+                'session_id' => 'required|string|min_length[36]|max_length[36]',
                 'class_id' => 'required|numeric',
                 'combination_id' => 'required|numeric'
             ];

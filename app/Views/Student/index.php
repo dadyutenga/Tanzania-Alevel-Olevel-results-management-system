@@ -904,7 +904,7 @@
             students.forEach(student => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${student.admission_no || '-'}</td>
+                    <td>${student.middlename || '-'}</td>
                     <td>${student.full_name || `${student.firstname} ${student.lastname}`}</td>
                     <td>${selectedClass}</td>
                     <td>${selectedSection}</td>

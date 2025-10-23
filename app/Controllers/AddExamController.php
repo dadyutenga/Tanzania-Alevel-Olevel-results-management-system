@@ -67,7 +67,7 @@ class AddExamController extends ResourceController
             $rules = [
                 'exam_name' => 'required|max_length[100]',
                 'exam_date' => 'required|valid_date',
-                'session_id' => 'required|numeric',
+                'session_id' => 'required|string|min_length[36]|max_length[36]',
                 'is_active' => 'permit_empty|in_list[yes,no]'
             ];
 

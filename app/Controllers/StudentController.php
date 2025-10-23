@@ -168,8 +168,8 @@ class StudentController extends ResourceController
             if ($search) {
                 $builder->groupStart()
                         ->like('students.firstname', $search)
+                        ->orLike('students.middlename', $search)
                         ->orLike('students.lastname', $search)
-                        ->orLike('students.admission_no', $search)
                         ->groupEnd();
             }
 
