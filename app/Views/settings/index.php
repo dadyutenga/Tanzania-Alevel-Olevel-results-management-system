@@ -11,6 +11,7 @@
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --primary: #4AE54A;
+            --secondary: #f1f5f9;
             --primary-dark: #3AD03A;
             --primary-light: #5FF25F;
             --secondary: #f1f5f9;
@@ -127,6 +128,20 @@
         .toggle-icon {
             transition: transform 0.3s ease;
             margin-left: auto;
+        }
+        
+        .logout-section {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .logout-link {
+            color: #ef4444 !important;
+        }
+        
+        .logout-link:hover {
+            background-color: rgba(239, 68, 68, 0.1) !important;
         }
 
         .main-content {
