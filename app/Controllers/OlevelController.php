@@ -2,48 +2,68 @@
 
 namespace App\Controllers;
 
+use App\Models\SettingsModel;
+
 class OLevelController extends ResultGradingController
 {
+    protected $settingsModel;
+
     public function __construct()
     {
         parent::__construct();
+        $this->settingsModel = new SettingsModel();
     }
 
     public function processOLevelGrades($examId, $classId, $sectionId = null, $sessionId = null, $studentId = null)
     {
         try {
-            // Validate input parameters
-            if (!is_numeric($examId) || $examId <= 0) {
+            // Session fix: Ensure school_id is set
+            $session = service('session');
+            $userId = $session->get('user_uuid') ?? $session->get('user_id');
+            $schoolId = $session->get('school_id');
+            
+            if (!$schoolId && $userId) {
+                $school = $this->settingsModel->getSchoolByUserId($userId);
+                if ($school) {
+                    $schoolId = $school['id'];
+                    $session->set('school_id', $schoolId);
+                    log_message('info', '[OLevel.processGrades] Fixed missing school_id in session: ' . $schoolId);
+                }
+            }
+
+            // Validate input parameters (UUID format)
+            if (empty($examId) || !is_string($examId) || strlen($examId) !== 36) {
                 throw new \Exception('Invalid exam ID');
             }
-            if (!is_numeric($classId) || $classId <= 0) {
+            if (empty($classId) || !is_string($classId) || strlen($classId) !== 36) {
                 throw new \Exception('Invalid class ID');
             }
-            if ($sectionId !== null && (!is_numeric($sectionId) || $sectionId <= 0)) {
+            if ($sectionId !== null && (!is_string($sectionId) || strlen($sectionId) !== 36)) {
                 throw new \Exception('Invalid section ID');
             }
-            if ($sessionId !== null && (!is_numeric($sessionId) || $sessionId <= 0)) {
+            if ($sessionId !== null && (!is_string($sessionId) || strlen($sessionId) !== 36)) {
                 throw new \Exception('Invalid session ID');
             }
-            if ($studentId !== null && (!is_numeric($studentId) || $studentId <= 0)) {
+            if ($studentId !== null && (!is_string($studentId) || strlen($studentId) !== 36)) {
                 throw new \Exception('Invalid student ID');
             }
 
             // Build query
-            $query = $this->examSubjectMarkModel
+            $db = \Config\Database::connect();
+            $builder = $db->table('students s');
+            
+            $query = $builder
                 ->select('
                     s.id AS student_id,
                     CONCAT(s.firstname, " ", COALESCE(s.middlename, ""), " ", s.lastname) AS full_name,
                     c.class AS class_name,
-                    cs.section_id AS section,
                     te.exam_name,
                     tes.subject_name,
+                    tes.max_marks,
                     tesm.marks_obtained
                 ')
-                ->from('students s')
                 ->join('student_session ss', 's.id = ss.student_id')
                 ->join('classes c', 'ss.class_id = c.id')
-                ->join('class_sections cs', 'ss.section_id = cs.section_id AND ss.class_id = cs.class_id')
                 ->join('tz_exam_classes tec', 'tec.class_id = ss.class_id AND tec.session_id = ss.session_id')
                 ->join('tz_exams te', 'te.id = tec.exam_id')
                 ->join('tz_exam_subjects tes', 'tes.exam_id = te.id')
@@ -69,7 +89,8 @@ class OLevelController extends ResultGradingController
             $marks = $query->orderBy('full_name')
                           ->orderBy('te.exam_name')
                           ->orderBy('tes.subject_name')
-                          ->findAll();
+                          ->get()
+                          ->getResultArray();
 
             // Log raw marks for debugging
             log_message('debug', 'Raw marks fetched: ' . json_encode($marks));

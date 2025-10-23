@@ -11,6 +11,7 @@ use App\Models\StudentSessionModel;
 use App\Models\ClassModel;
 use App\Models\ClassSectionModel;
 use App\Models\SessionModel;
+use App\Models\SettingsModel;
 use CodeIgniter\RESTful\ResourceController;
 
 class ResultGradingController extends ResourceController
@@ -24,6 +25,7 @@ class ResultGradingController extends ResourceController
     protected $classModel;
     protected $classSectionModel;
     protected $sessionModel;
+    protected $settingsModel;
 
     public function __construct()
     {
@@ -36,6 +38,7 @@ class ResultGradingController extends ResourceController
         $this->classModel = new ClassModel();
         $this->classSectionModel = new ClassSectionModel();
         $this->sessionModel = new SessionModel();
+        $this->settingsModel = new SettingsModel();
     }
 
     public function showPublishPage()
@@ -166,9 +169,25 @@ class ResultGradingController extends ResourceController
     public function processGradeCalculation()
     {
         try {
+            // Session fix
+            $session = service('session');
+            $userId = $session->get('user_uuid') ?? $session->get('user_id');
+            $schoolId = $session->get('school_id');
+            
+            if (!$schoolId && $userId) {
+                $school = $this->settingsModel->getSchoolByUserId($userId);
+                if ($school) {
+                    $schoolId = $school['id'];
+                    $session->set('school_id', $schoolId);
+                    log_message('info', '[ResultGrading.processGradeCalculation] Fixed missing school_id in session: ' . $schoolId);
+                }
+            }
+
             $examId = $this->request->getPost('exam_id');
             $classId = $this->request->getPost('class_id');
             $sessionId = $this->request->getPost('session_id');
+
+            log_message('debug', '[ResultGrading.processGradeCalculation] Received: exam_id=' . $examId . ', class_id=' . $classId . ', session_id=' . $sessionId);
 
             if (!$examId || !$classId || !$sessionId) {
                 return $this->response->setJSON([
