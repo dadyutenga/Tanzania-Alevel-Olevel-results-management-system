@@ -67,7 +67,7 @@ class DataAnalyticsController extends BaseController
         $genderBreakdown = $this->normalizeBreakdown($genderBreakdownRows, 'gender', 'unspecified');
 
         $recentStudents = $this->students->builder()
-            ->select('id, firstname, middlename, lastname, admission_no, created_at')
+            ->select('id, firstname, middlename, lastname, created_at')
             ->orderBy('created_at', 'DESC')
             ->limit(5)
             ->get()
@@ -83,7 +83,6 @@ class DataAnalyticsController extends BaseController
             return [
                 'student_id' => $row['id'] ?? null,
                 'full_name' => $nameParts ? implode(' ', $nameParts) : null,
-                'admission_no' => $row['admission_no'] ?? null,
                 'created_at' => $row['created_at'] ?? null,
             ];
         }, $recentStudents);
