@@ -7,6 +7,7 @@ use App\Models\ExamClassModel;
 use App\Models\StudentSessionModel;
 use App\Models\StudentModel;
 use App\Models\SessionModel;
+use App\Models\SettingsModel;
 use CodeIgniter\RESTful\ResourceController;
 
 class AddExamMarks extends ResourceController
@@ -16,6 +17,7 @@ class AddExamMarks extends ResourceController
     protected $studentSessionModel;
     protected $studentModel;
     protected $sessionModel;
+    protected $settingsModel;
     protected $format = 'json';
 
     public function __construct()
@@ -25,6 +27,7 @@ class AddExamMarks extends ResourceController
         $this->studentSessionModel = new StudentSessionModel();
         $this->studentModel = new StudentModel();
         $this->sessionModel = new SessionModel();
+        $this->settingsModel = new SettingsModel();
     }
 
     public function index()
@@ -67,7 +70,7 @@ class AddExamMarks extends ResourceController
             }
 
             $students = $this->studentSessionModel
-                ->select('students.id, students.firstname, students.lastname, students.roll_no, student_session.*, classes.class')
+                ->select('students.id, students.firstname, students.middlename, students.lastname, student_session.*, classes.class')
                 ->join('students', 'students.id = student_session.student_id')
                 ->join('classes', 'classes.id = student_session.class_id')
                 ->where([
@@ -121,10 +124,25 @@ class AddExamMarks extends ResourceController
     public function saveMarks()
     {
         try {
+            // Debug and fix: Check session data
+            $session = service('session');
+            $userId = $session->get('user_uuid') ?? $session->get('user_id');
+            $schoolId = $session->get('school_id');
+            
+            // If school_id is missing from session, try to get it from settings
+            if (!$schoolId && $userId) {
+                $school = $this->settingsModel->getSchoolByUserId($userId);
+                if ($school) {
+                    $schoolId = $school['id'];
+                    $session->set('school_id', $schoolId);
+                    log_message('info', '[AddExamMarks.saveMarks] Fixed missing school_id in session: ' . $schoolId);
+                }
+            }
+            
             $rules = [
-                'exam_id' => 'required|numeric',
-                'student_id' => 'required|numeric',
-                'class_id' => 'required|numeric',
+                'exam_id' => 'required|string|min_length[36]|max_length[36]',
+                'student_id' => 'required|string|min_length[36]|max_length[36]',
+                'class_id' => 'required|string|min_length[36]|max_length[36]',
                 'session_id' => 'required|string|min_length[36]|max_length[36]'
             ];
 

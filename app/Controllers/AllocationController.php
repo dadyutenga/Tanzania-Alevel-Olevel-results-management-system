@@ -6,6 +6,7 @@ use App\Models\ExamClassModel;
 use App\Models\ExamModel;
 use App\Models\ClassModel;
 use App\Models\SessionModel;
+use App\Models\SettingsModel;
 use CodeIgniter\RESTful\ResourceController;
 
 class AllocationController extends ResourceController
@@ -14,6 +15,7 @@ class AllocationController extends ResourceController
     protected $examModel;
     protected $classModel;
     protected $sessionModel;
+    protected $settingsModel;
     protected $format = 'json';
 
     public function __construct()
@@ -22,6 +24,7 @@ class AllocationController extends ResourceController
         $this->examModel = new ExamModel();
         $this->classModel = new ClassModel();
         $this->sessionModel = new SessionModel();
+        $this->settingsModel = new SettingsModel();
     }
 
     public function index()
@@ -109,7 +112,7 @@ class AllocationController extends ResourceController
         try {
             $db = \Config\Database::connect('default');
             $builder = $db->table('tz_exam_classes');
-            $this->applySchoolScopeToBuilder($builder, 'tz_exam_classes');
+            // Note: BaseModel automatically filters by school_id via beforeFind hook
 
             $allocations = $builder
                 ->select('
@@ -147,10 +150,26 @@ class AllocationController extends ResourceController
     public function store()
     {
         try {
+            // Debug and fix: Check session data
+            $session = service('session');
+            $userId = $session->get('user_uuid') ?? $session->get('user_id');
+            $schoolId = $session->get('school_id');
+            
+            // If school_id is missing from session, try to get it from settings
+            if (!$schoolId && $userId) {
+                $school = $this->settingsModel->getSchoolByUserId($userId);
+                if ($school) {
+                    $schoolId = $school['id'];
+                    // Update session with school_id
+                    $session->set('school_id', $schoolId);
+                    log_message('info', '[AllocationController.store] Fixed missing school_id in session: ' . $schoolId);
+                }
+            }
+            
             $rules = [
-                'exam_id' => 'required|max_length[36]',
-                'session_id' => 'required|max_length[36]',
-                'class_id' => 'required|max_length[36]'  // Changed from class_ids to class_id
+                'exam_id' => 'required|string|min_length[36]|max_length[36]',
+                'session_id' => 'required|string|min_length[36]|max_length[36]',
+                'class_id' => 'required|string|min_length[36]|max_length[36]'
             ];
 
             if (!$this->validate($rules)) {

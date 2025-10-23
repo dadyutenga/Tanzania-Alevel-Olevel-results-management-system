@@ -3,15 +3,18 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\SettingsModel;
 
 class AuthController extends BaseController
 {
     protected UserModel $users;
+    protected SettingsModel $settingsModel;
 
     public function __construct()
     {
         helper(["url", "form"]);
         $this->users = new UserModel();
+        $this->settingsModel = new SettingsModel();
     }
 
     public function loginForm()
@@ -59,12 +62,17 @@ class AuthController extends BaseController
                 );
         }
 
+        // Get school_id from settings (user's school)
+        $school = $this->settingsModel->getSchoolByUserId($user["id"]);
+        $schoolId = $school ? $school['id'] : null;
+
         $this->session->set([
             "user_id" => $user["id"],
             "user_uuid" => $user["id"],
             "email" => $user["email"],
             "username" => $user["username"],
             "role" => $user["role"] ?? "user",
+            "school_id" => $schoolId,
             "isLoggedIn" => true,
         ]);
 

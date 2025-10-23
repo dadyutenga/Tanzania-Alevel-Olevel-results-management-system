@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\ExamModel;
 use App\Models\ExamSubjectModel;
+use App\Models\SettingsModel;
 use CodeIgniter\RESTful\ResourceController;
 
 class AddExamSubjectController extends ResourceController
@@ -11,11 +12,13 @@ class AddExamSubjectController extends ResourceController
     protected $format = 'json';
     protected $examModel;
     protected $examSubjectModel;
+    protected $settingsModel;
 
     public function __construct()
     {
         $this->examModel = new ExamModel();
         $this->examSubjectModel = new ExamSubjectModel();
+        $this->settingsModel = new SettingsModel();
     }
 
     public function index($examId = null)
@@ -182,37 +185,77 @@ class AddExamSubjectController extends ResourceController
                 ], 400);
             }
 
-            $insertData = [];
+            // Debug and fix: Check session data
+            $session = service('session');
+            $userId = $session->get('user_uuid') ?? $session->get('user_id');
+            $schoolId = $session->get('school_id');
+            
+            // If school_id is missing from session, try to get it from settings
+            if (!$schoolId && $userId) {
+                $school = $this->settingsModel->getSchoolByUserId($userId);
+                if ($school) {
+                    $schoolId = $school['id'];
+                    // Update session with school_id
+                    $session->set('school_id', $schoolId);
+                    log_message('info', '[storeBatch] Fixed missing school_id in session: ' . $schoolId);
+                }
+            }
+            
+            $sessionData = [
+                'user_id' => $session->get('user_id'),
+                'user_uuid' => $session->get('user_uuid'),
+                'school_id' => $schoolId,
+                'role' => $session->get('role')
+            ];
+            log_message('debug', '[storeBatch] Session data: ' . json_encode($sessionData));
+
+            $successCount = 0;
+            $errorCount = 0;
             $errors = [];
 
-            foreach ($subjects as $subject) {
-                // Add debug logging for each subject
-                log_message('debug', 'Processing subject: ' . json_encode($subject));
+            foreach ($subjects as $index => $subject) {
+                try {
+                    // Add debug logging for each subject
+                    log_message('debug', 'Processing subject: ' . json_encode($subject));
 
-                // Validate each subject
-                if (!$this->validateSubject($subject)) {
-                    $errors[] = "Invalid data for subject: {$subject['subject_name']}";
-                    continue;
+                    // Validate each subject
+                    if (!$this->validateSubject($subject)) {
+                        $errorCount++;
+                        $errors[] = "Row " . ($index + 1) . ": Invalid data for subject: {$subject['subject_name']}";
+                        continue;
+                    }
+
+                    // Prepare data - let BaseModel handle school_id, created_by, updated_by
+                    $subjectData = [
+                        'exam_id' => $examId,
+                        'subject_name' => trim($subject['subject_name']),
+                        'max_marks' => (int)$subject['max_marks'],
+                        'passing_marks' => (int)$subject['passing_marks']
+                    ];
+
+                    // Use individual insert so BaseModel beforeInsert hook works
+                    $subjectId = $this->examSubjectModel->insert($subjectData);
+
+                    if (!$subjectId) {
+                        $errorCount++;
+                        $errors[] = "Row " . ($index + 1) . ": Failed to insert subject";
+                        continue;
+                    }
+
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $errorCount++;
+                    $errors[] = "Row " . ($index + 1) . ": " . $e->getMessage();
+                    log_message('error', 'Subject insert error: ' . $e->getMessage());
                 }
-
-                $insertData[] = [
-                    'exam_id' => $examId,
-                    'subject_name' => trim($subject['subject_name']),
-                    'max_marks' => (int)$subject['max_marks'],
-                    'passing_marks' => (int)$subject['passing_marks']
-                ];
-            }
-
-            if (!empty($insertData)) {
-                $inserted = $this->examSubjectModel->insertBatch($insertData);
-                log_message('debug', 'Insert result: ' . json_encode($inserted));
             }
 
             return $this->respond([
                 'status' => 'success',
-                'message' => 'Subjects added successfully',
-                'errors' => $errors,
-                'added_count' => count($insertData)
+                'message' => "Added $successCount subjects successfully" . ($errorCount > 0 ? ", $errorCount failed" : ""),
+                'successCount' => $successCount,
+                'errorCount' => $errorCount,
+                'errors' => $errors
             ]);
 
         } catch (\Exception $e) {
@@ -245,7 +288,7 @@ class AddExamSubjectController extends ResourceController
     {
         try {
             $rules = [
-                'exam_id' => 'required|numeric|is_not_unique[default.tz_exams.id]',
+                'exam_id' => 'required|string|min_length[36]|max_length[36]',
                 'subject_name' => 'required|max_length[100]',
                 'max_marks' => 'required|numeric|greater_than[0]',
                 'passing_marks' => 'required|numeric|greater_than[0]'

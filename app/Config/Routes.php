@@ -68,9 +68,9 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
     $routes->group("student", function ($routes) {
         $routes->get("/", "StudentController::index");
         $routes->get("fetchStudents", "StudentController::fetchStudents");
-        $routes->get("getStudent/(:num)", 'StudentController::getStudent/$1');
+        $routes->get("getStudent/(:segment)", 'StudentController::getStudent/$1');
         $routes->get("getClasses", "StudentController::getClasses");
-        $routes->get("getSections/(:num)", 'StudentController::getSections/$1');
+        $routes->get("getSections/(:segment)", 'StudentController::getSections/$1');
         $routes->get("getSessions", "StudentController::getSessions");
     });
 
@@ -130,48 +130,48 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
 
         // Exam Subjects
         $routes->get("subjects", "AddExamSubjectController::index");
-        $routes->get("subjects/(:num)", 'AddExamSubjectController::index/$1');
+        $routes->get("subjects/(:segment)", 'AddExamSubjectController::index/$1');
         $routes->post(
             "subjects/store-batch",
             "AddExamSubjectController::storeBatch",
         );
         $routes->post(
-            "subjects/update/(:num)",
+            "subjects/update/(:segment)",
             'AddExamSubjectController::update/$1',
         );
         $routes->get(
-            "subjects/list/(:num)",
+            "subjects/list/(:segment)",
             'AddExamSubjectController::getExamSubjects/$1',
         );
         $routes->post(
-            "subjects/delete/(:num)",
+            "subjects/delete/(:segment)",
             'AddExamSubjectController::delete/$1',
         );
 
         // Exam Allocations
         $routes->get("allocation", "AllocationController::index");
         $routes->get(
-            "allocation/exams/(:num)",
+            "allocation/exams/(:segment)",
             'AllocationController::getExamsBySession/$1',
         );
         $routes->get(
-            "allocation/list/(:num)",
+            "allocation/list/(:segment)",
             'AllocationController::getAllocations/$1',
         );
         $routes->post("allocation/store", "AllocationController::store");
         $routes->post(
-            "allocation/delete/(:num)/(:num)",
+            "allocation/delete/(:segment)/(:segment)",
             'AllocationController::deallocate/$1/$2',
         );
 
         // Exam Marks (Individual)
         $routes->get("marks", "AddExamMarks::index");
-        $routes->get("marks/exams/(:num)", 'AddExamMarks::getExams/$1');
-        $routes->get("marks/classes/(:num)", 'AddExamMarks::getClasses/$1');
+        $routes->get("marks/exams/(:segment)", 'AddExamMarks::getExams/$1');
+        $routes->get("marks/classes/(:segment)", 'AddExamMarks::getClasses/$1');
         $routes->get("marks/subjects", "AddExamMarks::getSubjects");
         $routes->get("marks/students", "AddExamMarks::getStudents");
         $routes->get(
-            "marks/existing/(:num)/(:num)",
+            "marks/existing/(:segment)/(:segment)",
             'AddExamMarks::getExistingMarks/$1/$2',
         );
         $routes->post("marks/save", "AddExamMarks::saveMarks");
@@ -179,11 +179,11 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
         // Exam Marks (Bulk)
         $routes->get("marks/bulk", "BulkExamMarksController::index");
         $routes->get(
-            "marks/bulk/getExams/(:num)",
+            "marks/bulk/getExams/(:segment)",
             'BulkExamMarksController::getExams/$1',
         );
         $routes->get(
-            "marks/bulk/getClasses/(:num)",
+            "marks/bulk/getClasses/(:segment)",
             'BulkExamMarksController::getClasses/$1',
         );
         $routes->get(
@@ -210,11 +210,11 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
             "ViewExamMarksController::getStudentMarks",
         );
         $routes->post(
-            "marks/view/update/(:num)",
+            "marks/view/update/(:segment)",
             'ViewExamMarksController::update/$1',
         );
         $routes->post(
-            "marks/view/delete/(:num)",
+            "marks/view/delete/(:segment)",
             'ViewExamMarksController::delete/$1',
         );
         $routes->post(
@@ -230,8 +230,8 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
         $routes->get("view", "ViewExamController::index");
         $routes->get("view/getSessions", "ViewExamController::getSessions");
         $routes->get("view/getExams", "ViewExamController::getExams");
-        $routes->post("view/update/(:num)", 'ViewExamController::update/$1');
-        $routes->post("view/delete/(:num)", 'ViewExamController::delete/$1');
+        $routes->post("view/update/(:segment)", 'ViewExamController::update/$1');
+        $routes->post("view/delete/(:segment)", 'ViewExamController::delete/$1');
     });
 
     // -----------------------------------------------------------------------------
@@ -256,11 +256,11 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
         );
         $routes->get("getExams", "ResultGradingController::getExams");
         $routes->get(
-            "getSections/(:num)",
+            "getSections/(:segment)",
             'ResultGradingController::getSections/$1',
         );
         $routes->get(
-            "getExamsBySession/(:num)",
+            "getExamsBySession/(:segment)",
             'ResultGradingController::getExamsBySession/$1',
         );
 
@@ -272,7 +272,7 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
             "ViewResultsModel::getFilteredResults",
         );
         $routes->get(
-            "view/fetchResults/(:num)/(:num)/(:num)",
+            "view/fetchResults/(:segment)/(:segment)/(:segment)",
             'ViewResultsModel::fetchResults/$1/$2/$3',
         );
         $routes->post(
@@ -297,15 +297,15 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
             $routes->get("combinations", "AddAlevelController::index");
             $routes->post("combinations/store", "AddAlevelController::store");
             $routes->get(
-                "combinations/edit/(:num)",
+                "combinations/edit/(:segment)",
                 'AddAlevelController::edit/$1',
             );
             $routes->post(
-                "combinations/update/(:num)",
+                "combinations/update/(:segment)",
                 'AddAlevelController::update/$1',
             );
             $routes->post(
-                "combinations/delete/(:num)",
+                "combinations/delete/(:segment)",
                 'AddAlevelController::delete/$1',
             );
 
@@ -314,15 +314,15 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
             $routes->get("subjects/view", "AlevelSubjectsController::view");
             $routes->post("subjects/store", "AlevelSubjectsController::store");
             $routes->get(
-                "subjects/edit/(:num)",
+                "subjects/edit/(:segment)",
                 'AlevelSubjectsController::edit/$1',
             );
             $routes->post(
-                "subjects/update/(:num)",
+                "subjects/update/(:segment)",
                 'AlevelSubjectsController::update/$1',
             );
             $routes->post(
-                "subjects/delete/(:num)",
+                "subjects/delete/(:segment)",
                 'AlevelSubjectsController::delete/$1',
             );
 
@@ -340,15 +340,15 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
                 "AllocationCombinationClasssController::store",
             );
             $routes->get(
-                "allocations/edit/(:num)",
+                "allocations/edit/(:segment)",
                 'AllocationCombinationClasssController::edit/$1',
             );
             $routes->post(
-                "allocations/update/(:num)",
+                "allocations/update/(:segment)",
                 'AllocationCombinationClasssController::update/$1',
             );
             $routes->get(
-                "allocations/delete/(:num)",
+                "allocations/delete/(:segment)",
                 'AllocationCombinationClasssController::delete/$1',
             );
             $routes->get(
@@ -356,22 +356,22 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
                 "AllocationCombinationClasssController::getSections",
             );
             $routes->get(
-                "allocations/get-classes-by-session/(:num)",
+                "allocations/get-classes-by-session/(:segment)",
                 'AllocationCombinationClasssController::getClassesBySession/$1',
             );
 
             // Marks Entry
             $routes->get("marks", "AddAlevelMarksController::index");
             $routes->get(
-                "marks/getExams/(:num)",
+                "marks/getExams/(:segment)",
                 'AddAlevelMarksController::getExams/$1',
             );
             $routes->get(
-                "marks/getClasses/(:num)",
+                "marks/getClasses/(:segment)",
                 'AddAlevelMarksController::getClasses/$1',
             );
             $routes->get(
-                "marks/getCombinations/(:num)/(:num)",
+                "marks/getCombinations/(:segment)/(:segment)",
                 'AddAlevelMarksController::getCombinations/$1/$2',
             );
             $routes->get(
@@ -383,7 +383,7 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
                 "AddAlevelMarksController::getSubjects",
             );
             $routes->get(
-                "marks/getExistingMarks/(:num)/(:num)",
+                "marks/getExistingMarks/(:segment)/(:segment)",
                 'AddAlevelMarksController::getExistingMarks/$1/$2',
             );
             $routes->post("marks/save", "AddAlevelMarksController::saveMarks");
@@ -405,25 +405,25 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
             $routes->post("marks/update", "ViewAlevelMarksController::update");
             $routes->post("marks/delete", "ViewAlevelMarksController::delete");
             $routes->get(
-                "marks/getExams/(:num)",
+                "marks/getExams/(:segment)",
                 'ViewAlevelMarksController::getExams/$1',
             );
             $routes->get(
-                "marks/getClasses/(:num)",
+                "marks/getClasses/(:segment)",
                 'ViewAlevelMarksController::getClasses/$1',
             );
 
             $routes->get("results/publish", "PublishAlevelResults::index");
             $routes->get(
-                "results/getExams/(:num)",
+                "results/getExams/(:segment)",
                 'PublishAlevelResults::getExams/$1',
             );
             $routes->get(
-                "results/getClasses/(:num)",
+                "results/getClasses/(:segment)",
                 'PublishAlevelResults::getClasses/$1',
             );
             $routes->get(
-                "results/getCombinations/(:num)/(:num)",
+                "results/getCombinations/(:segment)/(:segment)",
                 'PublishAlevelResults::getCombinations/$1/$2',
             );
             $routes->get(
@@ -469,11 +469,11 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
             // Exam Allocations
             $routes->get("allocate-exams", "AlllocateAlevelExam::index");
             $routes->get(
-                "allocate-exams/get-exams/(:num)",
+                "allocate-exams/get-exams/(:segment)",
                 'AlllocateAlevelExam::getExamsBySession/$1',
             );
             $routes->get(
-                "allocate-exams/get-classes/(:num)",
+                "allocate-exams/get-classes/(:segment)",
                 'AlllocateAlevelExam::getClassesBySession/$1',
             );
             $routes->post("allocate-exams/store", "AlllocateAlevelExam::store");
@@ -481,11 +481,11 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
             // View Exam Allocations
             $routes->get("view-exams", "ViewAlevelExams::index");
             $routes->get(
-                "view-exams/get-allocations/(:num)",
+                "view-exams/get-allocations/(:segment)",
                 'ViewAlevelExams::getAllocations/$1',
             );
             $routes->delete(
-                "view-exams/deallocate/(:num)/(:num)",
+                "view-exams/deallocate/(:segment)/(:segment)",
                 'ViewAlevelExams::deallocate/$1/$2',
             );
         },
