@@ -26,7 +26,7 @@ class Filters extends BaseFilters
      */
     public array $aliases = [
         "csrf" => CSRF::class,
-        "toolbar" => DebugToolbar::class,
+        // "toolbar" => DebugToolbar::class, // Disabled completely for better performance
         "honeypot" => Honeypot::class,
         "invalidchars" => InvalidChars::class,
         "secureheaders" => SecureHeaders::class,
@@ -104,16 +104,5 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [
-        'toolbar' => [
-            'except' => [
-                'classes/delete/*',
-                'classes/getClasses',
-                'classes/sections/delete/*',
-                'classes/getSections',
-                'classes/allocations/delete/*',
-                'classes/getAllocations'
-            ]
-        ]
-    ];
+    public array $filters = [];
 }
