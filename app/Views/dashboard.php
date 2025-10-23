@@ -586,249 +586,76 @@
         <div class="main-content">
             <div class="container">
                 <div class="header">
-                    <h1>Dashboard Overview Analytics</h1>
-                    <div class="header-actions">
-                        <button class="btn btn-outline">
-                            <i class="fas fa-calendar"></i>
-                            <span>Academic Year: 2023-2024</span>
-                        </button>
-                        <button class="btn btn-primary">
-                            <i class="fas fa-download"></i>
-                            <span>Export Report</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="dashboard-stats">
-                    <div class="stat-card" style="animation-delay: 0.1s;">
-                        <div class="stat-card-header">
-                            <div class="stat-card-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <h3 class="stat-card-title">Total Students</h3>
-                        </div>
-                        <div class="stat-card-value">28</div>
-                        <div class="stat-card-trend trend-up">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>12% from last term</span>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card" style="animation-delay: 0.2s;">
-                        <div class="stat-card-header">
-                            <div class="stat-card-icon" style="background-color: rgba(59, 130, 246, 0.1); color: var(--info);">
-                                <i class="fas fa-file-alt"></i>
-                            </div>
-                            <h3 class="stat-card-title">Active Exams</h3>
-                        </div>
-                        <div class="stat-card-value">5</div>
-                        <div class="stat-card-trend trend-neutral">
-                            <i class="fas fa-minus"></i>
-                            <span>Same as last term</span>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card" style="animation-delay: 0.3s;">
-                        <div class="stat-card-header">
-                            <div class="stat-card-icon" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success);">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <h3 class="stat-card-title">Pass Rate</h3>
-                        </div>
-                        <div class="stat-card-value">85%</div>
-                        <div class="stat-card-trend trend-up">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>5% from last term</span>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card" style="animation-delay: 0.4s;">
-                        <div class="stat-card-header">
-                            <div class="stat-card-icon" style="background-color: rgba(245, 158, 11, 0.1); color: var(--warning);">
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <h3 class="stat-card-title">Average Grade</h3>
-                        </div>
-                        <div class="stat-card-value">B+</div>
-                        <div class="stat-card-trend trend-up">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>From B last term</span>
-                        </div>
-                    </div>
+                    <h1>Dashboard Overview</h1>
                 </div>
                 
                 <div class="quick-actions">
-                    <div class="quick-action-card">
+                    <a href="<?= base_url('students/create') ?>" class="quick-action-card" style="text-decoration: none; color: inherit;">
                         <div class="quick-action-icon">
                             <i class="fas fa-user-plus"></i>
                         </div>
                         <h3 class="quick-action-title">Add Student</h3>
                         <p class="quick-action-description">Register a new student</p>
-                    </div>
+                    </a>
                     
-                    <div class="quick-action-card">
+                    <a href="<?= base_url('students/bulk-register') ?>" class="quick-action-card" style="text-decoration: none; color: inherit;">
+                        <div class="quick-action-icon" style="background-color: rgba(147, 51, 234, 0.1); color: #9333ea;">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h3 class="quick-action-title">Bulk Register</h3>
+                        <p class="quick-action-description">Register multiple students</p>
+                    </a>
+                    
+                    <a href="<?= base_url('classes/create') ?>" class="quick-action-card" style="text-decoration: none; color: inherit;">
                         <div class="quick-action-icon" style="background-color: rgba(59, 130, 246, 0.1); color: var(--info);">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <h3 class="quick-action-title">Add Class</h3>
+                        <p class="quick-action-description">Create a new class</p>
+                    </a>
+                    
+                    <a href="<?= base_url('exam') ?>" class="quick-action-card" style="text-decoration: none; color: inherit;">
+                        <div class="quick-action-icon" style="background-color: rgba(245, 158, 11, 0.1); color: var(--warning);">
                             <i class="fas fa-file-alt"></i>
                         </div>
                         <h3 class="quick-action-title">Create Exam</h3>
                         <p class="quick-action-description">Set up a new examination</p>
-                    </div>
+                    </a>
                     
-                    <div class="quick-action-card">
+                    <a href="<?= base_url('exam/marks') ?>" class="quick-action-card" style="text-decoration: none; color: inherit;">
                         <div class="quick-action-icon" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success);">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-pen"></i>
                         </div>
-                        <h3 class="quick-action-title">Enter Results</h3>
+                        <h3 class="quick-action-title">Enter Marks</h3>
                         <p class="quick-action-description">Record exam scores</p>
-                    </div>
+                    </a>
                     
-                    <div class="quick-action-card">
-                        <div class="quick-action-icon" style="background-color: rgba(245, 158, 11, 0.1); color: var(--warning);">
-                            <i class="fas fa-print"></i>
+                    <a href="<?= base_url('results/publish') ?>" class="quick-action-card" style="text-decoration: none; color: inherit;">
+                        <div class="quick-action-icon" style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                            <i class="fas fa-chart-bar"></i>
                         </div>
-                        <h3 class="quick-action-title">Generate Reports</h3>
-                        <p class="quick-action-description">Create result reports</p>
-                    </div>
+                        <h3 class="quick-action-title">Publish Results</h3>
+                        <p class="quick-action-description">Publish exam results</p>
+                    </a>
+                    
+                    <a href="<?= base_url('results/view') ?>" class="quick-action-card" style="text-decoration: none; color: inherit;">
+                        <div class="quick-action-icon" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success);">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3 class="quick-action-title">View Results</h3>
+                        <p class="quick-action-description">Check student results</p>
+                    </a>
+                    
+                    <a href="<?= base_url('settings') ?>" class="quick-action-card" style="text-decoration: none; color: inherit;">
+                        <div class="quick-action-icon" style="background-color: rgba(100, 116, 139, 0.1); color: #64748b;">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <h3 class="quick-action-title">Settings</h3>
+                        <p class="quick-action-description">Configure system settings</p>
+                    </a>
                 </div>
                 
-                <div class="dashboard-row">
-                    <div class="dashboard-card">
-                        <div class="dashboard-card-header">
-                            <h3 class="dashboard-card-title">Performance by Subject</h3>
-                            <div class="dashboard-card-actions">
-                                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-                                    <i class="fas fa-filter"></i>
-                                    <span>Filter</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="dashboard-card-body">
-                            <div class="chart-container">
-                                <canvas id="subjectPerformanceChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="dashboard-card">
-                        <div class="dashboard-card-header">
-                            <h3 class="dashboard-card-title">Recent Activity</h3>
-                            <div class="dashboard-card-actions">
-                                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-                                    <i class="fas fa-sync-alt"></i>
-                                    <span>Refresh</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="dashboard-card-body">
-                            <ul class="recent-activity">
-                                <li class="activity-item">
-                                    <div class="activity-icon success">
-                                        <i class="fas fa-check"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <div class="activity-title">Final Exam Results Published</div>
-                                        <div class="activity-time">Today, 10:30 AM</div>
-                                    </div>
-                                </li>
-                                <li class="activity-item">
-                                    <div class="activity-icon info">
-                                        <i class="fas fa-user-plus"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <div class="activity-title">New Student Registered</div>
-                                        <div class="activity-time">Yesterday, 2:15 PM</div>
-                                    </div>
-                                </li>
-                                <li class="activity-item">
-                                    <div class="activity-icon warning">
-                                        <i class="fas fa-edit"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <div class="activity-title">Marks Updated for Math Exam</div>
-                                        <div class="activity-time">Yesterday, 11:45 AM</div>
-                                    </div>
-                                </li>
-                                <li class="activity-item">
-                                    <div class="activity-icon danger">
-                                        <i class="fas fa-exclamation-circle"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <div class="activity-title">Low Performance Alert: Physics</div>
-                                        <div class="activity-time">2 days ago</div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card" style="animation-delay: 0.4s;">
-                    <div class="dashboard-card-header">
-                        <h3 class="dashboard-card-title">Recent Results</h3>
-                        <div class="dashboard-card-actions">
-                            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-                                <i class="fas fa-eye"></i>
-                                <span>View All</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="dashboard-card-body">
-                        <table class="recent-results">
-                            <thead>
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Class</th>
-                                    <th>Exam</th>
-                                    <th>Score</th>
-                                    <th>Grade</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Charles Victor Simtanda</td>
-                                    <td>Form 1</td>
-                                    <td>Mid-Term</td>
-                                    <td>85%</td>
-                                    <td>A</td>
-                                    <td><span class="badge badge-success">Passed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Sarah Johnson</td>
-                                    <td>Form 2</td>
-                                    <td>Final Exam</td>
-                                    <td>92%</td>
-                                    <td>A+</td>
-                                    <td><span class="badge badge-success">Passed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Michael Brown</td>
-                                    <td>Form 3</td>
-                                    <td>Mid-Term</td>
-                                    <td>68%</td>
-                                    <td>C+</td>
-                                    <td><span class="badge badge-warning">Average</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Emily Davis</td>
-                                    <td>Form 2</td>
-                                    <td>Final Exam</td>
-                                    <td>45%</td>
-                                    <td>F</td>
-                                    <td><span class="badge badge-danger">Failed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>James Wilson</td>
-                                    <td>Form 1</td>
-                                    <td>Mid-Term</td>
-                                    <td>78%</td>
-                                    <td>B+</td>
-                                    <td><span class="badge badge-success">Passed</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -883,56 +710,6 @@
             document.addEventListener('click', function(e) {
                 if (window.innerWidth <= 768 && !sidebar.contains(e.target) && e.target !== sidebarToggle) {
                     sidebar.classList.remove('show');
-                }
-            });
-
-            // Initialize Charts
-            const ctx = document.getElementById('subjectPerformanceChart').getContext('2d');
-            const subjectPerformanceChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Mathematics', 'English', 'Science', 'History', 'Geography', 'Physics'],
-                    datasets: [{
-                        label: 'Average Score (%)',
-                        data: [78, 82, 65, 75, 68, 62],
-                        backgroundColor: [
-                            'rgba(74, 229, 74, 0.6)',
-                            'rgba(74, 229, 74, 0.6)',
-                            'rgba(74, 229, 74, 0.6)',
-                            'rgba(74, 229, 74, 0.6)',
-                            'rgba(74, 229, 74, 0.6)',
-                            'rgba(74, 229, 74, 0.6)'
-                        ],
-                        borderColor: [
-                            'rgba(58, 208, 58, 1)',
-                            'rgba(58, 208, 58, 1)',
-                            'rgba(58, 208, 58, 1)',
-                            'rgba(58, 208, 58, 1)',
-                            'rgba(58, 208, 58, 1)',
-                            'rgba(58, 208, 58, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
                 }
             });
         });
