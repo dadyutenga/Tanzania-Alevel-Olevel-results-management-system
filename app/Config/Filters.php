@@ -108,7 +108,11 @@ class Filters extends BaseFilters
         'toolbar' => [
             'except' => [
                 'classes/delete/*',
-                'classes/getClasses'
+                'classes/getClasses',
+                'classes/sections/delete/*',
+                'classes/getSections',
+                'classes/allocations/delete/*',
+                'classes/getAllocations'
             ]
         ]
     ];

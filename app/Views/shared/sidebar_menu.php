@@ -16,6 +16,10 @@
         <ul class="submenu <?= strpos(current_url(), 'classes') !== false ? 'show' : '' ?>">
             <li><a href="<?= base_url('classes') ?>"><i class="fas fa-list"></i> View Classes</a></li>
             <li><a href="<?= base_url('classes/create') ?>"><i class="fas fa-plus-circle"></i> Add Class</a></li>
+            <li><a href="<?= base_url('classes/sections') ?>"><i class="fas fa-th-large"></i> View Sections</a></li>
+            <li><a href="<?= base_url('classes/sections/create') ?>"><i class="fas fa-plus-circle"></i> Add Section</a></li>
+            <li><a href="<?= base_url('classes/allocations') ?>"><i class="fas fa-link"></i> View Allocations</a></li>
+            <li><a href="<?= base_url('classes/allocations/create') ?>"><i class="fas fa-plus-circle"></i> Add Allocation</a></li>
         </ul>
     </li>
     <li>

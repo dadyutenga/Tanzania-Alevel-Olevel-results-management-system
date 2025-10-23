@@ -281,8 +281,8 @@
             <div class="container">
                 <div class="header">
                     <h1><?= esc($title) ?></h1>
-                    <a href="<?= base_url('classes/create') ?>" class="btn">
-                        <i class="fas fa-plus"></i> Add New Class
+                    <a href="<?= base_url('classes/allocations/create') ?>" class="btn">
+                        <i class="fas fa-plus"></i> Add New Allocation
                     </a>
                 </div>
 
@@ -303,15 +303,16 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Class Name</th>
+                                <th>Class</th>
+                                <th>Section</th>
                                 <th>Status</th>
                                 <th>Created At</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="classesTableBody">
+                        <tbody id="allocationsTableBody">
                             <tr>
-                                <td colspan="5" style="text-align: center;">Loading classes...</td>
+                                <td colspan="6" style="text-align: center;">Loading allocations...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -332,60 +333,61 @@
                 });
             }
 
-            loadClasses();
+            loadAllocations();
         });
 
-        async function loadClasses() {
+        async function loadAllocations() {
             try {
-                const response = await fetch('<?= base_url('classes/getClasses') ?>');
+                const response = await fetch('<?= base_url('classes/getAllocations') ?>');
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    displayClasses(result.data);
+                    displayAllocations(result.data);
                 } else {
-                    throw new Error(result.message || 'Failed to load classes');
+                    throw new Error(result.message || 'Failed to load allocations');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('classesTableBody').innerHTML = `
+                document.getElementById('allocationsTableBody').innerHTML = `
                     <tr>
-                        <td colspan="5" style="text-align: center; color: #dc2626;">
-                            Failed to load classes. Please refresh the page.
+                        <td colspan="6" style="text-align: center; color: #dc2626;">
+                            Failed to load allocations. Please refresh the page.
                         </td>
                     </tr>
                 `;
             }
         }
 
-        function displayClasses(classes) {
-            const tbody = document.getElementById('classesTableBody');
+        function displayAllocations(allocations) {
+            const tbody = document.getElementById('allocationsTableBody');
             
-            if (classes.length === 0) {
+            if (allocations.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" style="text-align: center;">
-                            No classes found. Click "Add New Class" to create one.
+                        <td colspan="6" style="text-align: center;">
+                            No allocations found. Click "Add New Allocation" to create one.
                         </td>
                     </tr>
                 `;
                 return;
             }
 
-            tbody.innerHTML = classes.map((cls, index) => `
+            tbody.innerHTML = allocations.map((alloc, index) => `
                 <tr>
                     <td>${index + 1}</td>
-                    <td>${cls.class}</td>
+                    <td>${alloc.class}</td>
+                    <td>${alloc.section}</td>
                     <td>
-                        <span class="badge ${cls.is_active === 'yes' ? 'badge-success' : 'badge-danger'}">
-                            ${cls.is_active === 'yes' ? 'Active' : 'Inactive'}
+                        <span class="badge ${alloc.is_active === 'yes' ? 'badge-success' : 'badge-danger'}">
+                            ${alloc.is_active === 'yes' ? 'Active' : 'Inactive'}
                         </span>
                     </td>
-                    <td>${new Date(cls.created_at).toLocaleDateString()}</td>
+                    <td>${new Date(alloc.created_at).toLocaleDateString()}</td>
                     <td>
-                        <a href="<?= base_url('classes/edit/') ?>${cls.id}" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        <a href="<?= base_url('classes/allocations/edit/') ?>${alloc.id}" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
                             <i class="fas fa-edit"></i> Edit
                         </a>
-                        <button onclick="deleteClass('${cls.id}')" class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        <button onclick="deleteAllocation('${alloc.id}')" class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </td>
@@ -393,7 +395,7 @@
             `).join('');
         }
 
-        async function deleteClass(id) {
+        async function deleteAllocation(id) {
             const result = await Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
@@ -406,7 +408,7 @@
 
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`<?= base_url('classes/delete/') ?>${id}`, {
+                    const response = await fetch(`<?= base_url('classes/allocations/delete/') ?>${id}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -428,7 +430,7 @@
                             showConfirmButton: false,
                             timer: 1500
                         });
-                        loadClasses();
+                        loadAllocations();
                     } else {
                         throw new Error(data.message);
                     }
@@ -437,7 +439,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: error.message || 'Failed to delete class'
+                        text: error.message || 'Failed to delete allocation'
                     });
                 }
             }

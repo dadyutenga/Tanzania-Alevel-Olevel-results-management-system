@@ -86,6 +86,22 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
         $routes->get("getClasses", "ClassManagementController::getClasses");
         $routes->post("delete/(:segment)", "ClassManagementController::delete/$1");
         $routes->delete("delete/(:segment)", "ClassManagementController::delete/$1");
+        
+        $routes->get("sections", "ClassManagementController::sections");
+        $routes->get("sections/create", "ClassManagementController::createSection");
+        $routes->get("sections/edit/(:segment)", "ClassManagementController::editSection/$1");
+        $routes->post("sections/store", "ClassManagementController::storeSection");
+        $routes->post("sections/update/(:segment)", "ClassManagementController::updateSection/$1");
+        $routes->get("getSections", "ClassManagementController::getSections");
+        $routes->post("sections/delete/(:segment)", "ClassManagementController::deleteSection/$1");
+        
+        $routes->get("allocations", "ClassManagementController::allocations");
+        $routes->get("allocations/create", "ClassManagementController::createAllocation");
+        $routes->get("allocations/edit/(:segment)", "ClassManagementController::editAllocation/$1");
+        $routes->post("allocations/store", "ClassManagementController::storeAllocation");
+        $routes->post("allocations/update/(:segment)", "ClassManagementController::updateAllocation/$1");
+        $routes->get("getAllocations", "ClassManagementController::getAllocations");
+        $routes->post("allocations/delete/(:segment)", "ClassManagementController::deleteAllocation/$1");
     });
 
     // -----------------------------------------------------------------------------
