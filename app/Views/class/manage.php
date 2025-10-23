@@ -72,6 +72,77 @@
             font-size: 1.75rem;
         }
 
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            position: relative;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            background-color: var(--primary);
+            color: black;
+        }
+
+        .sidebar-menu li a i {
+            margin-right: 0.75rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: var(--secondary);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .submenu.show {
+            max-height: 500px;
+        }
+
+        .submenu li a {
+            padding: 0.5rem 1.5rem 0.5rem 2.5rem;
+            font-size: 0.85rem;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            margin-left: auto;
+        }
+
+        .logout-section {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .logout-link {
+            color: #ef4444 !important;
+        }
+
+        .logout-link:hover {
+            background-color: rgba(239, 68, 68, 0.1) !important;
+        }
+
         .main-content {
             flex: 1;
             margin-left: 250px;
@@ -330,6 +401,32 @@
                     sidebar.classList.toggle('show');
                 });
             }
+            
+            // Submenu Toggle
+            const menuItems = document.querySelectorAll('.sidebar-menu > li');
+            
+            menuItems.forEach(item => {
+                const link = item.querySelector('.expandable');
+                const submenu = item.querySelector('.submenu');
+                const toggleIcon = item.querySelector('.toggle-icon');
+                
+                if (link && submenu) {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        submenu.classList.toggle('show');
+                        if (toggleIcon) {
+                            toggleIcon.style.transform = submenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+                        }
+                    });
+                }
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && !sidebar.contains(e.target) && e.target !== sidebarToggle) {
+                    sidebar.classList.remove('show');
+                }
+            });
         });
     </script>
 </body>
