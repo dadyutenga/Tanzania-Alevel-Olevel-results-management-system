@@ -26,9 +26,12 @@ abstract class BaseModel extends Model
             $data['data']['updated_by'] = $data['data']['updated_by'] ?? $userUuid;
         }
 
-        $schoolId = $this->resolveCurrentSchoolUuid();
-        if ($schoolId && empty($data['data']['school_id'])) {
-            $data['data']['school_id'] = $schoolId;
+        // Only set school_id if the model doesn't skip it
+        if (!isset($this->skipSchoolId) || !$this->skipSchoolId) {
+            $schoolId = $this->resolveCurrentSchoolUuid();
+            if ($schoolId && empty($data['data']['school_id'])) {
+                $data['data']['school_id'] = $schoolId;
+            }
         }
 
         return $data;
@@ -41,9 +44,12 @@ abstract class BaseModel extends Model
             $data['data']['updated_by'] = $userUuid;
         }
 
-        $schoolId = $this->resolveCurrentSchoolUuid();
-        if ($schoolId && empty($data['data']['school_id'])) {
-            $data['data']['school_id'] = $schoolId;
+        // Only set school_id if the model doesn't skip it
+        if (!isset($this->skipSchoolId) || !$this->skipSchoolId) {
+            $schoolId = $this->resolveCurrentSchoolUuid();
+            if ($schoolId && empty($data['data']['school_id'])) {
+                $data['data']['school_id'] = $schoolId;
+            }
         }
 
         return $data;

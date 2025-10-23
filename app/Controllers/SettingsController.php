@@ -126,39 +126,49 @@ class SettingsController extends ResourceController
             $userId = $session->get('user_uuid') ?? $session->get('user_id');
             
             if (!$userId) {
-                return $this->fail('User not authenticated', 401);
+                return redirect()->to('/login')->with('error', 'Please login first');
             }
 
             $existingSchool = $this->settingsModel->getSchoolByUserId($userId);
             
             if ($existingSchool) {
-                return $this->fail('School already exists. Use update instead.', 400);
+                return redirect()->back()->with('error', 'School already exists. Use update instead.');
             }
 
             $file = $this->request->getFile('school_logo');
             
             if ($file && $file->isValid()) {
-                $maxSize = 5 * 1024 * 1024;
+                $maxSize = 2 * 1024 * 1024; // Reduce to 2MB
                 if ($file->getSize() > $maxSize) {
-                    return $this->fail('Image file is too large. Maximum size allowed is 5MB.', 400);
+                    return redirect()->back()->withInput()->with('error', 'Image file is too large. Maximum size allowed is 2MB.');
                 }
 
                 $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
                 if (!in_array($file->getMimeType(), $allowedTypes)) {
-                    return $this->fail('Invalid image type. Only JPEG, PNG, and GIF are allowed.', 400);
+                    return redirect()->back()->withInput()->with('error', 'Invalid image type. Only JPEG, PNG, and GIF are allowed.');
                 }
 
-                // Store as binary data in database
-                $imageData = file_get_contents($file->getTempName());
-                if ($imageData === false) {
-                    return $this->fail('Failed to read image data.', 500);
+                // Resize and compress image
+                $image = \Config\Services::image('gd');
+                try {
+                    $image->withFile($file->getTempName())
+                          ->fit(500, 500, 'center') // Resize to max 500x500px
+                          ->save($file->getTempName(), 85); // Compress to 85% quality
+                    
+                    $imageData = file_get_contents($file->getTempName());
+                    if ($imageData === false) {
+                        return redirect()->back()->withInput()->with('error', 'Failed to read image data.');
+                    }
+                    
+                    $data['school_logo'] = base64_encode($imageData);
+                } catch (\Exception $e) {
+                    log_message('error', 'Image processing failed: ' . $e->getMessage());
+                    return redirect()->back()->withInput()->with('error', 'Failed to process image.');
                 }
-                
-                $data['school_logo'] = base64_encode($imageData);
             }
 
             if (!$this->settingsModel->validate($data)) {
-                return $this->failValidationErrors($this->settingsModel->errors());
+                return redirect()->back()->withInput()->with('errors', $this->settingsModel->errors());
             }
 
             $db = \Config\Database::connect();
@@ -169,7 +179,7 @@ class SettingsController extends ResourceController
             
             if (!$this->settingsModel->createSchool($data)) {
                 $db->transRollback();
-                return $this->fail('Failed to create school settings', 500);
+                return redirect()->back()->withInput()->with('error', 'Failed to create school settings');
             }
 
             if (isset($data['school_year']) && !empty($data['school_year'])) {
@@ -181,7 +191,7 @@ class SettingsController extends ResourceController
 
                 if (!$this->sessionModel->createSession($sessionData)) {
                     $db->transRollback();
-                    return $this->fail('Failed to create session', 500);
+                    return redirect()->back()->withInput()->with('error', 'Failed to create session');
                 }
 
                 $session->set('school_id', $schoolId);
@@ -191,17 +201,13 @@ class SettingsController extends ResourceController
             $db->transComplete();
 
             if ($db->transStatus() === false) {
-                return $this->fail('Failed to save settings', 500);
+                return redirect()->back()->withInput()->with('error', 'Failed to save settings');
             }
 
-            return $this->respond([
-                'status' => 'success',
-                'message' => 'School created successfully',
-                'redirect' => base_url('settings/view')
-            ]);
+            return redirect()->to('settings/view')->with('success', 'School created successfully!');
         } catch (\Exception $e) {
             log_message('error', '[SettingsController.store] Exception: ' . $e->getMessage());
-            return $this->fail('Failed to create school: ' . $e->getMessage(), 500);
+            return redirect()->back()->withInput()->with('error', 'Failed to create school: ' . $e->getMessage());
         }
     }
 
@@ -213,42 +219,52 @@ class SettingsController extends ResourceController
             $userId = $session->get('user_uuid') ?? $session->get('user_id');
             
             if (!$userId) {
-                return $this->fail('User not authenticated', 401);
+                return redirect()->to('/login')->with('error', 'Please login first');
             }
 
             $existingSchool = $this->settingsModel->getSchoolByUserId($userId);
             
             if (!$existingSchool) {
-                return $this->fail('No school found. Please create one first.', 404);
+                return redirect()->to('settings/create')->with('error', 'No school found. Please create one first.');
             }
 
             $schoolId = $existingSchool['id'];
             $file = $this->request->getFile('school_logo');
             
             if ($file && $file->isValid()) {
-                $maxSize = 5 * 1024 * 1024;
+                $maxSize = 2 * 1024 * 1024; // Reduce to 2MB
                 if ($file->getSize() > $maxSize) {
-                    return $this->fail('Image file is too large. Maximum size allowed is 5MB.', 400);
+                    return redirect()->back()->withInput()->with('error', 'Image file is too large. Maximum size allowed is 2MB.');
                 }
 
                 $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
                 if (!in_array($file->getMimeType(), $allowedTypes)) {
-                    return $this->fail('Invalid image type. Only JPEG, PNG, and GIF are allowed.', 400);
+                    return redirect()->back()->withInput()->with('error', 'Invalid image type. Only JPEG, PNG, and GIF are allowed.');
                 }
 
-                // Store as binary data in database
-                $imageData = file_get_contents($file->getTempName());
-                if ($imageData === false) {
-                    return $this->fail('Failed to read image data.', 500);
+                // Resize and compress image
+                $image = \Config\Services::image('gd');
+                try {
+                    $image->withFile($file->getTempName())
+                          ->fit(500, 500, 'center') // Resize to max 500x500px
+                          ->save($file->getTempName(), 85); // Compress to 85% quality
+                    
+                    $imageData = file_get_contents($file->getTempName());
+                    if ($imageData === false) {
+                        return redirect()->back()->withInput()->with('error', 'Failed to read image data.');
+                    }
+                    
+                    $data['school_logo'] = base64_encode($imageData);
+                } catch (\Exception $e) {
+                    log_message('error', 'Image processing failed: ' . $e->getMessage());
+                    return redirect()->back()->withInput()->with('error', 'Failed to process image.');
                 }
-                
-                $data['school_logo'] = base64_encode($imageData);
             } else {
                 $data['school_logo'] = $existingSchool['school_logo'];
             }
 
             if (!$this->settingsModel->validate($data)) {
-                return $this->failValidationErrors($this->settingsModel->errors());
+                return redirect()->back()->withInput()->with('errors', $this->settingsModel->errors());
             }
 
             $db = \Config\Database::connect();
@@ -256,7 +272,7 @@ class SettingsController extends ResourceController
 
             if (!$this->settingsModel->updateSchool($schoolId, $data)) {
                 $db->transRollback();
-                return $this->fail('Failed to update school settings', 500);
+                return redirect()->back()->withInput()->with('error', 'Failed to update school settings');
             }
 
             if (isset($data['school_year']) && !empty($data['school_year'])) {
@@ -272,7 +288,7 @@ class SettingsController extends ResourceController
 
                     if (!$sessionUpdate) {
                         $db->transRollback();
-                        return $this->fail('Failed to update session', 500);
+                        return redirect()->back()->withInput()->with('error', 'Failed to update session');
                     }
                 } else {
                     $sessionData = [
@@ -283,7 +299,7 @@ class SettingsController extends ResourceController
 
                     if (!$this->sessionModel->createSession($sessionData)) {
                         $db->transRollback();
-                        return $this->fail('Failed to create session', 500);
+                        return redirect()->back()->withInput()->with('error', 'Failed to create session');
                     }
                 }
 
@@ -294,17 +310,13 @@ class SettingsController extends ResourceController
             $db->transComplete();
 
             if ($db->transStatus() === false) {
-                return $this->fail('Failed to update settings', 500);
+                return redirect()->back()->withInput()->with('error', 'Failed to update settings');
             }
 
-            return $this->respond([
-                'status' => 'success',
-                'message' => 'Settings updated successfully',
-                'redirect' => base_url('settings/view')
-            ]);
+            return redirect()->to('settings/view')->with('success', 'Settings updated successfully!');
         } catch (\Exception $e) {
             log_message('error', '[SettingsController.update] Exception: ' . $e->getMessage());
-            return $this->fail('Failed to update settings: ' . $e->getMessage(), 500);
+            return redirect()->back()->withInput()->with('error', 'Failed to update settings: ' . $e->getMessage());
         }
     }
 

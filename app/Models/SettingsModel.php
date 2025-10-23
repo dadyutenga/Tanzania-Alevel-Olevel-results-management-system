@@ -9,6 +9,10 @@ class SettingsModel extends BaseModel
     protected $useAutoIncrement = false;
     protected $returnType = 'array';
     protected $protectFields = true;
+    
+    // Override to prevent school_id auto-assignment since this table doesn't have that column
+    protected $skipSchoolId = true;
+    
     protected $allowedFields = [
         'id',
         'school_name',

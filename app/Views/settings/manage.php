@@ -109,7 +109,7 @@
                     <h1><?= esc($title) ?></h1>
                     <div id="alert" class="alert"></div>
             
-            <form id="settingsForm" enctype="multipart/form-data">
+            <form id="settingsForm" enctype="multipart/form-data" method="POST" action="<?= isset($settings) ? base_url('settings/update') : base_url('settings/store') ?>">
                 <div class="form-group">
                     <label>School Name *</label>
                     <input type="text" name="school_name" class="form-control" value="<?= esc($settings['school_name'] ?? '') ?>" required>
@@ -173,44 +173,7 @@
             sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('show'));
         }
         
-        document.getElementById('settingsForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const url = '<?= isset($settings) ? base_url("settings/update") : base_url("settings/store") ?>';
-            const btn = this.querySelector('button[type="submit"]');
-            const alert = document.getElementById('alert');
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    alert.className = 'alert alert-success';
-                    alert.textContent = result.message;
-                    alert.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        window.location.href = result.redirect;
-                    }, 1000);
-                } else {
-                    throw new Error(result.message || 'Failed to save settings');
-                }
-            } catch (error) {
-                alert.className = 'alert alert-danger';
-                alert.textContent = error.message;
-                alert.style.display = 'block';
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> <?= $settings ? "Update Settings" : "Create School" ?>';
-            }
-        });
+        // Form will submit normally - no AJAX needed
     </script>
 </body>
 </html>
