@@ -5,9 +5,17 @@
     <li><a href="<?= base_url('analytics') ?>" class="<?= strpos(current_url(), 'analytics') !== false ? 'active' : '' ?>">
         <i class="fas fa-chart-line"></i> Analytics
     </a></li>
-    <li><a href="<?= base_url('student') ?>" class="<?= strpos(current_url(), 'student') !== false ? 'active' : '' ?>">
-        <i class="fas fa-users"></i> Students
-    </a></li>
+    <li>
+        <a href="#" class="expandable <?= strpos(current_url(), 'students') !== false ? 'active' : '' ?>">
+            <i class="fas fa-users"></i> Students
+            <i class="fas fa-chevron-down toggle-icon" style="margin-left:auto;"></i>
+        </a>
+        <ul class="submenu <?= strpos(current_url(), 'students') !== false ? 'show' : '' ?>">
+            <li><a href="<?= base_url('students') ?>"><i class="fas fa-list"></i> View Students</a></li>
+            <li><a href="<?= base_url('students/create') ?>"><i class="fas fa-plus-circle"></i> Add Student</a></li>
+            <li><a href="<?= base_url('students/bulk-register') ?>"><i class="fas fa-users-cog"></i> Bulk Register</a></li>
+        </ul>
+    </li>
     <li>
         <a href="#" class="expandable <?= strpos(current_url(), 'classes') !== false ? 'active' : '' ?>">
             <i class="fas fa-chalkboard-teacher"></i> Classes

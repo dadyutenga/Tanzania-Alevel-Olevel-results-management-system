@@ -63,7 +63,7 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
     $routes->get("dashboard", "DashboardController::index");
 
     // -----------------------------------------------------------------------------
-    // Students
+    // Students (Old)
     // -----------------------------------------------------------------------------
     $routes->group("student", function ($routes) {
         $routes->get("/", "StudentController::index");
@@ -72,6 +72,21 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
         $routes->get("getClasses", "StudentController::getClasses");
         $routes->get("getSections/(:num)", 'StudentController::getSections/$1');
         $routes->get("getSessions", "StudentController::getSessions");
+    });
+
+    // -----------------------------------------------------------------------------
+    // Student Management
+    // -----------------------------------------------------------------------------
+    $routes->group("students", ["namespace" => "App\Controllers"], function ($routes) {
+        $routes->get("/", "StudentManagementController::index");
+        $routes->get("create", "StudentManagementController::create");
+        $routes->get("edit/(:segment)", "StudentManagementController::edit/$1");
+        $routes->get("bulk-register", "StudentManagementController::bulkRegister");
+        $routes->post("store", "StudentManagementController::store");
+        $routes->post("store-bulk", "StudentManagementController::storeBulk");
+        $routes->post("update/(:segment)", "StudentManagementController::update/$1");
+        $routes->get("getStudents", "StudentManagementController::getStudents");
+        $routes->post("delete/(:segment)", "StudentManagementController::delete/$1");
     });
 
     // -----------------------------------------------------------------------------
