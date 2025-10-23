@@ -16,20 +16,22 @@ class MinioService
     {
         $this->config = new Minio();
         $this->bucket = $this->config->defaultBucket;
+    }
 
-        $this->client = new S3Client([
-            'version' => $this->config->version,
-            'region' => $this->config->region,
-            'endpoint' => 'http://' . $this->config->endpoint . ':' . $this->config->port,
-            'use_path_style_endpoint' => true,
-            'credentials' => [
-                'key' => $this->config->accessKey,
-                'secret' => $this->config->secretKey,
-            ],
-        ]);
-
-        // Ensure bucket exists
-        $this->ensureBucketExists();
+    protected function initClient()
+    {
+        if ($this->client === null) {
+            $this->client = new S3Client([
+                'version' => $this->config->version,
+                'region' => $this->config->region,
+                'endpoint' => 'http://' . $this->config->endpoint . ':' . $this->config->port,
+                'use_path_style_endpoint' => true,
+                'credentials' => [
+                    'key' => $this->config->accessKey,
+                    'secret' => $this->config->secretKey,
+                ],
+            ]);
+        }
     }
 
     /**
@@ -61,6 +63,9 @@ class MinioService
     public function uploadFile(string $filePath, string $objectKey, ?string $contentType = null, bool $isFileContent = false): array
     {
         try {
+            $this->initClient();
+            $this->ensureBucketExists();
+            
             $params = [
                 'Bucket' => $this->bucket,
                 'Key' => $objectKey,
@@ -104,6 +109,8 @@ class MinioService
     public function downloadFile(string $objectKey): array
     {
         try {
+            $this->initClient();
+            
             $result = $this->client->getObject([
                 'Bucket' => $this->bucket,
                 'Key' => $objectKey,
@@ -137,6 +144,8 @@ class MinioService
     public function deleteFile(string $objectKey): array
     {
         try {
+            $this->initClient();
+            
             $this->client->deleteObject([
                 'Bucket' => $this->bucket,
                 'Key' => $objectKey,
@@ -166,6 +175,7 @@ class MinioService
     public function fileExists(string $objectKey): bool
     {
         try {
+            $this->initClient();
             return $this->client->doesObjectExist($this->bucket, $objectKey);
         } catch (AwsException $e) {
             log_message('error', 'MinIO file existence check failed: ' . $e->getMessage());
@@ -201,6 +211,8 @@ class MinioService
     public function getPresignedUrl(string $objectKey, int $expirationMinutes = 60): array
     {
         try {
+            $this->initClient();
+            
             $cmd = $this->client->getCommand('GetObject', [
                 'Bucket' => $this->bucket,
                 'Key' => $objectKey,
@@ -233,6 +245,8 @@ class MinioService
     public function listObjects(string $prefix = ''): array
     {
         try {
+            $this->initClient();
+            
             $result = $this->client->listObjects([
                 'Bucket' => $this->bucket,
                 'Prefix' => $prefix,

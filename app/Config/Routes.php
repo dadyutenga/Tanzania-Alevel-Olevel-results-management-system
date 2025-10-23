@@ -452,10 +452,13 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
     $routes->group("settings", ["namespace" => "App\Controllers"], function (
         $routes,
     ) {
-        $routes->get("/", "SettingsController::settingsPage");
-        $routes->get("index", "SettingsController::index");
+        $routes->get("/", "SettingsController::index");
+        $routes->get("create", "SettingsController::create");
+        $routes->get("edit", "SettingsController::edit");
+        $routes->get("view", "SettingsController::view");
+        $routes->post("store", "SettingsController::store");
+        $routes->post("update", "SettingsController::update");
         $routes->get("test", "SettingsController::test");
-        $routes->post("update/(:num)", 'SettingsController::update/$1');
     });
 
     // -------------------------------------------------------------------------
