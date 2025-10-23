@@ -667,6 +667,7 @@
             students.forEach(student => {
                 const tr = document.createElement('tr');
                 const fullName = `${student.firstname} ${student.lastname}`.trim();
+                const studentId = student.student_id || student.id; // Use student_id field
 
                 let subjectsHtml = '<td><div class="subjects-container">';
                 subjects.forEach(subject => {
@@ -676,7 +677,7 @@
                             <input type="number" 
                                 class="marks-input" 
                                 data-subject="${subject.id}"
-                                data-student="${student.id}"
+                                data-student="${studentId}"
                                 min="0" 
                                 max="${subject.max_marks}"
                                 placeholder="Marks"
@@ -692,7 +693,7 @@
                     <td>${student.roll_no || 'N/A'}</td>
                     ${subjectsHtml}
                     <td>
-                        <button class="btn btn-success" onclick="saveMarks(${student.id})" aria-label="Save Marks">
+                        <button class="btn btn-success" onclick="saveMarks('${studentId}')" aria-label="Save Marks">
                             <i class="fas fa-save"></i> Save
                         </button>
                     </td>
@@ -700,7 +701,10 @@
                 tbody.appendChild(tr);
             });
 
-            students.forEach(student => loadExistingMarks(student.id));
+            students.forEach(student => {
+                const studentId = student.student_id || student.id;
+                loadExistingMarks(studentId);
+            });
         }
 
         async function loadExistingMarks(studentId) {
@@ -725,17 +729,30 @@
         }
 
         async function saveMarks(studentId) {
+            console.log('saveMarks called for student:', studentId);
+            
             const examId = document.getElementById('exam').value;
             const classId = document.getElementById('class').value;
             const sessionId = document.getElementById('session').value;
 
+            console.log('Form values:', { examId, classId, sessionId });
+
             const inputs = document.querySelectorAll(`input[data-student="${studentId}"]`);
+            console.log('Found inputs:', inputs.length);
+            
             const marks = {};
 
             let isValid = true;
             inputs.forEach(input => {
                 const maxMarks = parseInt(input.max);
                 const enteredMarks = input.value ? parseInt(input.value) : null;
+
+                console.log('Processing input:', {
+                    subject: input.dataset.subject,
+                    value: input.value,
+                    enteredMarks: enteredMarks,
+                    maxMarks: maxMarks
+                });
 
                 if (enteredMarks !== null && (enteredMarks < 0 || enteredMarks > maxMarks)) {
                     input.style.borderColor = '#ef4444';
@@ -746,6 +763,9 @@
                 }
             });
 
+            console.log('Collected marks:', marks);
+            console.log('Is valid:', isValid);
+
             if (!isValid) {
                 Swal.fire({
                     icon: 'error',
@@ -755,33 +775,62 @@
                 return;
             }
 
+            // Show loading indicator
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we save the marks',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             try {
+                const postData = {
+                    exam_id: examId,
+                    student_id: studentId,
+                    class_id: classId,
+                    session_id: sessionId,
+                    marks: JSON.stringify(marks)
+                };
+
+                console.log('Sending POST data:', postData);
+
                 const response = await fetch('<?= base_url('exam/marks/save') ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({
-                        exam_id: examId,
-                        student_id: studentId,
-                        class_id: classId,
-                        session_id: sessionId,
-                        marks: JSON.stringify(marks)
-                    })
+                    body: new URLSearchParams(postData)
                 });
 
-                const result = await response.json();
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    throw new Error('Invalid server response: ' + responseText.substring(0, 200));
+                }
+
+                console.log('Parsed result:', result);
 
                 if (result.status === 'success') {
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
-                        text: 'Marks saved successfully'
+                        text: result.message || 'Marks saved successfully'
                     });
                 } else {
                     throw new Error(result.message || 'Failed to save marks');
                 }
             } catch (error) {
+                console.error('Save error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',

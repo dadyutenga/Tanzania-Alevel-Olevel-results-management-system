@@ -24,13 +24,15 @@ class ExamSubjectMarkModel extends BaseModel
     protected $updatedField = 'updated_at';
 
     // Validation rules matching SQL constraints
+    // Note: Removed is_not_unique checks as they conflict with BaseModel's multi-tenancy scoping
+    // Foreign key constraints in the database will handle referential integrity
     protected $validationRules = [
-        'exam_id' => 'required|max_length[36]|is_not_unique[tz_exams.id]',
-        'student_id' => 'required|max_length[36]|is_not_unique[students.id]',
-        'class_id' => 'required|max_length[36]|is_not_unique[classes.id]',
-        'session_id' => 'required|max_length[36]|is_not_unique[sessions.id]',
-        'exam_subject_id' => 'required|max_length[36]|is_not_unique[tz_exam_subjects.id]',
-        'marks_obtained' => 'numeric|permit_empty'
+        'exam_id' => 'required|string|min_length[36]|max_length[36]',
+        'student_id' => 'required|string|min_length[36]|max_length[36]',
+        'class_id' => 'required|string|min_length[36]|max_length[36]',
+        'session_id' => 'required|string|min_length[36]|max_length[36]',
+        'exam_subject_id' => 'required|string|min_length[36]|max_length[36]',
+        'marks_obtained' => 'required|numeric'
     ];
 
     // Relationships based on SQL foreign keys

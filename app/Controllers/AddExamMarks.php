@@ -70,7 +70,7 @@ class AddExamMarks extends ResourceController
             }
 
             $students = $this->studentSessionModel
-                ->select('students.id, students.firstname, students.middlename, students.lastname, student_session.*, classes.class')
+                ->select('students.id as student_id, students.firstname, students.middlename, students.lastname, student_session.id as session_record_id, student_session.class_id, student_session.session_id, classes.class')
                 ->join('students', 'students.id = student_session.student_id')
                 ->join('classes', 'classes.id = student_session.class_id')
                 ->where([
@@ -80,6 +80,11 @@ class AddExamMarks extends ResourceController
                     'students.is_active' => 'yes'
                 ])
                 ->findAll();
+
+            log_message('debug', '[AddExamMarks.getStudents] Found ' . count($students) . ' students');
+            if (count($students) > 0) {
+                log_message('debug', '[AddExamMarks.getStudents] First student: ' . json_encode($students[0]));
+            }
 
             return $this->respond([
                 'status' => 'success',
@@ -160,47 +165,87 @@ class AddExamMarks extends ResourceController
             $sessionId = $this->request->getPost('session_id');
             $marks = json_decode($this->request->getPost('marks'), true);
 
-            if (!is_array($marks)) {
-                throw new \Exception('Invalid marks data format');
+            log_message('debug', '[AddExamMarks.saveMarks] Received data: ' . json_encode([
+                'exam_id' => $examId,
+                'student_id' => $studentId,
+                'class_id' => $classId,
+                'session_id' => $sessionId,
+                'marks_count' => is_array($marks) ? count($marks) : 0
+            ]));
+
+            // Verify student exists
+            $studentExists = $this->studentModel->find($studentId);
+            if (!$studentExists) {
+                log_message('error', '[AddExamMarks.saveMarks] Student not found: ' . $studentId);
+                throw new \Exception('Student not found in database. ID: ' . $studentId);
+            }
+            log_message('debug', '[AddExamMarks.saveMarks] Student found: ' . json_encode($studentExists));
+
+            if (!is_array($marks) || empty($marks)) {
+                throw new \Exception('Invalid or empty marks data');
             }
 
             $examSubjectMarkModel = new \App\Models\ExamSubjectMarkModel();
             
             // Start transaction
-            $examSubjectMarkModel->db->transStart();
+            $db = \Config\Database::connect();
+            $db->transStart();
 
-            // Delete existing marks
-            $examSubjectMarkModel->where([
-                'exam_id' => $examId,
-                'student_id' => $studentId
-            ])->delete();
-
-            // Insert new marks
-            foreach ($marks as $subjectId => $mark) {
-                $markData = [
+            try {
+                // Delete existing marks for this student and exam
+                $deleted = $examSubjectMarkModel->where([
                     'exam_id' => $examId,
-                    'student_id' => $studentId,
-                    'class_id' => $classId,
-                    'session_id' => $sessionId,
-                    'exam_subject_id' => $subjectId,
-                    'marks_obtained' => $mark
-                ];
+                    'student_id' => $studentId
+                ])->delete();
+                
+                log_message('debug', '[AddExamMarks.saveMarks] Deleted existing marks: ' . ($deleted ? 'yes' : 'no'));
 
-                if (!$examSubjectMarkModel->insert($markData)) {
-                    throw new \Exception('Failed to save marks: ' . implode(', ', $examSubjectMarkModel->errors()));
+                // Insert new marks - use individual inserts so BaseModel hooks work
+                $insertedCount = 0;
+                foreach ($marks as $subjectId => $mark) {
+                    // Skip if mark is empty or not numeric
+                    if ($mark === '' || $mark === null) {
+                        continue;
+                    }
+                    
+                    $markData = [
+                        'exam_id' => $examId,
+                        'student_id' => $studentId,
+                        'class_id' => $classId,
+                        'session_id' => $sessionId,
+                        'exam_subject_id' => $subjectId,
+                        'marks_obtained' => (float)$mark
+                    ];
+
+                    // Use insert - BaseModel will handle UUID and audit trail
+                    $markId = $examSubjectMarkModel->insert($markData);
+                    
+                    if (!$markId) {
+                        $errors = $examSubjectMarkModel->errors();
+                        log_message('error', '[AddExamMarks.saveMarks] Insert failed for subject ' . $subjectId . ': ' . json_encode($errors));
+                        throw new \Exception('Failed to save mark for subject: ' . json_encode($errors));
+                    }
+                    
+                    $insertedCount++;
+                    log_message('debug', '[AddExamMarks.saveMarks] Inserted mark ' . $insertedCount . ': subject=' . $subjectId . ', marks=' . $mark);
                 }
+
+                $db->transComplete();
+
+                if ($db->transStatus() === false) {
+                    throw new \RuntimeException('Transaction failed');
+                }
+
+                log_message('info', '[AddExamMarks.saveMarks] Successfully saved ' . $insertedCount . ' marks');
+
+                return $this->respond([
+                    'status' => 'success',
+                    'message' => 'Marks saved successfully (' . $insertedCount . ' subjects)'
+                ]);
+            } catch (\Exception $e) {
+                $db->transRollback();
+                throw $e;
             }
-
-            $examSubjectMarkModel->db->transComplete();
-
-            if ($examSubjectMarkModel->db->transStatus() === false) {
-                throw new \RuntimeException('Failed to save marks');
-            }
-
-            return $this->respond([
-                'status' => 'success',
-                'message' => 'Marks saved successfully'
-            ]);
         } catch (\Exception $e) {
             return $this->respond([
                 'status' => 'error',
