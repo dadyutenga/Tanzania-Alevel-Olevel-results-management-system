@@ -76,8 +76,8 @@ class ViewExamMarksController extends ResourceController
                     tz_exam_subjects.max_marks,
                     tz_exam_subjects.passing_marks,
                     students.firstname,
-                    students.lastname,
-                    students.roll_no
+                    students.middlename,
+                    students.lastname
                 ')
                 ->join('tz_exam_subjects', 'tz_exam_subjects.id = tz_exam_subject_marks.exam_subject_id')
                 ->join('students', 'students.id = tz_exam_subject_marks.student_id')

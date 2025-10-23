@@ -199,7 +199,7 @@
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .form-group label {
@@ -371,9 +371,12 @@
         .modal-content {
             background: var(--card-bg);
             border-radius: var(--radius);
-            padding: 2rem;
+            padding: 1.25rem;
             width: 100%;
-            max-width: 600px;
+            max-width: 450px;
+            max-height: 70vh;
+            display: flex;
+            flex-direction: column;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
             position: relative;
@@ -392,20 +395,48 @@
         }
 
         .modal-header {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            flex-shrink: 0;
         }
 
         .modal-header h3 {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 600;
             color: var(--text-primary);
         }
 
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: var(--secondary);
+            border-radius: 3px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
         .modal-actions {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             justify-content: flex-end;
-            margin-top: 2rem;
+            flex-shrink: 0;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
         }
 
         .table-responsive {
@@ -566,15 +597,21 @@
     <div id="editAllModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Edit All Marks for <span id="editAllStudentName"></span></h3>
+                <h3>Edit Marks - <span id="editAllStudentName"></span></h3>
             </div>
             <form id="editAllForm">
                 <input type="hidden" id="editAllStudentId">
                 <input type="hidden" id="editAllExamId">
-                <div id="marksContainer"></div>
+                <div class="modal-body">
+                    <div id="marksContainer"></div>
+                </div>
                 <div class="modal-actions">
-                    <button type="submit" class="btn" aria-label="Save All Marks">Save All</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('editAllModal')" aria-label="Cancel">Cancel</button>
+                    <button type="submit" class="btn" aria-label="Save All Marks">
+                        <i class="fas fa-save"></i> Save All
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editAllModal')" aria-label="Cancel">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
                 </div>
             </form>
         </div>
@@ -741,9 +778,12 @@
                     const students = {};
                     data.data.forEach(mark => {
                         if (!students[mark.student_id]) {
+                            const fullName = [mark.firstname, mark.middlename, mark.lastname]
+                                .filter(n => n && n.trim())
+                                .join(' ');
                             students[mark.student_id] = {
-                                roll_no: mark.roll_no,
-                                name: `${mark.firstname} ${mark.lastname}`.trim(),
+                                roll_no: 'N/A', // Roll number removed from database
+                                name: fullName,
                                 marks: [],
                                 markIds: []
                             };
