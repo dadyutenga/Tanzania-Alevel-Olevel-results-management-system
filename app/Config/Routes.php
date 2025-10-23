@@ -75,6 +75,19 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
     });
 
     // -----------------------------------------------------------------------------
+    // Class Management
+    // -----------------------------------------------------------------------------
+    $routes->group("classes", ["namespace" => "App\Controllers"], function ($routes) {
+        $routes->get("/", "ClassManagementController::index");
+        $routes->get("create", "ClassManagementController::create");
+        $routes->get("edit/(:segment)", "ClassManagementController::edit/$1");
+        $routes->post("store", "ClassManagementController::store");
+        $routes->post("update/(:segment)", "ClassManagementController::update/$1");
+        $routes->get("getClasses", "ClassManagementController::getClasses");
+        $routes->delete("delete/(:segment)", "ClassManagementController::delete/$1");
+    });
+
+    // -----------------------------------------------------------------------------
     // Exams (O-Level and General)
     // -----------------------------------------------------------------------------
     $routes->group("exam", function ($routes) {

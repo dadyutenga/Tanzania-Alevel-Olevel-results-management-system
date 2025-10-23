@@ -9,6 +9,16 @@
         <i class="fas fa-users"></i> Students
     </a></li>
     <li>
+        <a href="#" class="expandable <?= strpos(current_url(), 'classes') !== false ? 'active' : '' ?>">
+            <i class="fas fa-chalkboard-teacher"></i> Classes
+            <i class="fas fa-chevron-down toggle-icon" style="margin-left:auto;"></i>
+        </a>
+        <ul class="submenu <?= strpos(current_url(), 'classes') !== false ? 'show' : '' ?>">
+            <li><a href="<?= base_url('classes') ?>"><i class="fas fa-list"></i> View Classes</a></li>
+            <li><a href="<?= base_url('classes/create') ?>"><i class="fas fa-plus-circle"></i> Add Class</a></li>
+        </ul>
+    </li>
+    <li>
         <a href="#" class="expandable <?= strpos(current_url(), 'exam') !== false ? 'active' : '' ?>">
             <i class="fas fa-file-alt"></i> Exams
             <i class="fas fa-chevron-down toggle-icon" style="margin-left:auto;"></i>
