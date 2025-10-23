@@ -407,12 +407,21 @@
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(`<?= base_url('classes/delete/') ?>${id}`, {
-                        method: 'DELETE'
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
                     });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
                     const data = await response.json();
 
                     if (data.status === 'success') {
-                        Swal.fire({
+                        await Swal.fire({
                             icon: 'success',
                             title: 'Deleted!',
                             text: data.message,
@@ -424,6 +433,7 @@
                         throw new Error(data.message);
                     }
                 } catch (error) {
+                    console.error('Delete error:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',

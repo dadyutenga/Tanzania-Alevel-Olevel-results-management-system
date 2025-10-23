@@ -155,33 +155,47 @@ class ClassManagementController extends ResourceController
 
     public function delete($id = null)
     {
+        $this->response->setContentType('application/json');
+        
         try {
             $class = $this->classModel->find($id);
             
             if (!$class) {
-                return $this->respond([
+                $this->response->setStatusCode(404);
+                $this->response->setBody(json_encode([
                     'status' => 'error',
                     'message' => 'Class not found'
-                ], 404);
+                ]));
+                $this->response->send();
+                exit;
             }
 
             if (!$this->classModel->delete($id)) {
-                return $this->respond([
+                $this->response->setStatusCode(500);
+                $this->response->setBody(json_encode([
                     'status' => 'error',
                     'message' => 'Failed to delete class'
-                ], 500);
+                ]));
+                $this->response->send();
+                exit;
             }
 
-            return $this->respond([
+            $this->response->setStatusCode(200);
+            $this->response->setBody(json_encode([
                 'status' => 'success',
                 'message' => 'Class deleted successfully'
-            ]);
+            ]));
+            $this->response->send();
+            exit;
         } catch (\Exception $e) {
             log_message('error', '[ClassManagement.delete] Exception: {message}', ['message' => $e->getMessage()]);
-            return $this->respond([
+            $this->response->setStatusCode(500);
+            $this->response->setBody(json_encode([
                 'status' => 'error',
                 'message' => 'Failed to delete class: ' . $e->getMessage()
-            ], 500);
+            ]));
+            $this->response->send();
+            exit;
         }
     }
 }

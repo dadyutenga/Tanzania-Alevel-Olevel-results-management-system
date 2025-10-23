@@ -84,6 +84,7 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
         $routes->post("store", "ClassManagementController::store");
         $routes->post("update/(:segment)", "ClassManagementController::update/$1");
         $routes->get("getClasses", "ClassManagementController::getClasses");
+        $routes->post("delete/(:segment)", "ClassManagementController::delete/$1");
         $routes->delete("delete/(:segment)", "ClassManagementController::delete/$1");
     });
 

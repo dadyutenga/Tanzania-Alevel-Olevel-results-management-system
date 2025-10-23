@@ -58,7 +58,7 @@ class Filters extends BaseFilters
         "after" => [
             "pagecache", // Web Page Caching
             "performance", // Performance Metrics
-            "toolbar", // Debug Toolbar
+            // "toolbar", // Debug Toolbar - Disabled for better AJAX performance
         ],
     ];
 
@@ -104,5 +104,12 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'toolbar' => [
+            'except' => [
+                'classes/delete/*',
+                'classes/getClasses'
+            ]
+        ]
+    ];
 }
