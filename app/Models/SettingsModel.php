@@ -5,6 +5,9 @@ namespace App\Models;
 class SettingsModel extends BaseModel
 {
     protected $table = 'tz_web_setting';
+    protected $primaryKey = 'id';
+    protected $useAutoIncrement = false;
+    protected $returnType = 'array';
     protected $protectFields = true;
     protected $allowedFields = [
         'id',
@@ -18,7 +21,6 @@ class SettingsModel extends BaseModel
         'is_active',
         'created_by',
         'updated_by',
-        'school_id',
         'created_at',
         'updated_at',
     ];
@@ -74,5 +76,56 @@ class SettingsModel extends BaseModel
     public function getCurrentSettings()
     {
         return $this->first();
+    }
+
+    /**
+     * Get school settings by user ID (created_by)
+     */
+    public function getSchoolByUserId($userId)
+    {
+        return $this->where('created_by', $userId)->first();
+    }
+
+    /**
+     * Check if user has a school entry
+     */
+    public function userHasSchool($userId)
+    {
+        $school = $this->where('created_by', $userId)->first();
+        return $school !== null;
+    }
+
+    /**
+     * Get school by ID
+     */
+    public function getSchoolById($schoolId)
+    {
+        return $this->find($schoolId);
+    }
+
+    /**
+     * Create new school settings
+     */
+    public function createSchool($schoolData)
+    {
+        try {
+            return $this->insert($schoolData);
+        } catch (\Exception $e) {
+            log_message('error', 'Error creating school: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update existing school settings
+     */
+    public function updateSchool($schoolId, $schoolData)
+    {
+        try {
+            return $this->update($schoolId, $schoolData);
+        } catch (\Exception $e) {
+            log_message('error', 'Error updating school: ' . $e->getMessage());
+            return false;
+        }
     }
 }

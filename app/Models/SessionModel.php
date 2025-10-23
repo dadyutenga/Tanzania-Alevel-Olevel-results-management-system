@@ -86,7 +86,8 @@ class SessionModel extends BaseModel
         try {
             return $this->insert([
                 'session' => $sessionData['session'],
-                'is_active' => $sessionData['is_active'] ?? 'yes'
+                'is_active' => $sessionData['is_active'] ?? 'yes',
+                'school_id' => $sessionData['school_id'] ?? null
             ]);
         } catch (\Exception $e) {
             log_message('error', 'Error creating session: ' . $e->getMessage());
@@ -97,10 +98,16 @@ class SessionModel extends BaseModel
     public function updateSession($id, $sessionData)
     {
         try {
-            return $this->update($id, [
+            $updateData = [
                 'session' => $sessionData['session'],
                 'is_active' => $sessionData['is_active'] ?? 'yes'
-            ]);
+            ];
+            
+            if (isset($sessionData['school_id'])) {
+                $updateData['school_id'] = $sessionData['school_id'];
+            }
+            
+            return $this->update($id, $updateData);
         } catch (\Exception $e) {
             log_message('error', 'Error updating session: ' . $e->getMessage());
             return false;
@@ -110,5 +117,19 @@ class SessionModel extends BaseModel
     public function getAllSessions()
     {
         return $this->orderBy('session', 'DESC')->findAll();
+    }
+
+    public function getSessionsBySchool($schoolId)
+    {
+        return $this->where('school_id', $schoolId)
+                    ->orderBy('session', 'DESC')
+                    ->findAll();
+    }
+
+    public function getSessionBySchoolAndYear($schoolId, $sessionYear)
+    {
+        return $this->where('school_id', $schoolId)
+                    ->where('session', $sessionYear)
+                    ->first();
     }
 }

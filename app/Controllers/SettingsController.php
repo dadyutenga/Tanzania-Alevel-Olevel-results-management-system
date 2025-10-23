@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\SettingsModel;
 use App\Models\SessionModel;
+use App\Libraries\MinioService;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\RESTful\ResourceController;
 
@@ -13,12 +14,14 @@ class SettingsController extends ResourceController
 
     protected $settingsModel;
     protected $sessionModel;
+    protected $minioService;
     protected $format = "json";
 
     public function __construct()
     {
         $this->settingsModel = new SettingsModel();
         $this->sessionModel = new SessionModel();
+        $this->minioService = new MinioService();
     }
 
     /**
@@ -50,240 +53,226 @@ class SettingsController extends ResourceController
     }
 
     /**
-     * Update the settings by deleting existing record and inserting a new one
+     * Update the settings - creates new school if user doesn't have one, updates existing otherwise
      */
-    public function update($id = 1)
+    public function update($id = null)
     {
         try {
-            log_message(
-                "debug",
-                "[SettingsController.update] Update method called with ID: " .
-                    $id,
-            );
+            log_message('debug', '[SettingsController.update] Update method called');
 
             $data = $this->request->getPost();
-            log_message(
-                "debug",
-                "[SettingsController.update] POST data: " . json_encode($data),
-            );
+            log_message('debug', '[SettingsController.update] POST data: ' . json_encode($data));
 
-            $file = $this->request->getFile("school_logo");
-            log_message(
-                "debug",
-                "[SettingsController.update] File received: " .
-                    ($file ? "Yes" : "No"),
-            );
+            // Get current user ID from session
+            $session = service('session');
+            $userId = $session->get('user_uuid') ?? $session->get('user_id');
+            
+            if (!$userId) {
+                return $this->fail('User not authenticated', 401);
+            }
 
-            // Handle file upload if a new file is provided
-            if ($file && !empty($file)) {
-                if ($file->isValid()) {
-                    // Check file size (limit to 5MB for example)
-                    $maxSize = 5 * 1024 * 1024; // 5MB in bytes
-                    if ($file->getSize() > $maxSize) {
-                        return $this->fail(
-                            "Image file is too large. Maximum size allowed is 5MB.",
-                            400,
-                        );
-                    }
+            log_message('debug', '[SettingsController.update] User ID: ' . $userId);
 
-                    // Check file type
-                    $allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-                    if (!in_array($file->getMimeType(), $allowedTypes)) {
-                        return $this->fail(
-                            "Invalid image type. Only JPEG, PNG, and GIF are allowed.",
-                            400,
-                        );
-                    }
+            // Check if user already has a school
+            $existingSchool = $this->settingsModel->getSchoolByUserId($userId);
+            $schoolId = $existingSchool['id'] ?? null;
+            $isUpdate = $existingSchool !== null;
 
-                    // Read the file content as binary data
-                    $imageData = file_get_contents($file->getTempName());
-                    if ($imageData === false) {
-                        return $this->fail("Failed to read image data.", 500);
-                    }
+            log_message('debug', '[SettingsController.update] Existing school: ' . ($isUpdate ? 'Yes' : 'No'));
 
-                    // Store the binary data in the data array
-                    $data["school_logo"] = $imageData;
-                    log_message(
-                        "debug",
-                        "[SettingsController.update] Image data read successfully, size: " .
-                            strlen($imageData) .
-                            " bytes",
-                    );
-                } else {
-                    log_message(
-                        "error",
-                        "[SettingsController.update] Invalid file upload: " .
-                            $file->getErrorString(),
-                    );
-                    return $this->fail(
-                        "File upload error: " . $file->getErrorString(),
-                        400,
-                    );
+            // Handle file upload to MinIO if a new file is provided
+            $logoUrl = null;
+            $file = $this->request->getFile('school_logo');
+            
+            if ($file && $file->isValid()) {
+                log_message('debug', '[SettingsController.update] Processing file upload');
+
+                // Validate file
+                $maxSize = 5 * 1024 * 1024; // 5MB
+                if ($file->getSize() > $maxSize) {
+                    return $this->fail('Image file is too large. Maximum size allowed is 5MB.', 400);
                 }
+
+                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+                if (!in_array($file->getMimeType(), $allowedTypes)) {
+                    return $this->fail('Invalid image type. Only JPEG, PNG, and GIF are allowed.', 400);
+                }
+
+                // Generate unique filename
+                $extension = $file->getExtension();
+                $schoolUuid = $schoolId ?? $this->generateUuid();
+                $fileName = "schools/logos/{$schoolUuid}.{$extension}";
+
+                // Delete old logo if updating
+                if ($isUpdate && !empty($existingSchool['school_logo'])) {
+                    $oldLogoKey = $this->extractMinioKey($existingSchool['school_logo']);
+                    if ($oldLogoKey) {
+                        log_message('debug', '[SettingsController.update] Deleting old logo: ' . $oldLogoKey);
+                        $this->minioService->deleteFile($oldLogoKey);
+                    }
+                }
+
+                // Upload to MinIO
+                $uploadResult = $this->minioService->uploadFile(
+                    $file->getTempName(),
+                    $fileName,
+                    $file->getMimeType()
+                );
+
+                if (!$uploadResult['success']) {
+                    log_message('error', '[SettingsController.update] MinIO upload failed: ' . $uploadResult['error']);
+                    return $this->fail('Failed to upload logo: ' . $uploadResult['error'], 500);
+                }
+
+                $logoUrl = $uploadResult['url'];
+                $data['school_logo'] = $logoUrl;
+                
+                log_message('debug', '[SettingsController.update] Logo uploaded successfully: ' . $logoUrl);
+            } elseif ($isUpdate && isset($existingSchool['school_logo'])) {
+                // Keep existing logo if not uploading new one
+                $data['school_logo'] = $existingSchool['school_logo'];
             }
 
             // Validate the input data
             if (!$this->settingsModel->validate($data)) {
                 $errors = $this->settingsModel->errors();
-                log_message(
-                    "error",
-                    "[SettingsController.update] Validation failed: " .
-                        json_encode($errors),
-                );
+                log_message('error', '[SettingsController.update] Validation failed: ' . json_encode($errors));
                 return $this->failValidationErrors($errors);
             }
 
-            log_message(
-                "debug",
-                "[SettingsController.update] Validation passed",
-            );
+            log_message('debug', '[SettingsController.update] Validation passed');
 
             // Start database transaction
             $db = \Config\Database::connect();
             $db->transStart();
 
-            // Delete any existing record with the given ID to avoid primary key conflict
-            $existingRecord = $this->settingsModel->find($id);
-            if ($existingRecord) {
-                $this->settingsModel->delete($id);
-                log_message(
-                    "debug",
-                    "[SettingsController.update] Existing record deleted for ID: " .
-                        $id,
-                );
+            // Create or update school settings
+            if ($isUpdate) {
+                // Update existing school
+                log_message('debug', '[SettingsController.update] Updating school ID: ' . $schoolId);
+                
+                if (!$this->settingsModel->updateSchool($schoolId, $data)) {
+                    $db->transRollback();
+                    log_message('error', '[SettingsController.update] Failed to update school settings');
+                    return $this->fail('Failed to update school settings', 500);
+                }
+            } else {
+                // Create new school
+                $schoolId = $this->generateUuid();
+                $data['id'] = $schoolId;
+                
+                log_message('debug', '[SettingsController.update] Creating new school with ID: ' . $schoolId);
+                
+                if (!$this->settingsModel->createSchool($data)) {
+                    $db->transRollback();
+                    log_message('error', '[SettingsController.update] Failed to create school settings');
+                    return $this->fail('Failed to create school settings', 500);
+                }
             }
 
-            // Insert a new record with the specified ID
-            $data["id"] = $id; // Ensure the ID is set for the new record
-            if (!$this->settingsModel->insert($data)) {
-                $db->transRollback();
-                log_message(
-                    "error",
-                    "[SettingsController.update] Failed to insert settings data.",
-                );
-                return $this->fail("Failed to save settings", 500);
-            }
-
-            log_message(
-                "debug",
-                "[SettingsController.update] Settings data inserted successfully for ID: " .
-                    $id,
-            );
-
-            // Create or update session if school_year is provided
-            if (isset($data["school_year"]) && !empty($data["school_year"])) {
-                $schoolYear = $data["school_year"];
-
-                // Check if session already exists
-                $existingSession = $this->sessionModel
-                    ->where("session", $schoolYear)
-                    ->first();
+            // Handle session creation/update
+            if (isset($data['school_year']) && !empty($data['school_year'])) {
+                $schoolYear = $data['school_year'];
+                
+                // Check if session already exists for this school and year
+                $existingSession = $this->sessionModel->getSessionBySchoolAndYear($schoolId, $schoolYear);
 
                 if ($existingSession) {
                     // Update existing session
-                    $sessionUpdate = $this->sessionModel->update(
-                        $existingSession["id"],
-                        [
-                            "session" => $schoolYear,
-                            "is_active" => "yes",
-                        ],
-                    );
+                    log_message('debug', '[SettingsController.update] Updating session: ' . $schoolYear);
+                    
+                    $sessionUpdate = $this->sessionModel->updateSession($existingSession['id'], [
+                        'session' => $schoolYear,
+                        'is_active' => 'yes',
+                        'school_id' => $schoolId
+                    ]);
 
                     if (!$sessionUpdate) {
                         $db->transRollback();
-                        log_message(
-                            "error",
-                            "[SettingsController.update] Failed to update session.",
-                        );
-                        return $this->fail("Failed to update session", 500);
+                        log_message('error', '[SettingsController.update] Failed to update session');
+                        return $this->fail('Failed to update session', 500);
                     }
-
-                    log_message(
-                        "debug",
-                        "[SettingsController.update] Session updated: " .
-                            $schoolYear,
-                    );
                 } else {
                     // Create new session
+                    log_message('debug', '[SettingsController.update] Creating new session: ' . $schoolYear);
+                    
                     $sessionData = [
-                        "session" => $schoolYear,
-                        "is_active" => "yes",
+                        'session' => $schoolYear,
+                        'is_active' => 'yes',
+                        'school_id' => $schoolId
                     ];
 
-                    $sessionInsert = $this->sessionModel->insert($sessionData);
+                    $sessionInsert = $this->sessionModel->createSession($sessionData);
 
                     if (!$sessionInsert) {
                         $db->transRollback();
-                        log_message(
-                            "error",
-                            "[SettingsController.update] Failed to create session.",
-                        );
-                        return $this->fail("Failed to create session", 500);
+                        log_message('error', '[SettingsController.update] Failed to create session');
+                        return $this->fail('Failed to create session', 500);
                     }
-
-                    log_message(
-                        "debug",
-                        "[SettingsController.update] Session created: " .
-                            $schoolYear,
-                    );
                 }
+
+                // Set session in user's session data
+                $session->set('school_id', $schoolId);
+                $session->set('school_year', $schoolYear);
             }
 
             // Complete transaction
             $db->transComplete();
 
             if ($db->transStatus() === false) {
-                log_message(
-                    "error",
-                    "[SettingsController.update] Transaction failed.",
-                );
-                return $this->fail("Failed to save settings and session", 500);
+                log_message('error', '[SettingsController.update] Transaction failed');
+                return $this->fail('Failed to save settings and session', 500);
             }
 
-            // Retrieve the updated settings
-            $updatedSettings = $this->settingsModel->getCurrentSettings();
+            // Retrieve the updated/created settings
+            $updatedSettings = $this->settingsModel->getSchoolById($schoolId);
 
-            // Prepare response data without binary image data to avoid JSON encoding issues
-            $responseData = $updatedSettings;
-            if (
-                isset($responseData["school_logo"]) &&
-                !empty($responseData["school_logo"])
-            ) {
-                // Replace binary data with a flag or placeholder to indicate an image exists
-                $responseData["school_logo"] = "uploaded"; // This avoids including binary data in JSON
-            }
-
-            log_message(
-                "debug",
-                "[SettingsController.update] Sending success response",
-            );
+            log_message('debug', '[SettingsController.update] Operation successful');
 
             return $this->respond([
-                "status" => "success",
-                "message" => "Settings and session saved successfully",
-                "data" => $responseData,
+                'status' => 'success',
+                'message' => $isUpdate ? 'Settings updated successfully' : 'School created successfully',
+                'data' => $updatedSettings,
             ]);
         } catch (\Exception $e) {
-            log_message(
-                "error",
-                "[SettingsController.update] Exception: " .
-                    $e->getMessage() .
-                    " at " .
-                    $e->getFile() .
-                    ":" .
-                    $e->getLine(),
-            );
-            log_message(
-                "error",
-                "[SettingsController.update] Stack trace: " .
-                    $e->getTraceAsString(),
-            );
+            log_message('error', '[SettingsController.update] Exception: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
+            log_message('error', '[SettingsController.update] Stack trace: ' . $e->getTraceAsString());
 
-            return $this->fail(
-                "Failed to save settings: " . $e->getMessage(),
-                500,
-            );
+            return $this->fail('Failed to save settings: ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Extract MinIO object key from full URL
+     */
+    private function extractMinioKey($url)
+    {
+        if (empty($url)) {
+            return null;
+        }
+        
+        // Extract the path after the bucket name
+        $parts = parse_url($url);
+        if (isset($parts['path'])) {
+            // Remove leading slash and bucket name
+            $path = ltrim($parts['path'], '/');
+            $segments = explode('/', $path, 2);
+            return $segments[1] ?? null;
+        }
+        
+        return null;
+    }
+
+    /**
+     * Generate UUID v4
+     */
+    private function generateUuid(): string
+    {
+        $data = random_bytes(16);
+        $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+        $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
     /**

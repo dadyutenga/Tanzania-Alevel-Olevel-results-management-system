@@ -12,6 +12,7 @@
   "require": {
     "php": "^8.1",
     "africastalking/africastalking": "^3.0",
+    "aws/aws-sdk-php": "^3.357",
     "codeigniter4/framework": "^4.0",
     "dompdf/dompdf": "^3.1",
     "league/csv": "^9.22",

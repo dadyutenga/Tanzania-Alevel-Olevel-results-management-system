@@ -709,7 +709,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
             try {
-                const url = '<?= base_url("settings/update/1") ?>';
+                const url = '<?= base_url("settings/update") ?>';
                 console.log('Sending request to:', url);
 
                 const response = await fetch(url, {
