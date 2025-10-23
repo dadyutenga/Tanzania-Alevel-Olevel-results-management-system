@@ -6,7 +6,25 @@
     <title><?= esc($title) ?> - Student Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #4AE54A;
+            --primary-dark: #3AD03A;
+            --primary-light: #5FF25F;
+            --secondary: #f1f5f9;
+            --accent: #1a1a1a;
+            --accent-hover: #2d2d2d;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+            --button-radius: 50px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,54 +32,157 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.925rem;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
             min-height: 100vh;
         }
 
-        .container {
+        .dashboard {
             display: flex;
             min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border);
+            padding: 1rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 1.75rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            position: relative;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            background-color: var(--primary);
+            color: black;
+        }
+
+        .sidebar-menu li a i {
+            margin-right: 0.75rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: var(--secondary);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .submenu.show {
+            max-height: 500px;
+        }
+
+        .submenu li a {
+            padding: 0.5rem 1.5rem 0.5rem 2.5rem;
+            font-size: 0.85rem;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            margin-left: auto;
+        }
+
+        .logout-section {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .logout-link {
+            color: #ef4444 !important;
+        }
+
+        .logout-link:hover {
+            background-color: rgba(239, 68, 68, 0.1) !important;
         }
 
         .main-content {
             flex: 1;
             margin-left: 250px;
-            padding: 20px;
+            padding: 2rem 1rem;
             transition: margin-left 0.3s ease;
         }
 
-        .main-content.expanded {
-            margin-left: 80px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
         }
 
         .page-header {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 2rem;
         }
 
         .page-header h1 {
-            color: #333;
-            font-size: 24px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.025em;
         }
 
         .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--button-radius);
+            font-weight: 600;
             cursor: pointer;
-            font-size: 14px;
-            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
+            border: none;
             transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 0.875rem;
         }
 
         .btn-back {
@@ -71,24 +192,40 @@
 
         .btn-back:hover {
             background: #5a6268;
+            transform: translateY(-2px);
         }
 
         .form-card {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .form-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
         }
 
         .form-section {
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
 
         .form-section h3 {
-            color: #333;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #4AE54A;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary);
+            font-size: 1.25rem;
         }
 
         .form-row {
@@ -104,8 +241,8 @@
         }
 
         .form-group label {
-            margin-bottom: 8px;
-            color: #333;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
             font-weight: 500;
         }
 
@@ -114,10 +251,19 @@
         }
 
         .form-group select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.925rem;
+            transition: all 0.3s ease;
+            background-color: var(--secondary);
+            color: var(--text-primary);
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 229, 74, 0.2);
         }
 
         .students-list {
@@ -125,11 +271,12 @@
         }
 
         .student-entry {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
+            background: var(--secondary);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
             position: relative;
+            border: 1px solid var(--border);
         }
 
         .student-entry h4 {
@@ -162,32 +309,47 @@
 
         .student-fields input,
         .student-fields select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.925rem;
+            transition: all 0.3s ease;
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .student-fields input:focus,
+        .student-fields select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 229, 74, 0.2);
         }
 
         .btn-add-student {
-            background: #667eea;
+            background: var(--accent);
             color: white;
             width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            margin-top: 10px;
+            padding: 1rem;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
         }
 
         .btn-add-student:hover {
-            background: #5568d3;
+            background: var(--accent-hover);
+            transform: translateY(-2px);
         }
 
         .btn-primary {
-            background: #4AE54A;
-            color: white;
+            background-color: var(--primary);
+            color: black;
+            box-shadow: 0 0 20px rgba(74, 229, 74, 0.3);
         }
 
         .btn-primary:hover {
-            background: #3dd33d;
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(74, 229, 74, 0.4);
         }
 
         .btn-cancel {
@@ -197,6 +359,7 @@
 
         .btn-cancel:hover {
             background: #c82333;
+            transform: translateY(-2px);
         }
 
         .form-actions {
@@ -207,26 +370,56 @@
         }
 
         .info-box {
-            background: #e7f3ff;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
+            background: rgba(74, 229, 74, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: var(--radius);
         }
 
         .info-box i {
-            color: #667eea;
-            margin-right: 10px;
+            color: var(--primary-dark);
+            margin-right: 0.75rem;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: var(--primary);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow);
         }
 
         @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
             .main-content {
                 margin-left: 0;
-                padding: 10px;
+                padding: 1rem 0.5rem;
+            }
+
+            .container {
+                padding: 0 0.5rem;
+            }
+
+            .sidebar-toggle {
+                display: block;
             }
 
             .form-card {
-                padding: 20px;
+                padding: 1.5rem;
             }
 
             .form-row,
@@ -246,10 +439,21 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <?= view('shared/sidebar_menu') ?>
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
 
-        <div class="main-content" id="mainContent">
+    <div class="dashboard">
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>ExamResults</span>
+            </div>
+            <?= $this->include("shared/sidebar_menu") ?>
+        </div>
+
+        <div class="main-content">
+            <div class="container">
             <div class="page-header">
                 <h1><i class="fas fa-users-cog"></i> <?= esc($title) ?></h1>
                 <a href="<?= base_url('students') ?>" class="btn btn-back">
@@ -324,6 +528,7 @@
                         <i class="fas fa-save"></i> Register All Students
                     </button>
                 </div>
+            </div>
             </div>
         </div>
     </div>
@@ -477,6 +682,39 @@
 
         // Add first student row on load
         document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('show'));
+            }
+            
+            // Submenu Toggle
+            const menuItems = document.querySelectorAll('.sidebar-menu > li');
+            
+            menuItems.forEach(item => {
+                const link = item.querySelector('.expandable');
+                const submenu = item.querySelector('.submenu');
+                const toggleIcon = item.querySelector('.toggle-icon');
+                
+                if (link && submenu) {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        submenu.classList.toggle('show');
+                        if (toggleIcon) {
+                            toggleIcon.style.transform = submenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+                        }
+                    });
+                }
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && !sidebar.contains(e.target) && e.target !== sidebarToggle) {
+                    sidebar.classList.remove('show');
+                }
+            });
+            
             addStudentRow();
         });
     </script>
