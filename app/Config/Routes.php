@@ -454,6 +454,7 @@ $routes->group("", ["filter" => "auth"], function ($routes) {
     ) {
         $routes->get("/", "SettingsController::settingsPage");
         $routes->get("index", "SettingsController::index");
+        $routes->get("test", "SettingsController::test");
         $routes->post("update/(:num)", 'SettingsController::update/$1');
     });
 

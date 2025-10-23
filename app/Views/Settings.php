@@ -392,7 +392,7 @@
                 <i class="fas fa-graduation-cap"></i>
                 <span>ExamResults</span>
             </div>
-            <?= $this->include('shared/sidebar_menu') ?>
+            <?= $this->include("shared/sidebar_menu") ?>
         </div>
 
         <div class="main-content">
@@ -407,28 +407,31 @@
                         <i class="fas fa-info-circle"></i>
                         <div>
                             <strong>Update your school information:</strong>
-                            <p style="margin-top: 0.5rem;">Changes made here will reflect across the application.</p>
+                            <p style="margin-top: 0.5rem;">Changes made here will reflect across the application. The school year will automatically create or update a corresponding session.</p>
                         </div>
                     </div>
 
-                    <div class="alert alert-danger" id="errorAlert">
+                    <div class="alert alert-danger" id="errorAlert" style="display: none;">
                         <i class="fas fa-exclamation-circle"></i>
                         <div id="errorMessage"></div>
                     </div>
-                    <div class="alert alert-success" id="successAlert">
+                    <div class="alert alert-success" id="successAlert" style="display: none;">
                         <i class="fas fa-check-circle"></i>
                         <div id="successMessage"></div>
                     </div>
 
                     <form id="settingsForm">
+                        <?= csrf_field() ?>
                         <div class="form-group">
                             <label for="school_name">School Name <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <div class="input-icon">
                                     <i class="fas fa-school"></i>
                                 </div>
-                                <input type="text" id="school_name" name="school_name" class="form-control" 
-                                       value="<?= esc($settings['school_name'] ?? '') ?>" required aria-required="true" placeholder="Enter school name">
+                                <input type="text" id="school_name" name="school_name" class="form-control"
+                                       value="<?= esc(
+                                           $settings["school_name"] ?? "",
+                                       ) ?>" required aria-required="true" placeholder="Enter school name">
                             </div>
                         </div>
 
@@ -438,8 +441,10 @@
                                 <div class="input-icon">
                                     <i class="fas fa-users"></i>
                                 </div>
-                                <input type="number" id="total_classes" name="total_classes" class="form-control" 
-                                       value="<?= esc($settings['total_classes'] ?? 0) ?>" required aria-required="true" min="1" placeholder="Enter total number of classes">
+                                <input type="number" id="total_classes" name="total_classes" class="form-control"
+                                       value="<?= esc(
+                                           $settings["total_classes"] ?? 0,
+                                       ) ?>" required aria-required="true" min="1" placeholder="Enter total number of classes">
                             </div>
                         </div>
 
@@ -449,8 +454,10 @@
                                 <div class="input-icon">
                                     <i class="fas fa-calendar-alt"></i>
                                 </div>
-                                <input type="text" id="school_year" name="school_year" class="form-control" 
-                                       value="<?= esc($settings['school_year'] ?? '') ?>" required aria-required="true" placeholder="e.g., 2023-2024">
+                                <input type="text" id="school_year" name="school_year" class="form-control"
+                                       value="<?= esc(
+                                           $settings["school_year"] ?? "",
+                                       ) ?>" required aria-required="true" placeholder="e.g., 2023-2024">
                                 <div class="input-addon" onclick="showYearPicker()">
                                     <i class="fas fa-chevron-down"></i>
                                 </div>
@@ -468,7 +475,9 @@
                                 <div class="input-icon">
                                     <i class="fas fa-map-marker-alt"></i>
                                 </div>
-                                <textarea id="school_address" name="school_address" class="form-control" rows="3" placeholder="Enter school address"><?= esc($settings['school_address'] ?? '') ?></textarea>
+                                <textarea id="school_address" name="school_address" class="form-control" rows="3" placeholder="Enter school address"><?= esc(
+                                    $settings["school_address"] ?? "",
+                                ) ?></textarea>
                             </div>
                         </div>
 
@@ -483,10 +492,12 @@
                                     <span id="fileName">Choose an image file...</span>
                                 </label>
                             </div>
-                            <?php if (!empty($settings['school_logo'])): ?>
+                            <?php if (!empty($settings["school_logo"])): ?>
                                 <div style="margin-top: 10px;">
                                     <p>Current Logo:</p>
-                                    <img src="data:image/jpeg;base64,<?= base64_encode($settings['school_logo']) ?>" alt="School Logo" style="max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border);">
+                                    <img src="data:image/jpeg;base64,<?= base64_encode(
+                                        $settings["school_logo"],
+                                    ) ?>" alt="School Logo" style="max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border);">
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -497,8 +508,10 @@
                                 <div class="input-icon">
                                     <i class="fas fa-envelope"></i>
                                 </div>
-                                <input type="email" id="contact_email" name="contact_email" class="form-control" 
-                                       value="<?= esc($settings['contact_email'] ?? '') ?>" placeholder="Enter contact email">
+                                <input type="email" id="contact_email" name="contact_email" class="form-control"
+                                       value="<?= esc(
+                                           $settings["contact_email"] ?? "",
+                                       ) ?>" placeholder="Enter contact email">
                             </div>
                         </div>
 
@@ -508,8 +521,10 @@
                                 <div class="input-icon">
                                     <i class="fas fa-phone"></i>
                                 </div>
-                                <input type="text" id="contact_phone" name="contact_phone" class="form-control" 
-                                       value="<?= esc($settings['contact_phone'] ?? '') ?>" placeholder="Enter contact phone number">
+                                <input type="text" id="contact_phone" name="contact_phone" class="form-control"
+                                       value="<?= esc(
+                                           $settings["contact_phone"] ?? "",
+                                       ) ?>" placeholder="Enter contact phone number">
                             </div>
                         </div>
 
@@ -520,13 +535,21 @@
                                     <i class="fas fa-toggle-on"></i>
                                 </div>
                                 <select id="is_active" name="is_active" class="form-control" required aria-required="true">
-                                    <option value="yes" <?= (isset($settings['is_active']) && $settings['is_active'] == 'yes') ? 'selected' : '' ?>>Yes</option>
-                                    <option value="no" <?= (isset($settings['is_active']) && $settings['is_active'] == 'no') ? 'selected' : '' ?>>No</option>
+                                    <option value="yes" <?= isset(
+                                        $settings["is_active"],
+                                    ) && $settings["is_active"] == "yes"
+                                        ? "selected"
+                                        : "" ?>>Yes</option>
+                                    <option value="no" <?= isset(
+                                        $settings["is_active"],
+                                    ) && $settings["is_active"] == "no"
+                                        ? "selected"
+                                        : "" ?>>No</option>
                                 </select>
                             </div>
                         </div>
 
-                        <button type="button" class="btn btn-success" onclick="saveSettings()" aria-label="Save Settings">
+                        <button type="button" class="btn btn-success" onclick="saveSettings(event)" aria-label="Save Settings">
                             <i class="fas fa-save"></i> Save Settings
                         </button>
                     </form>
@@ -606,7 +629,7 @@
             const currentYear = new Date().getFullYear();
             const yearGrid = document.querySelector('.year-grid');
             yearGrid.innerHTML = '';
-            
+
             // Generate years from current year to next year as a range
             for (let i = currentYear - 5; i <= currentYear + 5; i++) {
                 const yearBtn = document.createElement('button');
@@ -633,7 +656,7 @@
             yearPicker.style.top = `${inputRect.bottom + window.scrollY + 10}px`;
             yearPicker.style.left = `${inputRect.left + window.scrollX}px`;
             yearPicker.style.display = 'block';
-            
+
             // Close when clicking outside
             document.addEventListener('click', closeYearPickerOutside);
         }
@@ -647,29 +670,92 @@
             }
         }
 
-        async function saveSettings() {
+        async function saveSettings(event) {
+            console.log('Save settings button clicked');
+
             const form = document.getElementById('settingsForm');
+            if (!form) {
+                console.error('Form not found');
+                showError('Form not found');
+                return;
+            }
+
             if (!form.checkValidity()) {
+                console.log('Form validation failed');
                 form.reportValidity();
                 return;
             }
 
             const formData = new FormData(form);
 
+            // Log form data for debugging
+            console.log('Form data:');
+            for (let [key, value] of formData.entries()) {
+                if (key === 'school_logo') {
+                    console.log(key + ':', value.name || 'No file');
+                } else {
+                    console.log(key + ':', value);
+                }
+            }
+
+            // Hide any existing alerts
+            document.getElementById('errorAlert').style.display = 'none';
+            document.getElementById('successAlert').style.display = 'none';
+
+            // Show loading state on button
+            const btn = event ? event.target.closest('button') : document.querySelector('button[onclick*="saveSettings"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
             try {
-                const response = await fetch('/settings/update/1', {
+                const url = '<?= base_url("settings/update/1") ?>';
+                console.log('Sending request to:', url);
+
+                const response = await fetch(url, {
                     method: 'POST',
                     body: formData
                 });
+
+                console.log('Response status:', response.status);
+                console.log('Response OK:', response.ok);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response not OK. Status:', response.status);
+                    console.error('Response text:', errorText);
+                    throw new Error(`Server error (${response.status}). Check console for details.`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response received:', text.substring(0, 500));
+                    throw new Error('Server returned non-JSON response. Check console for details.');
+                }
+
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (data.status === 'success') {
-                    showSuccess(data.message);
+                    btn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                    showSuccess(data.message || 'Settings and session saved successfully');
+                    // Reload page after 2 seconds to show updated data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
                 } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
                     throw new Error(data.message || 'Failed to update settings');
                 }
             } catch (error) {
-                showError(error.message || 'Failed to update settings');
+                console.error('Error in saveSettings:', error);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                showError(error.message || 'Failed to update settings. Check browser console for details.');
             }
         }
 
