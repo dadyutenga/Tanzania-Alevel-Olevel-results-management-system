@@ -7,10 +7,12 @@ use TCPDF;
 class PDFController extends BaseController
 {
     protected $viewResultsModel;
+    protected $settingsModel;
 
     public function __construct()
     {
         $this->viewResultsModel = new \App\Controllers\ViewResultsModel();
+        $this->settingsModel = new \App\Models\SettingsModel();
     }
 
     public function generateResultPDF()
@@ -39,9 +41,16 @@ class PDFController extends BaseController
 
     private function generateSingleStudentPDF($studentData)
     {
+        // Get school settings
+        $schoolSettings = $this->settingsModel->getCurrentSettings();
+        $schoolName = $schoolSettings['school_name'] ?? 'SCHOOL NAME';
+        $schoolAddress = $schoolSettings['school_address'] ?? '';
+        $schoolPhone = $schoolSettings['contact_phone'] ?? '';
+        $schoolEmail = $schoolSettings['contact_email'] ?? '';
+
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('School Management System');
+        $pdf->SetAuthor($schoolName);
         $pdf->SetTitle('Exam Result');
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
@@ -49,7 +58,18 @@ class PDFController extends BaseController
 
         // Header
         $pdf->SetFont('helvetica', 'B', 16);
-        $pdf->Cell(0, 10, 'SCHOOL NAME', 0, 1, 'C');
+        $pdf->Cell(0, 10, strtoupper($schoolName), 0, 1, 'C');
+        if ($schoolAddress) {
+            $pdf->SetFont('helvetica', '', 10);
+            $pdf->Cell(0, 6, $schoolAddress, 0, 1, 'C');
+        }
+        if ($schoolPhone || $schoolEmail) {
+            $pdf->SetFont('helvetica', '', 9);
+            $contactInfo = [];
+            if ($schoolPhone) $contactInfo[] = 'Tel: ' . $schoolPhone;
+            if ($schoolEmail) $contactInfo[] = 'Email: ' . $schoolEmail;
+            $pdf->Cell(0, 6, implode(' | ', $contactInfo), 0, 1, 'C');
+        }
         $pdf->SetFont('helvetica', '', 12);
         $pdf->Cell(0, 10, 'EXAM RESULTS', 0, 1, 'C');
         $pdf->Ln(10);
@@ -101,9 +121,16 @@ class PDFController extends BaseController
 
     private function generateClassPDF($classData)
     {
+        // Get school settings
+        $schoolSettings = $this->settingsModel->getCurrentSettings();
+        $schoolName = $schoolSettings['school_name'] ?? 'SCHOOL NAME';
+        $schoolAddress = $schoolSettings['school_address'] ?? '';
+        $schoolPhone = $schoolSettings['contact_phone'] ?? '';
+        $schoolEmail = $schoolSettings['contact_email'] ?? '';
+
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('School Management System');
+        $pdf->SetAuthor($schoolName);
         $pdf->SetTitle('Class Results');
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
@@ -114,7 +141,18 @@ class PDFController extends BaseController
 
         // Header
         $pdf->SetFont('helvetica', 'B', 18);
-        $pdf->Cell(0, 10, 'SCHOOL NAME', 0, 1, 'C');
+        $pdf->Cell(0, 10, strtoupper($schoolName), 0, 1, 'C');
+        if ($schoolAddress) {
+            $pdf->SetFont('helvetica', '', 10);
+            $pdf->Cell(0, 6, $schoolAddress, 0, 1, 'C');
+        }
+        if ($schoolPhone || $schoolEmail) {
+            $pdf->SetFont('helvetica', '', 9);
+            $contactInfo = [];
+            if ($schoolPhone) $contactInfo[] = 'Tel: ' . $schoolPhone;
+            if ($schoolEmail) $contactInfo[] = 'Email: ' . $schoolEmail;
+            $pdf->Cell(0, 6, implode(' | ', $contactInfo), 0, 1, 'C');
+        }
         $pdf->SetFont('helvetica', 'B', 14);
         $pdf->Cell(0, 10, 'EXAM RESULTS', 0, 1, 'C');
         
@@ -217,22 +255,45 @@ class PDFController extends BaseController
 
     public function generateStudentReportCard($studentData, $subjectMarks, $examResult)
     {
+        // Get school settings
+        $schoolSettings = $this->settingsModel->getCurrentSettings();
+        $schoolName = $schoolSettings['school_name'] ?? 'SCHOOL NAME';
+        $schoolAddress = $schoolSettings['school_address'] ?? '';
+        $schoolPhone = $schoolSettings['contact_phone'] ?? '';
+        $schoolEmail = $schoolSettings['contact_email'] ?? '';
+        $schoolYear = $schoolSettings['school_year'] ?? date('Y');
+        $schoolLogo = $schoolSettings['school_logo'] ?? '';
+
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('School Management System');
+        $pdf->SetAuthor($schoolName);
         $pdf->SetTitle('Student Report Card');
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
         $pdf->SetMargins(15, 15, 15);
         $pdf->AddPage();
 
-        // Header with School Logo Placeholder and Title
+        // Header with School Logo and Title
+        if ($schoolLogo && file_exists(WRITEPATH . 'uploads/' . $schoolLogo)) {
+            $pdf->Image(WRITEPATH . 'uploads/' . $schoolLogo, 15, 15, 30, 30, '', '', 'T', false, 300, '', false, false, 0, false, false, false);
+        }
         $pdf->SetFont('helvetica', 'B', 18);
-        $pdf->Cell(0, 10, 'EXAM RESULTS MANAGEMENT SYSTEM', 0, 1, 'C');
+        $pdf->Cell(0, 10, strtoupper($schoolName), 0, 1, 'C');
+        if ($schoolAddress) {
+            $pdf->SetFont('helvetica', '', 10);
+            $pdf->Cell(0, 6, $schoolAddress, 0, 1, 'C');
+        }
+        if ($schoolPhone || $schoolEmail) {
+            $pdf->SetFont('helvetica', '', 9);
+            $contactInfo = [];
+            if ($schoolPhone) $contactInfo[] = 'Tel: ' . $schoolPhone;
+            if ($schoolEmail) $contactInfo[] = 'Email: ' . $schoolEmail;
+            $pdf->Cell(0, 6, implode(' | ', $contactInfo), 0, 1, 'C');
+        }
         $pdf->SetFont('helvetica', 'B', 14);
         $pdf->Cell(0, 8, 'STUDENT REPORT CARD', 0, 1, 'C');
         $pdf->SetFont('helvetica', '', 10);
-        $pdf->Cell(0, 6, 'Academic Year: ' . date('Y'), 0, 1, 'C');
+        $pdf->Cell(0, 6, 'Academic Year: ' . $schoolYear, 0, 1, 'C');
         $pdf->Ln(5);
 
         // Decorative Line
@@ -408,9 +469,16 @@ class PDFController extends BaseController
 
     public function generateAlevelClassPDF($classData)
     {
+        // Get school settings
+        $schoolSettings = $this->settingsModel->getCurrentSettings();
+        $schoolName = $schoolSettings['school_name'] ?? 'SCHOOL NAME';
+        $schoolAddress = $schoolSettings['school_address'] ?? '';
+        $schoolPhone = $schoolSettings['contact_phone'] ?? '';
+        $schoolEmail = $schoolSettings['contact_email'] ?? '';
+
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('School Management System');
+        $pdf->SetAuthor($schoolName);
         $pdf->SetTitle('A-Level Class Results');
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
@@ -421,7 +489,18 @@ class PDFController extends BaseController
 
         // Header
         $pdf->SetFont('helvetica', 'B', 18);
-        $pdf->Cell(0, 10, 'SCHOOL NAME', 0, 1, 'C');
+        $pdf->Cell(0, 10, strtoupper($schoolName), 0, 1, 'C');
+        if ($schoolAddress) {
+            $pdf->SetFont('helvetica', '', 10);
+            $pdf->Cell(0, 6, $schoolAddress, 0, 1, 'C');
+        }
+        if ($schoolPhone || $schoolEmail) {
+            $pdf->SetFont('helvetica', '', 9);
+            $contactInfo = [];
+            if ($schoolPhone) $contactInfo[] = 'Tel: ' . $schoolPhone;
+            if ($schoolEmail) $contactInfo[] = 'Email: ' . $schoolEmail;
+            $pdf->Cell(0, 6, implode(' | ', $contactInfo), 0, 1, 'C');
+        }
         $pdf->SetFont('helvetica', 'B', 14);
         $pdf->Cell(0, 10, 'A-LEVEL EXAM RESULTS', 0, 1, 'C');
         
@@ -524,9 +603,16 @@ class PDFController extends BaseController
 
     public function generateAlevelSingleStudentPDF($studentData)
     {
+        // Get school settings
+        $schoolSettings = $this->settingsModel->getCurrentSettings();
+        $schoolName = $schoolSettings['school_name'] ?? 'SCHOOL NAME';
+        $schoolAddress = $schoolSettings['school_address'] ?? '';
+        $schoolPhone = $schoolSettings['contact_phone'] ?? '';
+        $schoolEmail = $schoolSettings['contact_email'] ?? '';
+
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('School Management System');
+        $pdf->SetAuthor($schoolName);
         $pdf->SetTitle('A-Level Exam Result');
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
@@ -534,7 +620,18 @@ class PDFController extends BaseController
 
         // Header
         $pdf->SetFont('helvetica', 'B', 16);
-        $pdf->Cell(0, 10, 'SCHOOL NAME', 0, 1, 'C');
+        $pdf->Cell(0, 10, strtoupper($schoolName), 0, 1, 'C');
+        if ($schoolAddress) {
+            $pdf->SetFont('helvetica', '', 10);
+            $pdf->Cell(0, 6, $schoolAddress, 0, 1, 'C');
+        }
+        if ($schoolPhone || $schoolEmail) {
+            $pdf->SetFont('helvetica', '', 9);
+            $contactInfo = [];
+            if ($schoolPhone) $contactInfo[] = 'Tel: ' . $schoolPhone;
+            if ($schoolEmail) $contactInfo[] = 'Email: ' . $schoolEmail;
+            $pdf->Cell(0, 6, implode(' | ', $contactInfo), 0, 1, 'C');
+        }
         $pdf->SetFont('helvetica', '', 12);
         $pdf->Cell(0, 10, 'A-LEVEL EXAM RESULTS', 0, 1, 'C');
         $pdf->Ln(10);
