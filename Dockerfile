@@ -22,7 +22,7 @@ RUN dnf -y install \
     php-json \
     php-mbstring \
     php-xml \
-    php-pgsql \
+    php-mysqlnd \
     php-pdo \
     php-gd \
     php-intl \
@@ -37,7 +37,7 @@ RUN dnf -y install \
     unzip \
     wget \
     supervisor \
-    postgresql \
+    mysql \
     && dnf clean all
 
 # Install Composer

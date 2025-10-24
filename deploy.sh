@@ -13,8 +13,8 @@ docker-compose build --no-cache
 echo "🚀 Starting services..."
 docker-compose up -d
 
-# Wait for PostgreSQL
-echo "⏳ Waiting for PostgreSQL..."
+# Wait for MySQL
+echo "⏳ Waiting for MySQL..."
 sleep 15
 
 # Run migrations
@@ -26,10 +26,9 @@ echo "🔐 Setting permissions..."
 docker-compose exec -T app chown -R apache:apache /var/www/html/writable
 
 echo "✅ Deployment complete!"
-echo "📍 Application: http://localhost:8080"
-echo "📍 MinIO Console: http://localhost:9001"
-echo "📍 PostgreSQL: localhost:5433"
+echo "📍 Application: http://localhost:8888"
+echo "📍 MySQL: localhost:3307"
 echo ""
 echo "📝 Default credentials:"
-echo "   PostgreSQL: tz_results_user / SecurePass2025!"
-echo "   MinIO: 91Z059h0qV3GV3LNN2E3 / ChangeMeInProduction"
+echo "   MySQL: tz_results_user / SecurePass2025!"
+echo "   MySQL Root: root / RootPass2025!"
