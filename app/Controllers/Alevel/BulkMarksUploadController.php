@@ -96,11 +96,11 @@ class BulkMarksUploadController extends BaseController
 
             // Fetch students
             $students = $this->studentModel
-                ->select('students.id, students.firstname, students.lastname, students.roll_no, student_session.*, classes.class')
+                ->select('students.id as student_id, students.firstname, students.middlename, students.lastname, classes.class')
                 ->join('student_session', 'student_session.student_id = students.id')
                 ->join('classes', 'classes.id = student_session.class_id')
                 ->join('tz_student_alevel_combinations sac', 'sac.class_id = student_session.class_id AND sac.session_id = student_session.session_id AND (sac.section_id = student_session.section_id OR sac.section_id IS NULL)')
-                ->join('tz_alevel_exam_combinations aec', 'aec.combination_id = sac.combination_id AND aec.class_id = student_session.class_id AND aec.session_id = student_session.session_id AND aec.exam_id = ' . $examId)
+                ->join('tz_alevel_exam_combinations aec', "aec.combination_id = sac.combination_id AND aec.class_id = student_session.class_id AND aec.session_id = student_session.session_id AND aec.exam_id = '" . $examId . "'")
                 ->where([
                     'student_session.session_id' => $sessionId,
                     'student_session.class_id' => $classId,
@@ -139,8 +139,7 @@ class BulkMarksUploadController extends BaseController
             // Set headers
             $sheet->setCellValue('A1', 'Student ID');
             $sheet->setCellValue('B1', 'Student Name');
-            $sheet->setCellValue('C1', 'Roll Number');
-            $column = 'D';
+            $column = 'C';
             foreach ($subjects as $subject) {
                 $sheet->setCellValue($column . '1', $subject['subject_name'] . ' (ID: ' . $subject['id'] . ')');
                 $column++;
@@ -158,9 +157,8 @@ class BulkMarksUploadController extends BaseController
             // Populate data
             $row = 2;
             foreach ($students as $student) {
-                $sheet->setCellValue('A' . $row, $student['id']);
+                $sheet->setCellValue('A' . $row, $student['student_id']);
                 $sheet->setCellValue('B' . $row, $student['firstname'] . ' ' . $student['lastname']);
-                $sheet->setCellValue('C' . $row, $student['roll_no'] ?? 'N/A');
                 $row++;
             }
 
@@ -246,9 +244,9 @@ class BulkMarksUploadController extends BaseController
             // Process headers to map subject columns
             $headers = $data[0];
             $subjectColumns = [];
-            for ($i = 3; $i < count($headers); $i++) {
+            for ($i = 2; $i < count($headers); $i++) {
                 if (!empty($headers[$i])) {
-                    preg_match('/\(ID: (\d+)\)/', $headers[$i], $matches);
+                    preg_match('/\(ID: ([a-f0-9\-]{36})\)/', $headers[$i], $matches);
                     if (isset($matches[1]) && in_array($matches[1], $validSubjectIds)) {
                         $subjectColumns[$i] = $matches[1];
                     }
@@ -266,7 +264,7 @@ class BulkMarksUploadController extends BaseController
             $maxConsecutiveEmptyRows = 2; // Stop after just 2 consecutive empty rows to be more strict
             for ($row = 1; $row < count($data); $row++) {
                 $studentId = trim($data[$row][0]); // Trim to remove any spaces
-                if (empty($studentId) || !is_numeric($studentId)) {
+                if (empty($studentId) || strlen($studentId) != 36) {
                     $consecutiveEmptyRows++;
                     if ($consecutiveEmptyRows >= $maxConsecutiveEmptyRows) {
                         log_message('debug', "[BulkMarksUploadController.uploadMarks] Stopping processing at Row $row due to consecutive empty rows.");

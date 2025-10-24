@@ -91,11 +91,11 @@ class AddAlevelMarksController extends BaseController
         }
 
         $students = $this->studentModel
-            ->select('students.id, students.firstname, students.lastname, students.roll_no, student_session.*, classes.class')
+            ->select('students.id as student_id, students.firstname, students.middlename, students.lastname, classes.class')
             ->join('student_session', 'student_session.student_id = students.id')
             ->join('classes', 'classes.id = student_session.class_id')
             ->join('tz_student_alevel_combinations sac', 'sac.class_id = student_session.class_id AND sac.session_id = student_session.session_id AND (sac.section_id = student_session.section_id OR sac.section_id IS NULL)')
-            ->join('tz_alevel_exam_combinations aec', 'aec.combination_id = sac.combination_id AND aec.class_id = student_session.class_id AND aec.session_id = student_session.session_id AND aec.exam_id = ' . $examId)
+            ->join('tz_alevel_exam_combinations aec', "aec.combination_id = sac.combination_id AND aec.class_id = student_session.class_id AND aec.session_id = student_session.session_id AND aec.exam_id = '" . $examId . "'")
             ->where([
                 'student_session.session_id' => $sessionId,
                 'student_session.class_id' => $classId,
@@ -106,6 +106,9 @@ class AddAlevelMarksController extends BaseController
                 'aec.is_active' => 'yes'
             ])
             ->findAll();
+
+        // Debug log the students
+        log_message('error', '[AddAlevelMarksController.getStudents] Students returned: ' . json_encode($students));
 
         return $this->respond([
             'status' => 'success',
@@ -155,11 +158,11 @@ public function saveMarks()
 {
     try {
         $rules = [
-            'exam_id' => 'required|numeric',
-            'student_id' => 'required|numeric',
-            'class_id' => 'required|numeric',
+            'exam_id' => 'required|string|min_length[36]|max_length[36]',
+            'student_id' => 'required|string|min_length[36]|max_length[36]',
+            'class_id' => 'required|string|min_length[36]|max_length[36]',
             'session_id' => 'required|string|min_length[36]|max_length[36]',
-            'combination_id' => 'required|numeric'
+            'combination_id' => 'required|string|min_length[36]|max_length[36]'
         ];
 
         if (!$this->validate($rules)) {
@@ -176,6 +179,17 @@ public function saveMarks()
         $sessionId = $this->request->getPost('session_id');
         $combinationId = $this->request->getPost('combination_id');
         $marks = json_decode($this->request->getPost('marks'), true);
+
+        // Debug log
+        log_message('error', '[AddAlevelMarksController.saveMarks] Student ID received: ' . $studentId);
+        
+        // Verify student exists
+        $studentExists = $this->studentModel->find($studentId);
+        if (!$studentExists) {
+            log_message('error', '[AddAlevelMarksController.saveMarks] Student not found in database: ' . $studentId);
+            throw new \Exception('Student ID not found in database: ' . $studentId);
+        }
+        log_message('error', '[AddAlevelMarksController.saveMarks] Student found: ' . json_encode($studentExists));
 
         if (!is_array($marks)) {
             throw new \Exception('Invalid marks data format');

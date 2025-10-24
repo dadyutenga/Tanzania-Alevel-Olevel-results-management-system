@@ -901,7 +901,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <thead>
                     <tr>
                         <th>Student Name</th>
-                        <th>Roll Number</th>
                         <th>Subjects</th>
                         <th>Actions</th>
                     </tr>
@@ -913,10 +912,9 @@ document.addEventListener('DOMContentLoaded', function() {
             table += `
                 <tr>
                     <td>${fullName}</td>
-                    <td>${student.roll_no || 'N/A'}</td>
-                    <td><div class="subjects-container" id="subjects_${student.id}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem; padding: 0.3rem;"></div></td>
+                    <td><div class="subjects-container" id="subjects_${student.student_id}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem; padding: 0.3rem;"></div></td>
                     <td>
-                        <button class="btn btn-success" onclick="saveMarks(${student.id})" style="background-color: var(--primary); color: black; padding: 0.4rem 1.2rem; border-radius: var(--button-radius); font-weight: 600; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 8px rgba(74, 229, 74, 0.3); font-size: 0.85rem;">
+                        <button class="btn btn-success" onclick="saveMarks('${student.student_id}')" style="background-color: var(--primary); color: black; padding: 0.4rem 1.2rem; border-radius: var(--button-radius); font-weight: 600; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 8px rgba(74, 229, 74, 0.3); font-size: 0.85rem;">
                             <i class="fas fa-save" style="font-size: 0.85rem;"></i> Save
                         </button>
                     </td>
@@ -952,7 +950,7 @@ document.addEventListener('DOMContentLoaded', function() {
             debugLog('Subjects for table:', data);
             if (data.status === 'success' && data.data.length > 0) {
                 students.forEach(student => {
-                    const container = document.getElementById(`subjects_${student.id}`);
+                    const container = document.getElementById(`subjects_${student.student_id}`);
                     let subjectsHtml = '';
                     data.data.forEach(subject => {
                         subjectsHtml += `
@@ -962,7 +960,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <input type="number" 
                                         class="marks-input" 
                                         data-subject="${subject.id}"
-                                        data-student="${student.id}"
+                                        data-student="${student.student_id}"
                                         min="0" 
                                         placeholder="Marks"
                                         style="width: 100%; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.85rem; background-color: var(--card-bg); color: var(--text-primary); transition: all 0.3s ease;">
@@ -972,7 +970,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         `;
                     });
                     container.innerHTML = subjectsHtml;
-                    loadExistingMarks(student.id);
+                    loadExistingMarks(student.student_id);
                 });
             }
         })
