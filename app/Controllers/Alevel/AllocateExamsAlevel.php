@@ -129,19 +129,33 @@ class AllocateExamsAlevel extends ResourceController
             // Log incoming data for debugging
             log_message('info', '[AllocateExamsAlevel.store] Received POST data: ' . json_encode($this->request->getPost()));
             
-            $rules = [
-                'exam_id' => 'required|string|min_length[36]|max_length[36]',
-                'session_id' => 'required|string|min_length[36]|max_length[36]',
-                'class_id' => 'required|string|min_length[36]|max_length[36]',
-                'combination_id' => 'required|string|min_length[36]|max_length[36]'
-            ];
+            // Manual validation with fresh validator instance
+            $validation = \Config\Services::validation();
+            $validation->setRules([
+                'exam_id' => [
+                    'label' => 'Exam ID',
+                    'rules' => 'required|string|min_length[36]|max_length[36]'
+                ],
+                'session_id' => [
+                    'label' => 'Session ID',
+                    'rules' => 'required|string|min_length[36]|max_length[36]'
+                ],
+                'class_id' => [
+                    'label' => 'Class ID',
+                    'rules' => 'required|string|min_length[36]|max_length[36]'
+                ],
+                'combination_id' => [
+                    'label' => 'Combination ID',
+                    'rules' => 'required|string|min_length[36]|max_length[36]'
+                ]
+            ]);
 
-            if (!$this->validate($rules)) {
-                log_message('error', '[AllocateExamsAlevel.store] Validation errors: ' . json_encode($this->validator->getErrors()));
+            if (!$validation->withRequest($this->request)->run()) {
+                log_message('error', '[AllocateExamsAlevel.store] Validation errors: ' . json_encode($validation->getErrors()));
                 return $this->respond([
                     'status' => 'error',
                     'message' => 'Validation failed',
-                    'errors' => $this->validator->getErrors()
+                    'errors' => $validation->getErrors()
                 ], 400);
             }
 
@@ -174,17 +188,22 @@ class AllocateExamsAlevel extends ResourceController
                 'is_active' => 'yes'
             ];
 
-            $result = $this->examCombinationModel->insert($data);
+            log_message('info', '[AllocateExamsAlevel.store] Attempting to insert: ' . json_encode($data));
+            $result = $this->examCombinationModel->insert($data, false); // false = skip model validation
 
             if ($result) {
+                log_message('info', '[AllocateExamsAlevel.store] Insert successful. ID: ' . $result);
                 return $this->respond([
                     'status' => 'success',
                     'message' => 'Exam allocated successfully'
                 ]);
             } else {
+                $errors = $this->examCombinationModel->errors();
+                log_message('error', '[AllocateExamsAlevel.store] Insert failed. Model errors: ' . json_encode($errors));
                 return $this->respond([
                     'status' => 'error',
-                    'message' => 'Failed to allocate exam'
+                    'message' => 'Failed to allocate exam',
+                    'errors' => $errors
                 ], 500);
             }
         } catch (\Exception $e) {

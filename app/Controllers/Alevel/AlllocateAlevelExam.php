@@ -146,18 +146,33 @@ class AlllocateAlevelExam extends ResourceController
     public function store()
     {
         try {
-            $rules = [
-                'exam_id' => 'required|numeric',
-                'session_id' => 'required|string|min_length[36]|max_length[36]',
-                'class_id' => 'required|numeric',
-                'combination_id' => 'required|numeric'
-            ];
+            // Manual validation with fresh validator instance
+            $validation = \Config\Services::validation();
+            $validation->setRules([
+                'exam_id' => [
+                    'label' => 'Exam ID',
+                    'rules' => 'required|string|min_length[36]|max_length[36]'
+                ],
+                'session_id' => [
+                    'label' => 'Session ID',
+                    'rules' => 'required|string|min_length[36]|max_length[36]'
+                ],
+                'class_id' => [
+                    'label' => 'Class ID',
+                    'rules' => 'required|string|min_length[36]|max_length[36]'
+                ],
+                'combination_id' => [
+                    'label' => 'Combination ID',
+                    'rules' => 'required|string|min_length[36]|max_length[36]'
+                ]
+            ]);
 
-            if (!$this->validate($rules)) {
+            if (!$validation->withRequest($this->request)->run()) {
+                log_message('error', '[AlllocateAlevelExam.store] Validation errors: ' . json_encode($validation->getErrors()));
                 return $this->respond([
                     'status' => 'error',
                     'message' => 'Validation failed',
-                    'errors' => $this->validator->getErrors()
+                    'errors' => $validation->getErrors()
                 ], 400);
             }
 
@@ -190,17 +205,22 @@ class AlllocateAlevelExam extends ResourceController
                 'is_active' => 'yes'
             ];
 
-            $result = $this->examCombinationModel->insert($data);
+            log_message('info', '[AlllocateAlevelExam.store] Attempting to insert: ' . json_encode($data));
+            $result = $this->examCombinationModel->insert($data, false); // Skip model validation
 
             if ($result) {
+                log_message('info', '[AlllocateAlevelExam.store] Insert successful');
                 return $this->respond([
                     'status' => 'success',
                     'message' => 'Exam allocated successfully'
                 ]);
             } else {
+                $errors = $this->examCombinationModel->errors();
+                log_message('error', '[AlllocateAlevelExam.store] Insert failed: ' . json_encode($errors));
                 return $this->respond([
                     'status' => 'error',
-                    'message' => 'Failed to allocate exam'
+                    'message' => 'Failed to allocate exam',
+                    'errors' => $errors
                 ], 500);
             }
         } catch (\Exception $e) {
