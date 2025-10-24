@@ -28,10 +28,10 @@ class AlevelExamCombinationModel extends BaseModel
 
     // Validation
     protected $validationRules = [
-        'exam_id'         => 'required|max_length[36]',
-        'combination_id'  => 'required|max_length[36]',
-        'class_id'        => 'required|max_length[36]',
-        'session_id'      => 'required|max_length[36]',
+        'exam_id'         => 'required|string|min_length[36]|max_length[36]',
+        'combination_id'  => 'required|string|min_length[36]|max_length[36]',
+        'class_id'        => 'required|string|min_length[36]|max_length[36]',
+        'session_id'      => 'required|string|min_length[36]|max_length[36]',
         'is_active'       => 'in_list[yes,no]'
     ];
 }

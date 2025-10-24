@@ -36,14 +36,15 @@ class AlevelSubjectsController extends BaseController
         try {
             $validation = \Config\Services::validation();
             $validation->setRules([
-                'combination_id' => 'required|numeric',
+                'combination_id' => 'required|string|min_length[36]|max_length[36]',
                 'subject_name' => 'required|max_length[100]',
                 'subject_type' => 'required|in_list[major,additional]',
                 'is_active' => 'in_list[yes,no]'
             ]);
 
             if (!$validation->withRequest($this->request)->run()) {
-                return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+                log_message('error', '[AlevelSubjectsController.store] Validation failed: ' . json_encode($validation->getErrors()));
+                return redirect()->back()->withInput()->with('error', 'Validation failed: ' . implode(', ', $validation->getErrors()));
             }
 
             $data = [
@@ -53,10 +54,15 @@ class AlevelSubjectsController extends BaseController
                 'is_active' => $this->request->getPost('is_active') ?? 'yes'
             ];
 
+            log_message('info', '[AlevelSubjectsController.store] Attempting to insert subject: ' . json_encode($data));
+
             if ($this->alevelCombinationSubjectModel->insert($data)) {
+                log_message('info', '[AlevelSubjectsController.store] Subject added successfully');
                 return redirect()->to(base_url('alevel/subjects'))->with('message', 'Subject added successfully');
             } else {
-                return redirect()->back()->withInput()->with('error', 'Failed to add subject');
+                $errors = $this->alevelCombinationSubjectModel->errors();
+                log_message('error', '[AlevelSubjectsController.store] Failed to insert subject. Errors: ' . json_encode($errors));
+                return redirect()->back()->withInput()->with('error', 'Failed to add subject: ' . implode(', ', $errors));
             }
         } catch (\Exception $e) {
             log_message('error', '[AlevelSubjectsController.store] Error: ' . $e->getMessage());
@@ -94,7 +100,7 @@ class AlevelSubjectsController extends BaseController
 
             $validation = \Config\Services::validation();
             $validation->setRules([
-                'combination_id' => 'required|numeric',
+                'combination_id' => 'required|string|min_length[36]|max_length[36]',
                 'subject_name' => 'required|max_length[100]',
                 'subject_type' => 'required|in_list[major,additional]',
                 'is_active' => 'in_list[yes,no]'

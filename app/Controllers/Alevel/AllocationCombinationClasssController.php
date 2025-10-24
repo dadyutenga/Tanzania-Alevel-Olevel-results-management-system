@@ -56,10 +56,10 @@ class AllocationCombinationClasssController extends BaseController
 
         // Validate request
         $rules = [
-            'combination_id' => 'required|numeric',
-            'class_id' => 'required|numeric',
+            'combination_id' => 'required|string|min_length[36]|max_length[36]',
+            'class_id' => 'required|string|min_length[36]|max_length[36]',
             'session_id' => 'required|string|min_length[36]|max_length[36]',
-            'section_id' => 'permit_empty|numeric',
+            'section_id' => 'permit_empty|string|min_length[36]|max_length[36]',
             'is_active' => 'required|in_list[yes,no]'
         ];
 
@@ -134,10 +134,10 @@ class AllocationCombinationClasssController extends BaseController
     {
         // Validate request
         $rules = [
-            'combination_id' => 'required|numeric',
-            'class_id' => 'required|numeric',
+            'combination_id' => 'required|string|min_length[36]|max_length[36]',
+            'class_id' => 'required|string|min_length[36]|max_length[36]',
             'session_id' => 'required|string|min_length[36]|max_length[36]',
-            'section_id' => 'permit_empty|numeric',
+            'section_id' => 'permit_empty|string|min_length[36]|max_length[36]',
             'is_active' => 'required|in_list[yes,no]'
         ];
 

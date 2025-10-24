@@ -126,14 +126,18 @@ class AllocateExamsAlevel extends ResourceController
     public function store()
     {
         try {
+            // Log incoming data for debugging
+            log_message('info', '[AllocateExamsAlevel.store] Received POST data: ' . json_encode($this->request->getPost()));
+            
             $rules = [
-                'exam_id' => 'required|numeric',
+                'exam_id' => 'required|string|min_length[36]|max_length[36]',
                 'session_id' => 'required|string|min_length[36]|max_length[36]',
-                'class_id' => 'required|numeric',
-                'combination_id' => 'required|numeric'
+                'class_id' => 'required|string|min_length[36]|max_length[36]',
+                'combination_id' => 'required|string|min_length[36]|max_length[36]'
             ];
 
             if (!$this->validate($rules)) {
+                log_message('error', '[AllocateExamsAlevel.store] Validation errors: ' . json_encode($this->validator->getErrors()));
                 return $this->respond([
                     'status' => 'error',
                     'message' => 'Validation failed',
