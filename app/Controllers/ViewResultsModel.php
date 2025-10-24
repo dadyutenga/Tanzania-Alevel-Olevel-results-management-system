@@ -46,7 +46,7 @@ class ViewResultsModel extends ResourceController
                     students.id AS student_id,
                     CONCAT(students.firstname, " ", COALESCE(students.middlename, ""), " ", students.lastname) AS full_name,
                     classes.class AS class_name,
-                    class_sections.section_id AS section,
+                    sections.section AS section,
                     tz_exams.exam_name,
                     tz_exam_results.total_points,
                     tz_exam_results.division
@@ -54,6 +54,7 @@ class ViewResultsModel extends ResourceController
                 ->join('student_session', 'students.id = student_session.student_id')
                 ->join('classes', 'student_session.class_id = classes.id')
                 ->join('class_sections', 'student_session.section_id = class_sections.section_id AND student_session.class_id = class_sections.class_id')
+                ->join('sections', 'class_sections.section_id = sections.id')
                 ->join('tz_exam_classes', 'tz_exam_classes.class_id = student_session.class_id AND tz_exam_classes.session_id = student_session.session_id')
                 ->join('tz_exams', 'tz_exams.id = tz_exam_classes.exam_id')
                 ->join('tz_exam_results', 'tz_exam_results.student_id = students.id 
@@ -297,7 +298,7 @@ class ViewResultsModel extends ResourceController
                     students.id AS student_id,
                     CONCAT(students.firstname, " ", COALESCE(students.middlename, ""), " ", students.lastname) AS full_name,
                     classes.class AS class_name,
-                    class_sections.section_id AS section,
+                    sections.section AS section,
                     tz_exams.exam_name,
                     tz_exam_subjects.subject_name,
                     tz_exam_subject_marks.marks_obtained,
@@ -308,7 +309,8 @@ class ViewResultsModel extends ResourceController
                 ->join('students', 'students.id = tz_exam_subject_marks.student_id')
                 ->join('student_session', 'students.id = student_session.student_id')
                 ->join('classes', 'student_session.class_id = classes.id')
-                ->join('class_sections', 'student_session.section_id = class_sections.section_id')
+                ->join('class_sections', 'student_session.section_id = class_sections.section_id AND student_session.class_id = class_sections.class_id')
+                ->join('sections', 'class_sections.section_id = sections.id')
                 ->join('tz_exams', 'tz_exams.id = tz_exam_subject_marks.exam_id')
                 ->join('tz_exam_subjects', 'tz_exam_subjects.id = tz_exam_subject_marks.exam_subject_id')
                 ->join('tz_exam_results', 'tz_exam_results.student_id = students.id AND tz_exam_results.exam_id = tz_exams.id')
