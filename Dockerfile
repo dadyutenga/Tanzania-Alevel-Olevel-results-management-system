@@ -13,7 +13,7 @@ RUN dnf -y update && \
 RUN dnf -y module reset php && \
     dnf -y module enable php:remi-8.2
 
-# Install PHP and extensions
+# Install PHP, nginx and extensions
 RUN dnf -y install \
     php \
     php-cli \
@@ -33,11 +33,11 @@ RUN dnf -y install \
     php-fileinfo \
     php-sodium \
     php-pecl-redis \
+    nginx \
     git \
     unzip \
     wget \
     supervisor \
-    mysql \
     && dnf clean all
 
 # Install Composer
@@ -65,7 +65,7 @@ RUN chown -R apache:apache /var/www/html && \
 
 # Configure PHP-FPM
 RUN mkdir -p /run/php-fpm && \
-    sed -i 's/^listen = .*/listen = 9000/' /etc/php-fpm.d/www.conf && \
+    sed -i 's/^listen = .*/listen = 127.0.0.1:9000/' /etc/php-fpm.d/www.conf && \
     sed -i 's/^user = .*/user = apache/' /etc/php-fpm.d/www.conf && \
     sed -i 's/^group = .*/group = apache/' /etc/php-fpm.d/www.conf && \
     sed -i 's/^;catch_workers_output = .*/catch_workers_output = yes/' /etc/php-fpm.d/www.conf
@@ -73,7 +73,9 @@ RUN mkdir -p /run/php-fpm && \
 # Copy configurations
 COPY docker/supervisor/supervisord.conf /etc/supervisord.conf
 COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
+# Copy nginx default config as a fallback (compose mounts can override it)
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 9000
+EXPOSE 80 9000
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]
