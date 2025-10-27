@@ -259,9 +259,6 @@
                 <a href="<?= base_url('register') ?>" class="btn btn-secondary">
                     <i class="fas fa-user-plus"></i> Register
                 </a>
-                <a href="<?= base_url('public/results') ?>" class="btn btn-primary">
-                    <i class="fas fa-search"></i> Search Results
-                </a>
             </div>
         </div>
     </div>
